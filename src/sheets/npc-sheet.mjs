@@ -27,7 +27,7 @@ export class RfsNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       closeOnSubmit: false,
     },
     actions: {
-      toggleMode:   RfsNpcSheet._onToggleMode,
+      toggleMode:     RfsNpcSheet._onToggleMode,
       rollDifficulty: RfsNpcSheet._onRollDifficulty,
 
       // Full-mode actions (same pattern as character sheet)
@@ -106,16 +106,20 @@ export class RfsNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     return roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor: this.actor }) });
   }
 
+  /**
+   * Add a new child skill under the clicked parent.
+   * v14: DialogV2.input returns form data object directly.
+   */
   static async _onAddSkill(event, target) {
     const parentId = target.dataset.skillId ?? this.actor.getRootSkill()?.id ?? "root";
-    const name = await foundry.applications.api.DialogV2.prompt({
+
+    const result = await foundry.applications.api.DialogV2.input({
       window: { title: "New Skill" },
       content: `<input type="text" name="skillName" placeholder="Skill name" autofocus style="width:100%">`,
-      ok: {
-        label: "Add",
-        callback: (e, b, d) => d.querySelector("[name=skillName]").value.trim(),
-      },
+      ok: { label: "Add" },
     });
+
+    const name = result?.skillName?.trim();
     if (!name) return;
     return this.actor.addSkill(name, parentId);
   }

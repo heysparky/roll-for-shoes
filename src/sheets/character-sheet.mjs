@@ -161,25 +161,23 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
   /**
    * Add a new child skill under the clicked parent.
+   * v14: DialogV2.input returns form data object directly.
+   * Access fields via result.fieldName.
    */
   static async _onAddSkill(event, target) {
     const parentId = target.dataset.skillId ?? this.actor.getRootSkill()?.id ?? "root";
     const parent   = this.actor.getSkillById(parentId);
     if (!parent) return;
 
-    // DialogV2 for entering the new skill name (Milestone 6 will flesh this out)
-    const name = await foundry.applications.api.DialogV2.prompt({
+    const result = await foundry.applications.api.DialogV2.input({
       window: { title: game.i18n.localize("RFS.Dialog.NewSkill.Title") },
       content: `<input type="text" name="skillName"
                   placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
                   autofocus style="width:100%">`,
-      ok: {
-        label: game.i18n.localize("RFS.Dialog.NewSkill.Confirm"),
-        callback: (event, button, dialog) =>
-          dialog.querySelector("[name=skillName]").value.trim(),
-      },
+      ok: { label: game.i18n.localize("RFS.Dialog.NewSkill.Confirm") },
     });
 
+    const name = result?.skillName?.trim();
     if (!name) return;
     return this.actor.addSkill(name, parentId);
   }
@@ -216,7 +214,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    */
   static async _onAddStatus(event, target) {
     // TODO (Milestone 9): Full DialogV2 with name + value fields
-    // Stub for Milestone 1: adds a placeholder status
+    // Stub for now: adds a placeholder status
     return this.actor.addStatus("New Status", 0);
   }
 
