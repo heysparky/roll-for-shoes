@@ -48,6 +48,10 @@ export class RfsSkillRoll {
    * @returns {Promise<void>}
    */
   static async roll(actor, skill, options = {}) {
+    // Default difficulty is 4 — every roll has opposition
+    const difficulty = options.difficulty ?? 4;
+    options = { ...options, difficulty };
+
     const roll = new Roll(`${skill.level}d6`);
     await roll.evaluate();
 
@@ -59,8 +63,8 @@ export class RfsSkillRoll {
 
     await RfsSkillRoll._postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, options);
 
-    // XP on failure — only when rolling against a set difficulty
-    if (options.difficulty !== undefined && total < options.difficulty) {
+    // Every failed roll grants XP — all rolls have opposition (default difficulty 4)
+    if (total < difficulty) {
       await actor.addXp(1);
     }
   }
