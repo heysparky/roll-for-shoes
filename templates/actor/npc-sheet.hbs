@@ -1,0 +1,89 @@
+{{!-- templates/actor/npc-sheet.hbs --}}
+
+<div class="rfs-sheet npc">
+
+  <header class="rfs-sheet__header">
+    <img class="rfs-sheet__portrait"
+         src="{{actor.img}}"
+         alt="{{actor.name}}"
+         data-edit="img">
+
+    <div class="rfs-sheet__identity">
+      <input class="rfs-sheet__name"
+             type="text"
+             name="name"
+             value="{{actor.name}}"
+             {{#unless isEditable}}disabled{{/unless}}>
+
+      {{!-- Mode badge + toggle --}}
+      <div class="rfs-npc-mode">
+        <span class="rfs-npc-mode__label">
+          {{#if isFixed}}{{localize 'RFS.NpcMode.Fixed'}}{{else}}{{localize 'RFS.NpcMode.Full'}}{{/if}}
+        </span>
+        {{#if isEditable}}
+          <button type="button"
+                  class="rfs-btn rfs-btn--small"
+                  data-action="toggleMode"
+                  title="{{localize 'RFS.Action.ToggleNpcMode'}}">
+            ⇄
+          </button>
+        {{/if}}
+      </div>
+    </div>
+  </header>
+
+  <section class="rfs-sheet__body">
+
+    {{!-- ── Fixed mode ──────────────────────────────────────────────── --}}
+    {{#if isFixed}}
+      <div class="rfs-panel rfs-panel--difficulty">
+        <label class="rfs-field">
+          <span class="rfs-field__label">{{localize 'RFS.Label.Difficulty'}}</span>
+          <input type="number"
+                 name="system.difficulty"
+                 value="{{system.difficulty}}"
+                 min="0"
+                 class="rfs-field__input rfs-field__input--number"
+                 {{#unless isEditable}}disabled{{/unless}}>
+        </label>
+
+        <button type="button"
+                class="rfs-btn rfs-btn--roll"
+                data-action="rollDifficulty">
+          {{localize 'RFS.Action.PostDifficulty'}}
+        </button>
+
+        <div class="rfs-field">
+          <label class="rfs-field__label">{{localize 'RFS.Label.Description'}}</label>
+          {{editor system.description
+                   target="system.description"
+                   button=true
+                   editable=isEditable
+                   engine="prosemirror"}}
+        </div>
+      </div>
+    {{/if}}
+
+    {{!-- ── Full mode ───────────────────────────────────────────────── --}}
+    {{#if isFull}}
+      {{> "systems/roll-for-shoes/templates/actor/partials/xp-tracker.hbs"}}
+
+      <div class="rfs-panel rfs-panel--skills">
+        <div class="rfs-panel__header">
+          <h2 class="rfs-panel__title">{{localize 'RFS.Label.Skills'}}</h2>
+        </div>
+        <div class="rfs-skill-tree">
+          {{> "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs"
+              skills=skills
+              isEditable=isEditable }}
+        </div>
+      </div>
+
+      {{> "systems/roll-for-shoes/templates/actor/partials/status-list.hbs"
+          statuses=statuses
+          isEditable=isEditable }}
+    {{/if}}
+
+  </section>
+
+</div>

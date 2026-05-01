@@ -1,0 +1,19 @@
+{{!-- templates/actor/partials/skill-tree.hbs --}}
+{{!--
+  Renders the top-level of the skill tree.
+  Finds the root skill (parentId = "") and passes it to skill-node,
+  which recurses for each generation of children.
+
+  This partial is the entry point — skill-node.hbs handles each node + its children.
+--}}
+
+{{#each skills}}
+  {{#unless this.parentId}}
+    {{!-- Root skill — render with skill-node, which will recurse --}}
+    {{> "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs"
+        skill=this
+        allSkills=../skills
+        isEditable=../isEditable
+        depth=0 }}
+  {{/unless}}
+{{/each}}

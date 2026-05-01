@@ -1,0 +1,135 @@
+/* =============================================================================
+   styles/themes/dark-factory.css
+   ================================
+   Dark Factory — Steampunk Theme for Roll for Shoes
+   ==================================================
+
+   Palette intent:
+     Backgrounds  → Dark industrial steel, aged iron, soot-black
+     Text         → Warm brass, aged parchment, steam-white
+     Accent       → Molten copper, furnace orange
+     Skills       → Aged brass pipes — root is wrought iron
+     XP           → Pressurised steam green
+     Status pos   → Copper patina green
+     Status neg   → Furnace red
+     Buttons      → Riveted iron plate
+
+   How to create your own theme:
+     Copy this file → styles/themes/my-theme.css
+     Change the values inside [data-rfs-theme="my-theme"] { }
+     Add to system.json "styles" and to RFS.themes in config.mjs
+     No other changes needed.
+   ============================================================================= */
+
+[data-rfs-theme="dark-factory"] {
+
+  /* ── Backgrounds ──────────────────────────────────────────────────────── */
+  --rfs-color-bg:             #1a1812;   /* soot black, warm */
+  --rfs-color-bg-panel:       #221e16;   /* slightly lighter iron */
+  --rfs-color-bg-input:       #2a2419;   /* dark parchment */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --rfs-color-border:         #4a3e28;   /* aged brass */
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --rfs-color-text:           #e8d8b0;   /* warm parchment */
+  --rfs-color-text-muted:     #8a7a5a;   /* aged brass, dim */
+  --rfs-color-text-label:     #b09a6a;   /* polished brass */
+
+  /* ── Accents ──────────────────────────────────────────────────────────── */
+  --rfs-color-accent:         #c86a1a;   /* molten copper */
+  --rfs-color-accent-hover:   #e07a20;   /* brighter copper */
+
+  /* ── Skills ───────────────────────────────────────────────────────────── */
+  --rfs-color-skill-root:     #d4a842;   /* polished brass — root is special */
+  --rfs-color-pip:            #c86a1a;   /* copper gear icons */
+
+  /* ── XP ───────────────────────────────────────────────────────────────── */
+  --rfs-color-xp:             #4a9a6a;   /* steam valve green */
+
+  /* ── Danger ───────────────────────────────────────────────────────────── */
+  --rfs-color-danger:         #9a2a1a;   /* furnace red */
+
+  /* ── Status modifiers ─────────────────────────────────────────────────── */
+  --rfs-color-status-pos:     #4a9a6a;   /* copper patina */
+  --rfs-color-status-neg:     #9a2a1a;   /* furnace red */
+  --rfs-color-status-neu:     #8a7a5a;   /* aged brass */
+
+  /* ── Roll / action buttons ────────────────────────────────────────────── */
+  --rfs-color-roll-btn:       #2a3a5a;   /* dark steel blue */
+  --rfs-color-roll-btn-hover: #3a4a7a;   /* lighter steel */
+
+  /* ── Typography: lean into the industrial feel ────────────────────────── */
+  --rfs-font-body:            "Palatino Linotype", "Palatino", "Book Antiqua", serif;
+  --rfs-font-display:         "Palatino Linotype", "Palatino", serif;
+
+  /* ── Radii: hard industrial corners ──────────────────────────────────── */
+  --rfs-radius-sm:            1px;
+  --rfs-radius-md:            2px;
+  --rfs-radius-lg:            4px;
+
+  /* ── Shadows: heavier, darker ─────────────────────────────────────────── */
+  --rfs-shadow-sm:            0 1px 4px rgba(0,0,0,0.5);
+  --rfs-shadow-md:            0 2px 8px rgba(0,0,0,0.6);
+  --rfs-shadow-panel:         inset 0 1px 4px rgba(0,0,0,0.4),
+                              inset 0 0 0 1px rgba(74,62,40,0.3);
+}
+
+/* ── Dark Factory specific decorations ───────────────────────────────────── */
+/* These go OUTSIDE the custom property block because they add new rules,
+   not just override variables. */
+
+[data-rfs-theme="dark-factory"] .rfs-sheet {
+  /* Subtle rivet-texture via repeating gradient */
+  background-image:
+    radial-gradient(circle at 8px 8px, rgba(74,62,40,0.15) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+[data-rfs-theme="dark-factory"] .rfs-sheet__header {
+  /* Brushed metal header feel */
+  background-image:
+    linear-gradient(180deg,
+      rgba(255,255,255,0.04) 0%,
+      rgba(0,0,0,0.1) 100%);
+}
+
+[data-rfs-theme="dark-factory"] .rfs-panel__title {
+  /* Brass engraving effect on section titles */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 8px rgba(200,106,26,0.2);
+  letter-spacing: 0.04em;
+}
+
+[data-rfs-theme="dark-factory"] .rfs-pip {
+  /* Gear icons pulse faintly — subtle, not distracting */
+  text-shadow: 0 0 4px rgba(200,106,26,0.4);
+}
+
+[data-rfs-theme="dark-factory"] .rfs-skill-node__name--root {
+  /* Root skill looks like it's cast in brass */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(212,168,66,0.3);
+  letter-spacing: 0.02em;
+}
+
+[data-rfs-theme="dark-factory"] .rfs-xp__value {
+  /* Steam pressure gauge readout */
+  text-shadow: 0 0 8px rgba(74,154,106,0.5);
+}
+
+[data-rfs-theme="dark-factory"] .rfs-btn--roll {
+  /* Riveted steel roll button */
+  background-image:
+    linear-gradient(180deg,
+      rgba(255,255,255,0.08) 0%,
+      rgba(0,0,0,0.15) 100%);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+[data-rfs-theme="dark-factory"] .rfs-panel {
+  /* Panel has a faint inner glow from the furnace */
+  box-shadow:
+    var(--rfs-shadow-panel),
+    0 0 0 1px rgba(200,106,26,0.05);
+}

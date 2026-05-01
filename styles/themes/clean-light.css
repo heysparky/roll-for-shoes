@@ -1,0 +1,39 @@
+/* =============================================================================
+   styles/themes/clean-light.css
+   ==============================
+   Clean Light — Minimal, high-contrast theme.
+   A proof of the theme architecture: one file, no JS changes.
+   ============================================================================= */
+
+[data-rfs-theme="clean-light"] {
+  --rfs-color-bg:             #ffffff;
+  --rfs-color-bg-panel:       #f4f4f4;
+  --rfs-color-bg-input:       #ffffff;
+  --rfs-color-border:         #d0d0d0;
+  --rfs-color-text:           #111111;
+  --rfs-color-text-muted:     #666666;
+  --rfs-color-text-label:     #444444;
+  --rfs-color-accent:         #1a56a0;
+  --rfs-color-accent-hover:   #2066c0;
+  --rfs-color-skill-root:     #111111;
+  --rfs-color-pip:            #1a56a0;
+  --rfs-color-xp:             #1a7a4a;
+  --rfs-color-danger:         #b00020;
+  --rfs-color-status-pos:     #1a7a4a;
+  --rfs-color-status-neg:     #b00020;
+  --rfs-color-status-neu:     #666666;
+  --rfs-color-roll-btn:       #1a56a0;
+  --rfs-color-roll-btn-hover: #2066c0;
+
+  --rfs-font-body:    "Inter", "Segoe UI", system-ui, sans-serif;
+  --rfs-font-display: "Inter", system-ui, sans-serif;
+  --rfs-font-mono:    "JetBrains Mono", "Fira Code", monospace;
+
+  --rfs-radius-sm:    4px;
+  --rfs-radius-md:    6px;
+  --rfs-radius-lg:    10px;
+
+  --rfs-shadow-sm:    0 1px 3px rgba(0,0,0,0.10);
+  --rfs-shadow-md:    0 2px 6px rgba(0,0,0,0.12);
+  --rfs-shadow-panel: 0 1px 3px rgba(0,0,0,0.08);
+}

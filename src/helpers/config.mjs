@@ -1,0 +1,58 @@
+/**
+ * src/helpers/config.mjs
+ * ==========================
+ * Central configuration constants for the Roll for Shoes system.
+ *
+ * Keep game-rule constants here (not scattered in data models or sheets)
+ * so they're easy to find and adjust without hunting through files.
+ */
+
+export const RFS = {
+  // ── Identity ───────────────────────────────────────────────────────────────
+  id: "roll-for-shoes",
+
+  // ── Core Rules ────────────────────────────────────────────────────────────
+  rules: {
+    /** Every character starts with exactly this skill. Cannot be deleted. */
+    rootSkillName: "Do Anything",
+    rootSkillLevel: 1,
+
+    /**
+     * Rolling all 6s on a skill check triggers advancement.
+     * New skill is level = parent level + 1.
+     */
+    advancementTrigger: "allSixes",
+
+    /** Each failed roll earns this many XP. */
+    xpPerFailure: 1,
+
+    /** Die type used for all rolls. */
+    dieType: "d6",
+  },
+
+  // ── Actor Types ───────────────────────────────────────────────────────────
+  actorTypes: {
+    character: "RFS.ActorType.Character",
+    npc: "RFS.ActorType.Npc",
+  },
+
+  // ── NPC Modes ─────────────────────────────────────────────────────────────
+  // NPCs can run under full PC rules (skill tree, advancement, XP)
+  // or fixed mode (a flat difficulty number the GM sets).
+  npcModes: {
+    fixed: "RFS.NpcMode.Fixed",
+    full: "RFS.NpcMode.Full",
+  },
+
+  // ── Theme Registry ────────────────────────────────────────────────────────
+  // Themes are CSS files that override the custom properties defined in
+  // rfs-base.css. Add an entry here + a corresponding CSS file in
+  // styles/themes/ to register a new theme.
+  themes: {
+    "dark-factory": "RFS.Theme.DarkFactory",
+    "clean-light":  "RFS.Theme.CleanLight",
+  },
+
+  // ── Default Theme ─────────────────────────────────────────────────────────
+  defaultTheme: "dark-factory",
+};

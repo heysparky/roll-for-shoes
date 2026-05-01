@@ -1,0 +1,81 @@
+{
+  "RFS": {
+
+    "ActorType": {
+      "Character": "Character",
+      "Npc": "NPC"
+    },
+
+    "SheetLabel": {
+      "Character": "Roll for Shoes: Character Sheet",
+      "Npc": "Roll for Shoes: NPC Sheet"
+    },
+
+    "NpcMode": {
+      "Fixed": "Fixed",
+      "Full": "Full Rules"
+    },
+
+    "Theme": {
+      "DarkFactory": "Dark Factory (Steampunk)",
+      "CleanLight": "Clean Light"
+    },
+
+    "Label": {
+      "XP": "XP",
+      "Skills": "Skills",
+      "Statuses": "Statuses",
+      "Biography": "Biography",
+      "Difficulty": "Difficulty",
+      "Description": "Description",
+      "NoStatuses": "No active statuses."
+    },
+
+    "Action": {
+      "AddSkill": "Add skill to root",
+      "AddChildSkill": "Add child skill",
+      "DeleteSkill": "Delete skill",
+      "SpendXp": "Spend XP",
+      "AddStatus": "Add status",
+      "DeleteStatus": "Remove status",
+      "PostDifficulty": "Post Difficulty to Chat",
+      "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)"
+    },
+
+    "Dialog": {
+      "NewSkill": {
+        "Title": "New Skill",
+        "Placeholder": "e.g. Boots of Kicking",
+        "Confirm": "Add Skill"
+      }
+    },
+
+    "Placeholder": {
+      "ActorName": "Character Name"
+    },
+
+    "Settings": {
+      "Theme": {
+        "Name": "Sheet Theme",
+        "Hint": "Visual theme applied to all Roll for Shoes sheets and dialogs."
+      },
+      "NpcMode": {
+        "Name": "Default NPC Mode",
+        "Hint": "New NPCs default to this mode. Fixed = single difficulty number. Full = complete PC skill tree."
+      }
+    },
+
+    "Warn": {
+      "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
+      "NoXpToSpend": "No XP to spend."
+    },
+
+    "Chat": {
+      "SkillRoll": "rolls {skillName} ({level}d6)",
+      "AllSixes": "✦ All sixes! Advancement opportunity!",
+      "Failure": "Fail — +1 XP",
+      "Success": "Success",
+      "Difficulty": "{actorName} difficulty: {difficulty}"
+    }
+  }
+}

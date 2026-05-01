@@ -1,0 +1,453 @@
+/* =============================================================================
+   styles/rfs-base.css
+   ====================
+   Base layout and structure for the Roll for Shoes system.
+
+   ARCHITECTURE:
+   - This file defines ALL CSS custom properties used by the system.
+   - Zero hardcoded colors, fonts, or decorative values here.
+   - Theme files (styles/themes/*.css) override these custom properties
+     inside [data-rfs-theme="theme-id"] selectors.
+   - This means: swap a theme → body attribute changes → entire UI repaints.
+
+   CUSTOM PROPERTY NAMING:
+   --rfs-color-*       Colors
+   --rfs-font-*        Typography
+   --rfs-space-*       Spacing scale
+   --rfs-radius-*      Border radii
+   --rfs-border-*      Border widths/styles
+   --rfs-shadow-*      Box shadows
+   --rfs-anim-*        Animation durations/easings
+   --rfs-skill-depth   Set per-node inline for tree indentation
+
+   HOW TO ADD A THEME:
+   1. Create styles/themes/my-theme.css
+   2. Add [data-rfs-theme="my-theme"] { --rfs-color-bg: ...; ... }
+   3. Add "my-theme": "RFS.Theme.MyTheme" to RFS.themes in config.mjs
+   4. Add the CSS file to system.json "styles" array
+   ============================================================================= */
+
+/* ── Default custom properties (fallback / no-theme) ─────────────────────── */
+:root {
+  /* Colors — semantic names, overridden by themes */
+  --rfs-color-bg:             #f5f0e8;
+  --rfs-color-bg-panel:       #ece6d8;
+  --rfs-color-bg-input:       #fff;
+  --rfs-color-border:         #c8b89a;
+  --rfs-color-text:           #2a1e10;
+  --rfs-color-text-muted:     #7a6a55;
+  --rfs-color-text-label:     #5a4a35;
+  --rfs-color-accent:         #8b3a1a;
+  --rfs-color-accent-hover:   #a0461f;
+  --rfs-color-skill-root:     #4a2c0a;
+  --rfs-color-pip:            #8b3a1a;
+  --rfs-color-xp:             #1a5a3a;
+  --rfs-color-danger:         #8b1a1a;
+  --rfs-color-status-pos:     #1a5a3a;
+  --rfs-color-status-neg:     #8b1a1a;
+  --rfs-color-status-neu:     #5a4a35;
+  --rfs-color-roll-btn:       #2a3a5a;
+  --rfs-color-roll-btn-hover: #3a4a7a;
+
+  /* Typography */
+  --rfs-font-body:    "Georgia", "Times New Roman", serif;
+  --rfs-font-display: "Georgia", serif;
+  --rfs-font-mono:    "Courier New", monospace;
+  --rfs-font-size-sm: 0.75rem;
+  --rfs-font-size-md: 0.875rem;
+  --rfs-font-size-lg: 1rem;
+  --rfs-font-size-xl: 1.25rem;
+
+  /* Spacing */
+  --rfs-space-xs: 0.25rem;
+  --rfs-space-sm: 0.5rem;
+  --rfs-space-md: 0.75rem;
+  --rfs-space-lg: 1rem;
+  --rfs-space-xl: 1.5rem;
+
+  /* Borders & Radii */
+  --rfs-radius-sm: 2px;
+  --rfs-radius-md: 4px;
+  --rfs-radius-lg: 8px;
+  --rfs-border-width: 1px;
+  --rfs-border-style: solid;
+
+  /* Shadows */
+  --rfs-shadow-sm: 0 1px 3px rgba(0,0,0,0.15);
+  --rfs-shadow-md: 0 2px 6px rgba(0,0,0,0.20);
+  --rfs-shadow-panel: inset 0 1px 3px rgba(0,0,0,0.10);
+
+  /* Animations */
+  --rfs-anim-fast:   150ms ease;
+  --rfs-anim-normal: 250ms ease;
+  --rfs-anim-slow:   400ms ease;
+
+  /* Tree layout */
+  --rfs-skill-indent:    1.25rem;  /* per-level indentation */
+  --rfs-skill-connector: 1px solid var(--rfs-color-border);
+}
+
+/* ── Sheet wrapper ────────────────────────────────────────────────────────── */
+.rfs-sheet {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--rfs-color-bg);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.rfs-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-md);
+  padding: var(--rfs-space-md);
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  background: var(--rfs-color-bg-panel);
+}
+
+.rfs-sheet__portrait {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: var(--rfs-radius-md);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  cursor: pointer;
+}
+
+.rfs-sheet__identity {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-sheet__name {
+  font-family: var(--rfs-font-display);
+  font-size: var(--rfs-font-size-xl);
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  border-bottom: var(--rfs-border-width) dashed var(--rfs-color-border);
+  color: var(--rfs-color-text);
+  width: 100%;
+  padding: var(--rfs-space-xs) 0;
+
+  &:focus {
+    outline: none;
+    border-bottom-color: var(--rfs-color-accent);
+  }
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.rfs-sheet__body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-md);
+  padding: var(--rfs-space-md);
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────────── */
+.rfs-panel {
+  background: var(--rfs-color-bg-panel);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-md);
+  padding: var(--rfs-space-md);
+  box-shadow: var(--rfs-shadow-panel);
+}
+
+.rfs-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--rfs-space-sm);
+}
+
+.rfs-panel__title {
+  font-family: var(--rfs-font-display);
+  font-size: var(--rfs-font-size-lg);
+  color: var(--rfs-color-text-label);
+  margin: 0;
+  border: none;
+}
+
+/* ── Skill tree ──────────────────────────────────────────────────────────── */
+.rfs-skill-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rfs-skill-node {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  margin-left: calc(var(--rfs-skill-depth, 0) * var(--rfs-skill-indent));
+  border-radius: var(--rfs-radius-sm);
+  position: relative;
+  transition: background var(--rfs-anim-fast);
+
+  /* Tree connector line */
+  &:not(:first-child) {
+    &::before {
+      content: '';
+      position: absolute;
+      left: calc(var(--rfs-skill-depth, 0) * var(--rfs-skill-indent) - var(--rfs-space-sm));
+      top: 50%;
+      width: var(--rfs-space-sm);
+      height: 1px;
+      background: var(--rfs-color-border);
+    }
+  }
+
+  &:hover {
+    background: rgba(0,0,0,0.04);
+  }
+}
+
+.rfs-skill-node__pips {
+  display: flex;
+  gap: 2px;
+  min-width: 3rem;
+}
+
+.rfs-pip {
+  color: var(--rfs-color-pip);
+  font-size: var(--rfs-font-size-sm);
+  line-height: 1;
+}
+
+.rfs-skill-node__name {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  transition: border-color var(--rfs-anim-fast);
+
+  &:focus {
+    outline: none;
+    border-bottom-color: var(--rfs-color-accent);
+  }
+}
+
+.rfs-skill-node__name--root {
+  font-weight: bold;
+  color: var(--rfs-color-skill-root);
+}
+
+.rfs-skill-node__level {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  font-family: var(--rfs-font-mono);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.rfs-skill-node__actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--rfs-anim-fast);
+
+  .rfs-skill-node:hover & {
+    opacity: 1;
+  }
+}
+
+/* ── XP tracker ──────────────────────────────────────────────────────────── */
+.rfs-xp {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+}
+
+.rfs-xp__label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rfs-xp__value {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-xl);
+  font-weight: bold;
+  color: var(--rfs-color-xp);
+  min-width: 2rem;
+  text-align: center;
+}
+
+/* ── Statuses ─────────────────────────────────────────────────────────────── */
+.rfs-status {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  border-radius: var(--rfs-radius-sm);
+  border-left: 3px solid transparent;
+
+  &--positive { border-left-color: var(--rfs-color-status-pos); }
+  &--negative { border-left-color: var(--rfs-color-status-neg); }
+  &--neutral  { border-left-color: var(--rfs-color-status-neu); }
+}
+
+.rfs-status__modifier {
+  font-family: var(--rfs-font-mono);
+  font-weight: bold;
+  min-width: 2.5rem;
+  text-align: right;
+
+  .rfs-status--positive & { color: var(--rfs-color-status-pos); }
+  .rfs-status--negative & { color: var(--rfs-color-status-neg); }
+}
+
+.rfs-status__name {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+
+  &:focus {
+    outline: none;
+    border-bottom-color: var(--rfs-color-accent);
+  }
+}
+
+.rfs-status__value {
+  background: transparent;
+  border: 1px solid var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-mono);
+  padding: 2px 4px;
+  text-align: center;
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.rfs-btn {
+  background: transparent;
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  cursor: pointer;
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-sm);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  transition: background var(--rfs-anim-fast), color var(--rfs-anim-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--rfs-color-border);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+  }
+
+  &--roll {
+    background: var(--rfs-color-roll-btn);
+    border-color: var(--rfs-color-roll-btn);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: var(--rfs-color-roll-btn-hover);
+    }
+  }
+
+  &--danger {
+    &:hover:not(:disabled) {
+      background: var(--rfs-color-danger);
+      border-color: var(--rfs-color-danger);
+      color: #fff;
+    }
+  }
+
+  &--xp {
+    background: var(--rfs-color-xp);
+    border-color: var(--rfs-color-xp);
+    color: #fff;
+    font-size: var(--rfs-font-size-sm);
+
+    &:hover:not(:disabled) {
+      filter: brightness(1.15);
+    }
+  }
+
+  &--small {
+    font-size: var(--rfs-font-size-sm);
+    padding: 2px var(--rfs-space-xs);
+  }
+}
+
+/* ── NPC mode badge ──────────────────────────────────────────────────────── */
+.rfs-npc-mode {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-npc-mode__label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────────── */
+.rfs-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-field__label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rfs-field__input {
+  background: var(--rfs-color-bg-input);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
+
+  &--number { width: 5rem; text-align: center; font-family: var(--rfs-font-mono); }
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.rfs-empty {
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+  font-size: var(--rfs-font-size-sm);
+  text-align: center;
+  padding: var(--rfs-space-md);
+}

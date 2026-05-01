@@ -1,0 +1,92 @@
+{{!-- templates/actor/partials/skill-node.hbs --}}
+{{!--
+  A single skill node in the tree.
+  Renders the skill row, then recursively renders its children below it.
+
+  CSS uses --rfs-skill-depth to indent children visually.
+  The depth variable increments with each level of recursion.
+
+  Variables:
+    skill       – the skill object { id, name, level, parentId }
+    allSkills   – the full flat array, passed down for child lookup
+    isEditable  – boolean
+    depth       – integer (0 = root, 1 = direct children, etc.)
+--}}
+
+<div class="rfs-skill-node" style="--rfs-skill-depth: {{depth}};"
+     data-skill-id="{{skill.id}}">
+
+  {{!-- Dice pip indicators: one pip per die level --}}
+  <div class="rfs-skill-node__pips" aria-label="Level {{skill.level}}">
+    {{#rfsRepeat skill.level}}
+      <span class="rfs-pip">⚙</span>
+    {{/rfsRepeat}}
+  </div>
+
+  {{!-- Skill name — editable inline if sheet is editable --}}
+  {{#if isEditable}}
+    {{#unless (rfsIsRoot skill)}}
+      <input class="rfs-skill-node__name"
+             type="text"
+             name="system.skills.{{@index}}.name"
+             value="{{skill.name}}">
+    {{else}}
+      <span class="rfs-skill-node__name rfs-skill-node__name--root">
+        {{skill.name}}
+      </span>
+    {{/unless}}
+  {{else}}
+    <span class="rfs-skill-node__name">{{skill.name}}</span>
+  {{/if}}
+
+  {{!-- Level badge --}}
+  <span class="rfs-skill-node__level" title="Roll {{skill.level}}d6">
+    {{skill.level}}
+  </span>
+
+  {{!-- Action buttons --}}
+  <div class="rfs-skill-node__actions">
+    {{!-- Roll button — always visible --}}
+    <button type="button"
+            class="rfs-btn rfs-btn--roll rfs-btn--icon"
+            data-action="rollSkill"
+            data-skill-id="{{skill.id}}"
+            title="Roll {{skill.name}} ({{skill.level}}d6)">
+      🎲
+    </button>
+
+    {{#if isEditable}}
+      {{!-- Add child skill --}}
+      <button type="button"
+              class="rfs-btn rfs-btn--icon"
+              data-action="addSkill"
+              data-skill-id="{{skill.id}}"
+              title="{{localize 'RFS.Action.AddChildSkill'}}">
+        +
+      </button>
+
+      {{!-- Delete (hidden on root) --}}
+      {{#unless (rfsIsRoot skill)}}
+        <button type="button"
+                class="rfs-btn rfs-btn--icon rfs-btn--danger"
+                data-action="deleteSkill"
+                data-skill-id="{{skill.id}}"
+                title="{{localize 'RFS.Action.DeleteSkill'}}">
+          ✕
+        </button>
+      {{/unless}}
+    {{/if}}
+  </div>
+
+</div>
+
+{{!-- ── Recursion: render children of this skill ─────────────────────── --}}
+{{#each allSkills}}
+  {{#if (eq this.parentId ../skill.id)}}
+    {{> "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs"
+        skill=this
+        allSkills=../allSkills
+        isEditable=../isEditable
+        depth=(add ../depth 1) }}
+  {{/if}}
+{{/each}}

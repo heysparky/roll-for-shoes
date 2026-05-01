@@ -1,0 +1,38 @@
+{
+  "id": "roll-for-shoes",
+  "title": "Roll for Shoes",
+  "description": "A Foundry VTT implementation of Roll for Shoes (Ben Wray), featuring dynamic skill trees, opposed rolls, difficulty thresholds, and status effects. Includes Dark Factory theme (steampunk) with full CSS theme support.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.359"
+  },
+  "authors": [
+    {
+      "name": "YOUR NAME HERE",
+      "url": "https://github.com/YOUR_USERNAME/roll-for-shoes",
+      "discord": "YOUR_DISCORD"
+    }
+  ],
+  "esmodules": ["roll-for-shoes.mjs"],
+  "styles": [
+    "styles/rfs-base.css",
+    "styles/themes/dark-factory.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/YOUR_USERNAME/roll-for-shoes",
+  "manifest": "https://raw.githubusercontent.com/YOUR_USERNAME/roll-for-shoes/main/system.json",
+  "download": "https://github.com/YOUR_USERNAME/roll-for-shoes/releases/download/v0.1.0/roll-for-shoes.zip",
+  "bugs": "https://github.com/YOUR_USERNAME/roll-for-shoes/issues",
+  "changelog": "CHANGELOG.md",
+  "license": "LICENSE",
+  "socket": false,
+  "packs": [],
+  "packFolders": []
+}

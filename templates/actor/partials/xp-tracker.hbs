@@ -1,0 +1,21 @@
+{{!-- templates/actor/partials/xp-tracker.hbs --}}
+{{!--
+  XP tracker. Displays current XP with +/- controls.
+  Failing a roll adds 1 XP (via actor.addXp — called from roll logic).
+  Spending XP turns one die to 6 for advancement only.
+--}}
+
+<div class="rfs-xp">
+  <span class="rfs-xp__label">{{localize 'RFS.Label.XP'}}</span>
+  <span class="rfs-xp__value">{{xp}}</span>
+
+  {{#if isEditable}}
+    <button type="button"
+            class="rfs-btn rfs-btn--xp rfs-btn--small"
+            data-action="spendXp"
+            title="{{localize 'RFS.Action.SpendXp'}}"
+            {{#if (eq xp 0)}}disabled{{/if}}>
+      {{localize 'RFS.Action.SpendXp'}}
+    </button>
+  {{/if}}
+</div>

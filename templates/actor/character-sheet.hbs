@@ -1,0 +1,93 @@
+{{!-- templates/actor/character-sheet.hbs --}}
+{{!--
+  Character sheet for Roll for Shoes PCs.
+
+  Data comes from RfsCharacterSheet._prepareContext().
+  Key variables:
+    actor       – the Actor document
+    system      – actor.system (CharacterData instance)
+    skills      – sorted flat array, tree rendered via partials
+    xp          – current XP count
+    statuses    – array of status objects
+    isEditable  – boolean, controls input disabled states
+
+  CSS targeting:
+    All layout uses CSS custom properties defined in rfs-base.css.
+    Theme overrides live in styles/themes/*.css via [data-rfs-theme].
+--}}
+
+<div class="rfs-sheet character">
+
+  {{!-- ── Header ───────────────────────────────────────────────────────── --}}
+  <header class="rfs-sheet__header">
+    <img class="rfs-sheet__portrait"
+         src="{{actor.img}}"
+         alt="{{actor.name}}"
+         data-edit="img"
+         title="{{actor.name}}">
+
+    <div class="rfs-sheet__identity">
+      <input class="rfs-sheet__name"
+             type="text"
+             name="name"
+             value="{{actor.name}}"
+             placeholder="{{localize 'RFS.Placeholder.ActorName'}}"
+             {{#unless isEditable}}disabled{{/unless}}>
+
+      {{!-- XP counter lives in the header — it's a primary resource --}}
+      {{> "systems/roll-for-shoes/templates/actor/partials/xp-tracker.hbs"}}
+    </div>
+  </header>
+
+  {{!-- ── Tabs ─────────────────────────────────────────────────────────── --}}
+  {{!-- Milestone 1: no tabs yet. Skills + Statuses on one view. --}}
+
+  {{!-- ── Main body ───────────────────────────────────────────────────── --}}
+  <section class="rfs-sheet__body">
+
+    {{!-- Skills panel --}}
+    <div class="rfs-panel rfs-panel--skills">
+      <div class="rfs-panel__header">
+        <h2 class="rfs-panel__title">{{localize 'RFS.Label.Skills'}}</h2>
+        {{#if isEditable}}
+          <button type="button"
+                  class="rfs-btn rfs-btn--icon"
+                  data-action="addSkill"
+                  data-skill-id="{{rootSkillId}}"
+                  title="{{localize 'RFS.Action.AddSkill'}}">
+            +
+          </button>
+        {{/if}}
+      </div>
+
+      {{!-- Skill tree rendered recursively from the root --}}
+      <div class="rfs-skill-tree">
+        {{> "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs"
+            skills=skills
+            rootSkillId=rootSkillId
+            isEditable=isEditable }}
+      </div>
+    </div>
+
+    {{!-- Statuses panel --}}
+    <div class="rfs-panel rfs-panel--statuses">
+      <div class="rfs-panel__header">
+        <h2 class="rfs-panel__title">{{localize 'RFS.Label.Statuses'}}</h2>
+        {{#if isEditable}}
+          <button type="button"
+                  class="rfs-btn rfs-btn--icon"
+                  data-action="addStatus"
+                  title="{{localize 'RFS.Action.AddStatus'}}">
+            +
+          </button>
+        {{/if}}
+      </div>
+
+      {{> "systems/roll-for-shoes/templates/actor/partials/status-list.hbs"
+          statuses=statuses
+          isEditable=isEditable }}
+    </div>
+
+  </section>
+
+</div>
