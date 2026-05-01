@@ -79,4 +79,4 @@ roll-for-shoes/
 
 ## License
 
-MIT
+The Unlicense

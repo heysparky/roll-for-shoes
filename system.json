@@ -1,7 +1,7 @@
 {
   "id": "roll-for-shoes",
   "title": "Roll for Shoes",
-  "description": "A Foundry VTT implementation of Roll for Shoes (Ben Wray), featuring dynamic skill trees, opposed rolls, difficulty thresholds, and status effects. Includes Dark Factory theme (steampunk) with full CSS theme support.",
+  "description": "A Foundry VTT implementation of Roll for Shoes (Ben Wray), featuring dynamic skill trees, opposed rolls, difficulty thresholds, and status effects.",
   "version": "0.1.0",
   "compatibility": {
     "minimum": "14",
