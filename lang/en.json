@@ -1,4 +1,11 @@
 {
+  "TYPES": {
+    "Actor": {
+      "character": "Character",
+      "npc": "NPC"
+    }
+  },
+
   "RFS": {
 
     "ActorType": {
