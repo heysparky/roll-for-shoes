@@ -92,7 +92,7 @@ Hooks.once("ready", function () {
  * The button is rendered as plain HTML by skill-roll.mjs — we attach
  * the click listener here each time a chat message is rendered.
  */
-Hooks.on("renderChatMessage", (message, html) => {
+Hooks.on("renderChatMessageHTML", (message, html) => {
   html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {
     btn.addEventListener("click", () => {
       const { actorId, skillId } = btn.dataset;
