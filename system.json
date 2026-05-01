@@ -9,9 +9,9 @@
   },
   "authors": [
     {
-      "name": "YOUR NAME HERE",
-      "url": "https://github.com/YOUR_USERNAME/roll-for-shoes",
-      "discord": "YOUR_DISCORD"
+      "name": "heysparky (Karen McMullan",
+      "url": "https://github.com/heysparky/roll-for-shoes",
+      "discord": "heysparky"
     }
   ],
   "esmodules": ["roll-for-shoes.mjs"],
@@ -26,10 +26,10 @@
       "path": "lang/en.json"
     }
   ],
-  "url": "https://github.com/YOUR_USERNAME/roll-for-shoes",
-  "manifest": "https://raw.githubusercontent.com/YOUR_USERNAME/roll-for-shoes/main/system.json",
-  "download": "https://github.com/YOUR_USERNAME/roll-for-shoes/releases/download/v0.1.0/roll-for-shoes.zip",
-  "bugs": "https://github.com/YOUR_USERNAME/roll-for-shoes/issues",
+  "url": "https://github.com/heysparky/roll-for-shoes",
+  "manifest": "https://raw.githubusercontent.com/heysparky/roll-for-shoes/main/system.json",
+  "download": "https://github.com/heysparky/roll-for-shoes/releases/download/v0.1.0/roll-for-shoes.zip",
+  "bugs": "https://github.com/heysparky/roll-for-shoes/issues",
   "changelog": "CHANGELOG.md",
   "license": "LICENSE",
   "socket": false,
