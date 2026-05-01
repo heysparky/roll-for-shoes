@@ -50,15 +50,18 @@ Hooks.once("init", function () {
 
   // ── Sheet Registration ─────────────────────────────────────────────────────
   // Unregister the default ActorSheet so ours is the only option.
-  Actors.unregisterSheet("core", ActorSheet);
+  // v14 pattern: DocumentSheetConfig replaces the deprecated Actors global.
+  const { DocumentSheetConfig } = foundry.applications.apps;
 
-  Actors.registerSheet("roll-for-shoes", RfsCharacterSheet, {
+  DocumentSheetConfig.unregisterSheet(Actor, "core", foundry.appv1.sheets.ActorSheet);
+
+  DocumentSheetConfig.registerSheet(Actor, "roll-for-shoes", RfsCharacterSheet, {
     types: ["character"],
     makeDefault: true,
     label: "RFS.SheetLabel.Character",
   });
 
-  Actors.registerSheet("roll-for-shoes", RfsNpcSheet, {
+  DocumentSheetConfig.registerSheet(Actor, "roll-for-shoes", RfsNpcSheet, {
     types: ["npc"],
     makeDefault: true,
     label: "RFS.SheetLabel.Npc",

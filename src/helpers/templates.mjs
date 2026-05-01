@@ -24,7 +24,8 @@ export async function preloadHandlebarsTemplates() {
     "systems/roll-for-shoes/templates/actor/partials/xp-tracker.hbs",
   ];
 
-  return loadTemplates(templates);
+  // v14: loadTemplates is namespaced under foundry.applications.handlebars
+  return foundry.applications.handlebars.loadTemplates(templates);
 }
 
 /**
