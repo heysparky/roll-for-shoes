@@ -18,7 +18,7 @@ import { CharacterData, NpcData } from "./src/data/actor-data.mjs";
 import { RfsActor } from "./src/documents/actor.mjs";
 import { RfsCharacterSheet } from "./src/sheets/character-sheet.mjs";
 import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
-import { preloadHandlebarsTemplates } from "./src/helpers/templates.mjs";
+import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
 import { registerSystemSettings } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
 
@@ -65,6 +65,8 @@ Hooks.once("init", function () {
   });
 
   // ── Handlebars Helpers & Templates ────────────────────────────────────────
+  // Helpers must be registered before templates are preloaded and rendered.
+  registerHandlebarsHelpers();
   return preloadHandlebarsTemplates();
 });
 
