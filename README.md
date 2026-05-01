@@ -2,6 +2,9 @@
 
 A Foundry VTT v14 game system implementation of [Roll for Shoes](https://rollforshoes.com/) by Ben Wray.
 
+Written by Claude.ai
+Designed by heysparky (Karen McMullan)
+
 ## Features
 
 - Dynamic skill trees that grow organically in play
