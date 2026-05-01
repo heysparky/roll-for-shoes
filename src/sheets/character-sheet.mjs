@@ -17,6 +17,8 @@
  *  - Delegate mutations (add skill, remove skill) to RfsActor methods
  */
 
+import { RfsSkillRoll } from "../rolls/skill-roll.mjs";
+
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 
@@ -138,25 +140,13 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
   /**
    * Roll a skill. The skill ID is stored in data-skill-id on the element.
-   * Delegates to rolls/skill-roll.mjs (Milestone 5).
+   * Delegates to rolls/skill-roll.mjs.
    */
   static async _onRollSkill(event, target) {
     const skillId = target.dataset.skillId;
     const skill   = this.actor.getSkillById(skillId);
     if (!skill) return;
-
-    // TODO (Milestone 5): import and call RfsSkillRoll.roll(this.actor, skill)
-    // For now: a placeholder roll so the button does something visible.
-    const roll = new Roll(`${skill.level}d6`);
-    await roll.evaluate();
-
-    const content = `<strong>${skill.name} ${skill.level}</strong><br>
-      Rolled: ${roll.result} = <strong>${roll.total}</strong>`;
-
-    return roll.toMessage({
-      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
-      flavor: content,
-    });
+    return RfsSkillRoll.roll(this.actor, skill);
   }
 
   /**

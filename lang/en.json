@@ -54,6 +54,11 @@
         "Title": "New Skill",
         "Placeholder": "e.g. Boots of Kicking",
         "Confirm": "Add Skill"
+      },
+      "Advancement": {
+        "Title": "Advancement — All Sixes!",
+        "Hint": "All dice showed 6! Name your new skill (child of {skill}, level {level}):",
+        "Confirm": "Claim Skill"
       }
     },
 
@@ -82,7 +87,10 @@
       "AllSixes": "✦ All sixes! Advancement opportunity!",
       "Failure": "Fail — +1 XP",
       "Success": "Success",
-      "Difficulty": "{actorName} difficulty: {difficulty}"
+      "Difficulty": "{actorName} difficulty: {difficulty}",
+      "OpposedRoll": "Opposed Roll",
+      "Winner": "{name} wins!",
+      "Tie": "Tie"
     }
   }
 }
