@@ -21,6 +21,7 @@ import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
 import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
 import { registerSystemSettings } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
+import { RfsSkillRoll } from "./src/rolls/skill-roll.mjs";
 
 /* -------------------------------------------- */
 /*  Init Hook                                   */
@@ -33,6 +34,7 @@ Hooks.once("init", function () {
   // Useful for macros and modules: game.rfs.RfsActor, game.rfs.config, etc.
   game.rfs = {
     RfsActor,
+    RfsSkillRoll,
     config: RFS,
   };
 
@@ -78,7 +80,23 @@ Hooks.once("init", function () {
 /* -------------------------------------------- */
 
 Hooks.once("ready", function () {
-  // Anything that needs the world to be fully loaded goes here.
-  // For now: just a console confirmation.
   console.log("RFS | Roll for Shoes is ready.");
+});
+
+/* -------------------------------------------- */
+/*  Chat Message Hook                           */
+/* -------------------------------------------- */
+
+/**
+ * Wire up the "Claim Skill" advancement button in chat cards.
+ * The button is rendered as plain HTML by skill-roll.mjs — we attach
+ * the click listener here each time a chat message is rendered.
+ */
+Hooks.on("renderChatMessage", (message, html) => {
+  html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const { actorId, skillId } = btn.dataset;
+      RfsSkillRoll.claimAdvancement(actorId, skillId);
+    });
+  });
 });

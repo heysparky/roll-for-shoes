@@ -10,8 +10,9 @@
  *     - Applies status modifiers to the total
  *     - Detects all-sixes (advancement trigger)
  *     - Posts a rich chat message with result
- *     - On failure: calls actor.addXp(1)
- *     - On all-sixes: triggers advancement prompt
+ *     - On failure (vs difficulty): calls actor.addXp(1)
+ *     - On all-sixes: embeds a "Claim Skill" button in the chat card
+ *       The player clicks it when ready; the naming dialog opens then.
  *
  *   RfsSkillRoll.opposed(actorA, skillA, actorB, skillB)
  *     - Rolls both actors simultaneously
@@ -20,13 +21,15 @@
  *
  *   RfsSkillRoll.rollVsDifficulty(actor, skill, difficulty)
  *     - Rolls actor's skill against a static difficulty number
- *     - Used for NPC fixed-mode opposition and GM-set thresholds
+ *
+ *   RfsSkillRoll.claimAdvancement(actorId, skillId)
+ *     - Called when the player clicks the "Claim Skill" button in chat
+ *     - Opens the naming dialog and adds the new skill
  *
  * OPTIONS shape:
  *   {
  *     flavor:     string,   // optional override for chat message flavor
  *     difficulty: number,   // static threshold (undefined = narrative only)
- *     spendXp:    boolean,  // true if the player is spending XP to boost
  *   }
  */
 
@@ -48,30 +51,18 @@ export class RfsSkillRoll {
     const roll = new Roll(`${skill.level}d6`);
     await roll.evaluate();
 
-    const dice      = roll.terms[0].results.map(r => r.result);
-    const rawTotal  = roll.total;
-    const modifier  = actor.system.totalStatusModifier ?? 0;
-    const total     = rawTotal + modifier;
-    const allSixes  = dice.every(d => d === 6);
+    const dice     = roll.terms[0].results.map(r => r.result);
+    const rawTotal = roll.total;
+    const modifier = actor.system.totalStatusModifier ?? 0;
+    const total    = rawTotal + modifier;
+    const allSixes = dice.every(d => d === 6);
 
-    // Build and post the chat message
     await RfsSkillRoll._postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, options);
 
-    // On all sixes — trigger advancement
-    if (allSixes) {
-      await RfsSkillRoll._triggerAdvancement(actor, skill);
+    // XP on failure — only when rolling against a set difficulty
+    if (options.difficulty !== undefined && total < options.difficulty) {
+      await actor.addXp(1);
     }
-
-    // No difficulty set = narrative only, no pass/fail
-    if (options.difficulty !== undefined) {
-      if (total < options.difficulty) {
-        await actor.addXp(1);
-      }
-      return;
-    }
-
-    // No difficulty — XP on failure isn't automatic in narrative mode.
-    // The GM decides; XP can be awarded manually via the sheet.
   }
 
   /**
@@ -101,7 +92,9 @@ export class RfsSkillRoll {
                  : totalB > totalA ? actorB.name
                  : game.i18n.localize("RFS.Chat.Tie");
 
-    // Build chat content
+    const advA = allSixesA ? RfsSkillRoll._advancementButton(actorA, skillA) : "";
+    const advB = allSixesB ? RfsSkillRoll._advancementButton(actorB, skillB) : "";
+
     const content = `
       <div class="rfs-roll rfs-roll--opposed">
         <div class="rfs-roll__header">
@@ -113,6 +106,7 @@ export class RfsSkillRoll {
           <span class="rfs-roll__dice">[${diceA.join(", ")}]</span>
           <span class="rfs-roll__total">${RfsSkillRoll._modifierString(rollA.total, modA)} = <strong>${totalA}</strong></span>
           ${allSixesA ? `<span class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
+          ${advA}
         </div>
         <div class="rfs-roll__row">
           <span class="rfs-roll__actor">${actorB.name}</span>
@@ -120,6 +114,7 @@ export class RfsSkillRoll {
           <span class="rfs-roll__dice">[${diceB.join(", ")}]</span>
           <span class="rfs-roll__total">${RfsSkillRoll._modifierString(rollB.total, modB)} = <strong>${totalB}</strong></span>
           ${allSixesB ? `<span class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
+          ${advB}
         </div>
         <div class="rfs-roll__result">
           ${game.i18n.format("RFS.Chat.Winner", { name: winner })}
@@ -129,13 +124,8 @@ export class RfsSkillRoll {
     await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor: actorA }),
       content,
-      rolls:   [rollA, rollB],
-      type:    CONST.CHAT_MESSAGE_TYPES?.ROLL ?? CONST.CHAT_MESSAGE_STYLES?.ROLL ?? 0,
+      rolls: [rollA, rollB],
     });
-
-    // Advancement checks
-    if (allSixesA) await RfsSkillRoll._triggerAdvancement(actorA, skillA);
-    if (allSixesB) await RfsSkillRoll._triggerAdvancement(actorB, skillB);
 
     // XP for the loser
     if (totalA < totalB) await actorA.addXp(1);
@@ -144,14 +134,38 @@ export class RfsSkillRoll {
 
   /**
    * Roll a skill against a static difficulty number.
-   *
-   * @param {RfsActor} actor
-   * @param {object}   skill
-   * @param {number}   difficulty
-   * @returns {Promise<void>}
    */
   static async rollVsDifficulty(actor, skill, difficulty) {
     return RfsSkillRoll.roll(actor, skill, { difficulty });
+  }
+
+  /**
+   * Called when a player clicks the "Claim Skill" button in a chat card.
+   * Opens the naming dialog and adds the new skill to the actor.
+   *
+   * @param {string} actorId
+   * @param {string} skillId
+   * @returns {Promise<void>}
+   */
+  static async claimAdvancement(actorId, skillId) {
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+    const skill = actor.getSkillById(skillId);
+    if (!skill) return;
+
+    const result = await foundry.applications.api.DialogV2.input({
+      window: { title: game.i18n.localize("RFS.Dialog.Advancement.Title") },
+      content: `
+        <p>${game.i18n.format("RFS.Dialog.Advancement.Hint", { skill: skill.name, level: skill.level + 1 })}</p>
+        <input type="text" name="skillName"
+               placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+               autofocus style="width:100%">`,
+      ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
+    });
+
+    const name = result?.skillName?.trim();
+    if (!name) return;
+    return actor.addSkill(name, skill.id);
   }
 
   /* -------------------------------------------- */
@@ -163,8 +177,8 @@ export class RfsSkillRoll {
    * @private
    */
   static async _postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, options) {
-    const modStr   = RfsSkillRoll._modifierString(rawTotal, modifier);
-    const flavor   = options.flavor ?? `${actor.name}: ${skill.name} (${skill.level}d6)`;
+    const modStr = RfsSkillRoll._modifierString(rawTotal, modifier);
+    const flavor = options.flavor ?? `${actor.name}: ${skill.name} (${skill.level}d6)`;
 
     let resultLine = "";
     if (options.difficulty !== undefined) {
@@ -174,6 +188,8 @@ export class RfsSkillRoll {
         : `<div class="rfs-roll__result rfs-roll__result--failure">✘ ${game.i18n.localize("RFS.Chat.Failure")} (vs ${options.difficulty}) — +1 XP</div>`;
     }
 
+    const advButton = allSixes ? RfsSkillRoll._advancementButton(actor, skill) : "";
+
     const content = `
       <div class="rfs-roll">
         <div class="rfs-roll__header"><strong>${flavor}</strong></div>
@@ -182,6 +198,7 @@ export class RfsSkillRoll {
         </div>
         <div class="rfs-roll__total">${modStr} = <strong>${total}</strong></div>
         ${allSixes ? `<div class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</div>` : ""}
+        ${advButton}
         ${resultLine}
       </div>`;
 
@@ -190,6 +207,22 @@ export class RfsSkillRoll {
       flavor,
       content,
     });
+  }
+
+  /**
+   * Build the "Claim Skill" button HTML for embedding in a chat card.
+   * The renderChatMessage hook in roll-for-shoes.mjs wires up the click.
+   * @private
+   */
+  static _advancementButton(actor, skill) {
+    return `
+      <button type="button"
+              class="rfs-btn rfs-btn--advancement"
+              data-action="rfsClaimAdvancement"
+              data-actor-id="${actor.id}"
+              data-skill-id="${skill.id}">
+        ✦ ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
+      </button>`;
   }
 
   /**
@@ -202,27 +235,5 @@ export class RfsSkillRoll {
     if (modifier === 0) return `${rawTotal}`;
     if (modifier > 0)   return `${rawTotal} + ${modifier}`;
     return `${rawTotal} − ${Math.abs(modifier)}`;
-  }
-
-  /**
-   * Trigger the advancement prompt when all dice show 6.
-   * Opens a DialogV2.input asking the player to name their new skill,
-   * then calls actor.addSkill() with the parent being the skill just rolled.
-   * @private
-   */
-  static async _triggerAdvancement(actor, skill) {
-    const result = await foundry.applications.api.DialogV2.input({
-      window: { title: game.i18n.localize("RFS.Dialog.Advancement.Title") },
-      content: `
-        <p>${game.i18n.format("RFS.Dialog.Advancement.Hint", { skill: skill.name, level: skill.level + 1 })}</p>
-        <input type="text" name="skillName"
-               placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
-               autofocus style="width:100%">`,
-      ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
-    });
-
-    const name = result?.skillName?.trim();
-    if (!name) return; // player dismissed — no advancement
-    return actor.addSkill(name, skill.id);
   }
 }
