@@ -5,13 +5,16 @@
   which recurses for each generation of children.
 
   This partial is the entry point — skill-node.hbs handles each node + its children.
+
+  We use {{#each skills}} here so @index is the true flat-array position,
+  which we pass as skillIndex so input names like system.skills.N.name are correct.
 --}}
 
 {{#each skills}}
   {{#unless this.parentId}}
-    {{!-- Root skill — render with skill-node, which will recurse --}}
     {{> "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs"
         skill=this
+        skillIndex=@index
         allSkills=../skills
         isEditable=../isEditable
         depth=0 }}

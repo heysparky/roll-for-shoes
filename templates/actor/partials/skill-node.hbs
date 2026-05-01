@@ -8,6 +8,8 @@
 
   Variables:
     skill       – the skill object { id, name, level, parentId }
+    skillIndex  – the skill's true index in the flat allSkills array
+                  used for input names: system.skills.N.name
     allSkills   – the full flat array, passed down for child lookup
     isEditable  – boolean
     depth       – integer (0 = root, 1 = direct children, etc.)
@@ -28,7 +30,7 @@
     {{#unless (rfsIsRoot skill)}}
       <input class="rfs-skill-node__name"
              type="text"
-             name="system.skills.{{@index}}.name"
+             name="system.skills.{{skillIndex}}.name"
              value="{{skill.name}}">
     {{else}}
       <span class="rfs-skill-node__name rfs-skill-node__name--root">
@@ -81,10 +83,15 @@
 </div>
 
 {{!-- ── Recursion: render children of this skill ─────────────────────── --}}
+{{!--
+  We iterate allSkills with {{#each}} so @index gives us the true flat position.
+  Only render children whose parentId matches this skill's id.
+--}}
 {{#each allSkills}}
   {{#if (eq this.parentId ../skill.id)}}
     {{> "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs"
         skill=this
+        skillIndex=@index
         allSkills=../allSkills
         isEditable=../isEditable
         depth=(add ../depth 1) }}
