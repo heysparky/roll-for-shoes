@@ -75,4 +75,12 @@ export function registerHandlebarsHelpers() {
   Handlebars.registerHelper("rfsLocalise", function (key) {
     return game.i18n.localize(`RFS.${key}`);
   });
+
+  /**
+   * {{add a b}} — adds two numbers together.
+   * Used by skill-node.hbs to increment depth on each recursive call.
+   */
+  Handlebars.registerHelper("add", function (a, b) {
+    return a + b;
+  });
 }
