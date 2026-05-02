@@ -102,15 +102,10 @@ export class RfsTokenHUD extends TokenHUD {
       ? canvas.tokens.controlled
       : [token];
 
-    // Stub: log selected tokens and hand off to the challenge dialog.
-    // RfsChallengeDialog is built in the next step.
-    console.log("RFS | Call for Roll →", selectedTokens.map(t => t.name));
-
-    // TODO: Replace this stub with:
-    // const { RfsChallengeDialog } = await import("../dialogs/challenge-dialog.mjs");
-    // return RfsChallengeDialog.open(selectedTokens);
-    ui.notifications.info(
-      `Call for Roll: ${selectedTokens.map(t => t.name).join(", ")} — dialog coming next!`
-    );
+    // Open the challenge dialog with the selected tokens.
+    // Dynamic import keeps the HUD lean — challenge-dialog.mjs only loads
+    // when the GM actually clicks the button.
+    const { RfsChallengeDialog } = await import("../dialogs/challenge-dialog.mjs");
+    return RfsChallengeDialog.open(selectedTokens);
   }
 }

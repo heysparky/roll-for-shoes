@@ -66,6 +66,17 @@
         "NamePlaceholder": "e.g. Slippery, Raining, Clean Shoe",
         "ValueLabel": "Modifier (negative = penalty)",
         "Confirm": "Add"
+      },
+      "Challenge": {
+        "Title": "Call for Roll",
+        "DcModeRoll": "Roll for DC",
+        "DcModeStatic": "Static DC",
+        "DcDiceLabel": "Number of dice",
+        "DcValueLabel": "Target number",
+        "CalledTokens": "Called to roll",
+        "NoTokens": "No tokens selected.",
+        "Confirm": "Post to Chat",
+        "Cancel": "Cancel"
       }
     },
 
@@ -101,7 +112,15 @@
       "Difficulty": "{actorName} difficulty: {difficulty}",
       "OpposedRoll": "Opposed Roll",
       "Winner": "{name} wins!",
-      "Tie": "Tie"
+      "Tie": "Tie",
+      "Challenge": {
+        "Title": "Challenge",
+        "Speaker": "Game Master",
+        "DcRolled": "DC: rolled {dice}d6 → {result}",
+        "DcStatic": "DC: {dc}",
+        "CalledTo": "Called to roll:",
+        "Hint": "Roll a skill from your character sheet to respond."
+      }
     }
   }
 }

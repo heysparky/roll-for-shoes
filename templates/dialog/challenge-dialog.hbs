@@ -1,0 +1,110 @@
+{{!-- templates/dialog/challenge-dialog.hbs --}}
+{{!--
+  GM-facing challenge dialog.
+  Rendered by RfsChallengeDialog — not a partial, a full dialog template.
+
+  Context:
+    dcMode        – "roll" | "static"
+    dcDice        – number of d6s to roll for DC
+    dcValue       – static DC value
+    isRollMode    – boolean shorthand
+    isStaticMode  – boolean shorthand
+    tokens        – array of { id, name }
+    labels        – pre-localised label strings
+--}}
+
+<section class="rfs-challenge-dialog">
+
+  {{!-- ── DC Mode Toggle ──────────────────────────────────────────────── --}}
+  <div class="rfs-challenge-dialog__section">
+    <label class="rfs-challenge-dialog__label">
+      {{labels.dcModeRoll}}
+    </label>
+
+    <div class="rfs-challenge-dialog__dc-toggle">
+      <button type="button"
+              class="rfs-btn {{#if isRollMode}}rfs-btn--active{{/if}}"
+              data-action="toggleDcMode">
+        {{#if isRollMode}}
+          ✦ {{labels.dcModeRoll}}
+        {{else}}
+          {{labels.dcModeRoll}}
+        {{/if}}
+      </button>
+      <button type="button"
+              class="rfs-btn {{#if isStaticMode}}rfs-btn--active{{/if}}"
+              data-action="toggleDcMode">
+        {{#if isStaticMode}}
+          ✦ {{labels.dcModeStatic}}
+        {{else}}
+          {{labels.dcModeStatic}}
+        {{/if}}
+      </button>
+    </div>
+
+    {{!-- Roll mode: choose number of dice --}}
+    {{#if isRollMode}}
+      <div class="rfs-challenge-dialog__field">
+        <label for="rfs-dc-dice">{{labels.dcDiceLabel}}</label>
+        <input type="number"
+               id="rfs-dc-dice"
+               name="dcDice"
+               value="{{dcDice}}"
+               min="1"
+               max="10"
+               style="width:4rem;">
+        <span>d6</span>
+      </div>
+    {{/if}}
+
+    {{!-- Static mode: enter a number --}}
+    {{#if isStaticMode}}
+      <div class="rfs-challenge-dialog__field">
+        <label for="rfs-dc-value">{{labels.dcValueLabel}}</label>
+        <input type="number"
+               id="rfs-dc-value"
+               name="dcValue"
+               value="{{dcValue}}"
+               min="1"
+               style="width:4rem;">
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- ── Called Tokens ───────────────────────────────────────────────── --}}
+  <div class="rfs-challenge-dialog__section">
+    <label class="rfs-challenge-dialog__label">{{labels.calledTokens}}</label>
+
+    {{#if tokens.length}}
+      <ul class="rfs-challenge-dialog__token-list">
+        {{#each tokens}}
+          <li class="rfs-challenge-dialog__token">
+            <span class="rfs-challenge-dialog__token-name">{{this.name}}</span>
+            <button type="button"
+                    class="rfs-btn rfs-btn--icon rfs-btn--danger"
+                    data-action="removeToken"
+                    data-token-id="{{this.id}}"
+                    title="Remove">
+              ✕
+            </button>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p class="rfs-challenge-dialog__empty">{{labels.noTokens}}</p>
+    {{/if}}
+  </div>
+
+  {{!-- ── Buttons ──────────────────────────────────────────────────────── --}}
+  <div class="rfs-challenge-dialog__footer">
+    <button type="submit" class="rfs-btn rfs-btn--primary">
+      🎲 {{labels.confirm}}
+    </button>
+    <button type="button"
+            class="rfs-btn"
+            onclick="this.closest('.application').dispatchEvent(new Event('close'))">
+      {{labels.cancel}}
+    </button>
+  </div>
+
+</section>
