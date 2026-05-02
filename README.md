@@ -5,6 +5,8 @@ A Foundry VTT v14 game system implementation of [Roll for Shoes](https://rollfor
 Written by Claude.ai
 Designed by heysparky (Karen McMullan)
 
+Game System Image by Linnaea Mallette (https://www.publicdomainpictures.net/en/view-image.php?image=390097&picture=tennis-shoes)
+
 ## Features
 
 - Dynamic skill trees that grow organically in play
