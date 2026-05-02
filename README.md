@@ -7,7 +7,7 @@ Designed by heysparky (Karen McMullan)
 
 Assets
 - Game System Image by Linnaea Mallette (https://www.publicdomainpictures.net/en/view-image.php?image=390097&picture=tennis-shoes)
-- Call for Roll [svg](https://thenounproject.com/icon/sport-mode-69797/) by [iconsmind.com](www.iconsmind.com)
+- Call for Roll [svg](https://thenounproject.com/icon/running-shoe-7236490/) by [MihiMiki](https://thenounproject.com/creator/berlianahadi3/)
 
 ## Features
 
