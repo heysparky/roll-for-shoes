@@ -41,6 +41,31 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
+  // ── Active Challenge ───────────────────────────────────────────────────────
+  // Stores the currently active GM challenge so skill rolls can pick up
+  // the correct DC. Cleared automatically when all called tokens have rolled
+  // or when the challenge times out.
+  //
+  // Shape: {
+  //   challengeId: string,   — unique ID matching the chat card flag
+  //   dc:          number,   — the rolled or static difficulty
+  //   tokenIds:    string[], — token IDs called to roll
+  //   rolledIds:   string[], — token IDs that have already rolled
+  //   timestamp:   number,   — Date.now() when the challenge was posted
+  // }
+  //
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  CHALLENGE TIMEOUT — change the default value below     ║
+  // ║  Default: 3 minutes (180000 ms)                         ║
+  // ║  To adjust: edit RFS_CHALLENGE_TIMEOUT_MS in config.mjs ║
+  // ╚══════════════════════════════════════════════════════════╝
+  game.settings.register(RFS.id, "activeChallenge", {
+    scope:  "world",
+    config: false,   // Hidden from the settings UI — managed programmatically
+    type:   Object,
+    default: null,
+  });
+
   // ── Apply theme on load ────────────────────────────────────────────────────
   // We read the stored setting here; onChange handles runtime switches.
   Hooks.once("ready", () => {
@@ -58,4 +83,85 @@ export function registerSystemSettings() {
  */
 export function applyTheme(themeId) {
   document.body.dataset.rfsTheme = themeId ?? RFS.defaultTheme;
+}
+
+/* -------------------------------------------- */
+/*  Challenge Setting Helpers                   */
+/* -------------------------------------------- */
+
+/**
+ * Set the active challenge. Called by RfsChallengeDialog when a card posts.
+ *
+ * @param {object} challenge  - { challengeId, dc, tokenIds }
+ */
+export async function setActiveChallenge(challenge) {
+  await game.settings.set(RFS.id, "activeChallenge", {
+    ...challenge,
+    rolledIds: [],
+    timestamp: Date.now(),
+  });
+}
+
+/**
+ * Get the active challenge if one exists and hasn't timed out.
+ * Returns null if there's no challenge or it has expired.
+ *
+ * Timeout is checked here — no timer needed, just a staleness check
+ * every time a roll happens.
+ *
+ * @returns {object|null}
+ */
+export function getActiveChallenge() {
+  const challenge = game.settings.get(RFS.id, "activeChallenge");
+  if (!challenge) return null;
+
+  // ╔══════════════════════════════════════════════════════════╗
+  // ║  CHALLENGE TIMEOUT VALUE                                 ║
+  // ║  Default: 3 minutes. Increase for slower tables.        ║
+  // ║  Move to RFS.challengeTimeoutMs in config.mjs to make   ║
+  // ║  this a GM-configurable setting in the future.          ║
+  // ╚══════════════════════════════════════════════════════════╝
+  const TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
+
+  const age = Date.now() - (challenge.timestamp ?? 0);
+  if (age > TIMEOUT_MS) {
+    // Expired — clear it silently and return null
+    // Fire-and-forget: don't await so rolls aren't blocked
+    clearActiveChallenge();
+    return null;
+  }
+
+  return challenge;
+}
+
+/**
+ * Record that a token has rolled for the active challenge.
+ * If all called tokens have now rolled, clears the challenge automatically.
+ *
+ * @param {string} tokenId
+ */
+export async function recordChallengeRoll(tokenId) {
+  const challenge = getActiveChallenge();
+  if (!challenge) return;
+
+  const rolledIds = [...(challenge.rolledIds ?? []), tokenId];
+
+  // Check if everyone has rolled
+  const allRolled = challenge.tokenIds.every(id => rolledIds.includes(id));
+
+  if (allRolled) {
+    await clearActiveChallenge();
+  } else {
+    await game.settings.set(RFS.id, "activeChallenge", {
+      ...challenge,
+      rolledIds,
+    });
+  }
+}
+
+/**
+ * Clear the active challenge. Called on timeout, completion, or manually.
+ */
+export async function clearActiveChallenge() {
+  await game.settings.set(RFS.id, "activeChallenge", null);
 }

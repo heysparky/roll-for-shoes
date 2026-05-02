@@ -7,7 +7,6 @@
     actor       – the Actor document
     system      – actor.system (CharacterData instance)
     skills      – sorted flat array, tree rendered via partials
-    xp          – current XP count
     statuses    – array of status objects
     isEditable  – boolean, controls input disabled states
 
@@ -33,14 +32,8 @@
              value="{{actor.name}}"
              placeholder="{{localize 'RFS.Placeholder.ActorName'}}"
              {{#unless isEditable}}disabled{{/unless}}>
-
-      {{!-- XP counter lives in the header — it's a primary resource --}}
-      {{> "systems/roll-for-shoes/templates/actor/partials/xp-tracker.hbs"}}
     </div>
   </header>
-
-  {{!-- ── Tabs ─────────────────────────────────────────────────────────── --}}
-  {{!-- Milestone 1: no tabs yet. Skills + Statuses on one view. --}}
 
   {{!-- ── Main body ───────────────────────────────────────────────────── --}}
   <section class="rfs-sheet__body">

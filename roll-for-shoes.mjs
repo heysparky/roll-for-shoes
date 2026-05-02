@@ -32,34 +32,19 @@ import { RfsSkillRoll } from "./src/rolls/skill-roll.mjs";
 Hooks.once("init", function () {
   console.log("RFS | Initialising Roll for Shoes");
 
-  // Expose a convenient namespace on the global game object.
-  // Useful for macros and modules: game.rfs.RfsActor, game.rfs.config, etc.
   game.rfs = {
     RfsActor,
     RfsSkillRoll,
     config: RFS,
   };
 
-  // Register system-wide game settings (theme picker, optional NPC rules, etc.)
   registerSystemSettings();
 
-  // ── Data Models ────────────────────────────────────────────────────────────
-  // TypeDataModel replaces template.json schema in v14. The type names here
-  // must match what's declared in template.json.
   CONFIG.Actor.dataModels.character = CharacterData;
   CONFIG.Actor.dataModels.npc = NpcData;
-
-  // ── Document Classes ───────────────────────────────────────────────────────
   CONFIG.Actor.documentClass = RfsActor;
-
-  // ── Token HUD ─────────────────────────────────────────────────────────────
-  // Replace Foundry's default TokenHUD with our RFS version.
-  // This swaps the combat toggle button for the "Call for Roll" shoe button.
   CONFIG.Token.hudClass = RfsTokenHUD;
 
-  // ── Sheet Registration ─────────────────────────────────────────────────────
-  // Unregister the default ActorSheet so ours is the only option.
-  // v14 pattern: DocumentSheetConfig replaces the deprecated Actors global.
   const { DocumentSheetConfig } = foundry.applications.apps;
 
   DocumentSheetConfig.unregisterSheet(Actor, "core", foundry.appv1.sheets.ActorSheet);
@@ -76,8 +61,6 @@ Hooks.once("init", function () {
     label: "RFS.SheetLabel.Npc",
   });
 
-  // ── Handlebars Helpers & Templates ────────────────────────────────────────
-  // Helpers must be registered before templates are preloaded and rendered.
   registerHandlebarsHelpers();
   return preloadHandlebarsTemplates();
 });
@@ -95,15 +78,29 @@ Hooks.once("ready", function () {
 /* -------------------------------------------- */
 
 /**
- * Wire up the "Claim Skill" advancement button in chat cards.
- * The button is rendered as plain HTML by skill-roll.mjs — we attach
- * the click listener here each time a chat message is rendered.
+ * Wire up interactive buttons in RFS chat cards.
+ * All RFS chat buttons use data-action to identify themselves.
+ * This hook fires every time a chat message is rendered — including
+ * after ChatMessage#update() calls, so updated cards get fresh listeners.
  */
 Hooks.on("renderChatMessageHTML", (message, html) => {
+
+  // ── Claim Skill (advancement) ──────────────────────────────────────────────
   html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {
     btn.addEventListener("click", () => {
       const { actorId, skillId } = btn.dataset;
       RfsSkillRoll.claimAdvancement(actorId, skillId);
     });
   });
+
+  // ── Spend XP ──────────────────────────────────────────────────────────────
+  // Button only appears on failed roll cards where xpSpent is false.
+  // After clicking, the card updates in place via ChatMessage#update().
+  html.querySelectorAll("[data-action='rfsSpendXp']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const { messageId } = btn.dataset;
+      RfsSkillRoll.spendXpOnCard(messageId);
+    });
+  });
+
 });

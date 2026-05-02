@@ -18,6 +18,8 @@
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
+import { setActiveChallenge } from "../helpers/settings.mjs";
+
 export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /* -------------------------------------------- */
@@ -239,6 +241,7 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
     // Generate a stable ID for this challenge so result cards can reference it
     const challengeId = foundry.utils.randomID();
+    const tokenIds    = tokens.map(t => t.id);
 
     const message = await ChatMessage.create({
       speaker: { alias: game.i18n.localize("RFS.Chat.Challenge.Speaker") },
@@ -248,12 +251,16 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
           type:        "challenge",
           challengeId,
           dc:          finalDc,
-          tokenIds:    tokens.map(t => t.id),
+          tokenIds,
         },
       },
       // Include the DC roll in the message so Foundry handles dice rendering
       rolls: dcRoll ? [dcRoll] : [],
     });
+
+    // Store the active challenge so skill rolls pick up the correct DC.
+    // Clears automatically on timeout (3 min) or when all tokens have rolled.
+    await setActiveChallenge({ challengeId, dc: finalDc, tokenIds });
 
     return message;
   }

@@ -42,7 +42,6 @@
       "AddSkill": "Add skill to root",
       "AddChildSkill": "Add child skill",
       "DeleteSkill": "Delete skill",
-      "SpendXp": "Spend XP",
       "AddStatus": "Add status",
       "DeleteStatus": "Remove status",
       "PostDifficulty": "Post Difficulty to Chat",
@@ -101,7 +100,8 @@
 
     "Warn": {
       "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
-      "NoXpToSpend": "No XP to spend."
+      "NoXpToSpend": "No XP to spend.",
+      "XpAlreadySpent": "XP has already been spent on this roll."
     },
 
     "Chat": {
@@ -113,6 +113,9 @@
       "OpposedRoll": "Opposed Roll",
       "Winner": "{name} wins!",
       "Tie": "Tie",
+      "SpendXp": "Spend XP for advancement",
+      "XpSpentAllSixes": "XP spent — all sixes achieved!",
+      "XpSpentNoSixes": "XP spent — not quite all sixes. Better luck next time.",
       "Challenge": {
         "Title": "Challenge",
         "Speaker": "Game Master",
