@@ -16,6 +16,7 @@ export async function preloadHandlebarsTemplates() {
     // Actor sheets
     "systems/roll-for-shoes/templates/actor/character-sheet.hbs",
     "systems/roll-for-shoes/templates/actor/npc-sheet.hbs",
+    "systems/roll-for-shoes/templates/dialog/challenge-dialog.hbs"    
 
     // Partials — loaded once, referenced as {{> "path"}} in other templates
     "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs",
