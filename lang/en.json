@@ -59,6 +59,13 @@
         "Title": "Advancement — All Sixes!",
         "Hint": "All dice showed 6! Name your new skill (child of {skill}, level {level}):",
         "Confirm": "Claim Skill"
+      },
+      "NewStatus": {
+        "Title": "Add Status",
+        "NameLabel": "Name",
+        "NamePlaceholder": "e.g. Slippery, Raining, Clean Shoe",
+        "ValueLabel": "Modifier (negative = penalty)",
+        "Confirm": "Add"
       }
     },
 
