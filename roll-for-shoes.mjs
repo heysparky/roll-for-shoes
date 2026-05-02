@@ -11,6 +11,7 @@
  *  - Sheets (HandlebarsApplicationMixin + ActorSheetV2) handle rendering and input.
  *  - RfsActor extends Actor for derived data and roll methods.
  *  - rolls/ contains pure roll logic, decoupled from the sheet.
+ *  - hud/ contains the token HUD override (shoe button → Call for Roll).
  *  - styles/ uses CSS custom properties for theming (one base file, N theme files).
  */
 
@@ -18,6 +19,7 @@ import { CharacterData, NpcData } from "./src/data/actor-data.mjs";
 import { RfsActor } from "./src/documents/actor.mjs";
 import { RfsCharacterSheet } from "./src/sheets/character-sheet.mjs";
 import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
+import { RfsTokenHUD } from "./src/hud/token-hud.mjs";
 import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
 import { registerSystemSettings } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
@@ -49,6 +51,11 @@ Hooks.once("init", function () {
 
   // ── Document Classes ───────────────────────────────────────────────────────
   CONFIG.Actor.documentClass = RfsActor;
+
+  // ── Token HUD ─────────────────────────────────────────────────────────────
+  // Replace Foundry's default TokenHUD with our RFS version.
+  // This swaps the combat toggle button for the "Call for Roll" shoe button.
+  CONFIG.Token.hudClass = RfsTokenHUD;
 
   // ── Sheet Registration ─────────────────────────────────────────────────────
   // Unregister the default ActorSheet so ours is the only option.

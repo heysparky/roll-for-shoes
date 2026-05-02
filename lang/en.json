@@ -84,6 +84,10 @@
       }
     },
 
+    "HUD": {
+      "CallForRoll": "Call for Roll"
+    },
+
     "Warn": {
       "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
       "NoXpToSpend": "No XP to spend."

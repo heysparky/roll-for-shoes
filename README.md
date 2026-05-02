@@ -5,7 +5,9 @@ A Foundry VTT v14 game system implementation of [Roll for Shoes](https://rollfor
 Written by Claude.ai
 Designed by heysparky (Karen McMullan)
 
-Game System Image by Linnaea Mallette (https://www.publicdomainpictures.net/en/view-image.php?image=390097&picture=tennis-shoes)
+Assets
+- Game System Image by Linnaea Mallette (https://www.publicdomainpictures.net/en/view-image.php?image=390097&picture=tennis-shoes)
+- Call for Roll [svg](https://thenounproject.com/icon/sport-mode-69797/) by [iconsmind.com](www.iconsmind.com)
 
 ## Features
 
