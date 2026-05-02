@@ -135,6 +135,49 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   }
 
   /* -------------------------------------------- */
+  /*  Form Data Processing                        */
+  /* -------------------------------------------- */
+
+  /**
+   * Override _processFormData to prevent partial skill updates from
+   * resetting fields that have no corresponding form input (level, id,
+   * parentId, notes).
+   *
+   * The form only submits system.skills.N.name (the only editable input).
+   * Without this override, Foundry's default merge would leave level/id/
+   * parentId undefined, and the TypeDataModel would reset them to their
+   * initial values — collapsing every skill back to level 1.
+   *
+   * Fix: read the full existing skills array from the actor, then patch
+   * only the name field for any index that was submitted.
+   *
+   * @override
+   */
+  _processFormData(event, form, formData) {
+    const data = super._processFormData(event, form, formData);
+
+    // If the submission includes skill data, rebuild the full array.
+    if (data.system?.skills) {
+      const existingSkills = this.actor.system.skills;
+
+      // data.system.skills is a sparse object keyed by index: { 0: { name: "..." }, 2: { name: "..." } }
+      // Merge each submitted name onto the full existing skill object.
+      const merged = existingSkills.map((skill, i) => {
+        const submitted = data.system.skills[i];
+        if (!submitted) return { ...skill };
+        return {
+          ...skill,
+          name: submitted.name ?? skill.name,
+        };
+      });
+
+      data.system.skills = merged;
+    }
+
+    return data;
+  }
+
+  /* -------------------------------------------- */
   /*  Action Handlers (static, bound by AppV2)    */
   /* -------------------------------------------- */
 
@@ -200,12 +243,47 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   }
 
   /**
-   * Add a new status. Prompts for name and value.
+   * Add a new status. Prompts for name and value via DialogV2.
+   *
+   * Statuses are narrative modifiers: positive values are bonuses,
+   * negative values are penalties (e.g. "Raining -4", "Clean Shoe +2").
+   * Value defaults to 0 so the GM can add a named status without a modifier.
    */
   static async _onAddStatus(event, target) {
-    // TODO (Milestone 9): Full DialogV2 with name + value fields
-    // Stub for now: adds a placeholder status
-    return this.actor.addStatus("New Status", 0);
+    const result = await foundry.applications.api.DialogV2.input({
+      window: { title: game.i18n.localize("RFS.Dialog.NewStatus.Title") },
+      content: `
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <div>
+            <label style="display:block; margin-bottom:0.25rem;">
+              ${game.i18n.localize("RFS.Dialog.NewStatus.NameLabel")}
+            </label>
+            <input type="text"
+                   name="statusName"
+                   placeholder="${game.i18n.localize("RFS.Dialog.NewStatus.NamePlaceholder")}"
+                   autofocus
+                   style="width:100%">
+          </div>
+          <div>
+            <label style="display:block; margin-bottom:0.25rem;">
+              ${game.i18n.localize("RFS.Dialog.NewStatus.ValueLabel")}
+            </label>
+            <input type="number"
+                   name="statusValue"
+                   value="0"
+                   style="width:100%">
+          </div>
+        </div>`,
+      ok: { label: game.i18n.localize("RFS.Dialog.NewStatus.Confirm") },
+    });
+
+    const name  = result?.statusName?.trim();
+    const value = parseInt(result?.statusValue ?? 0, 10);
+
+    // Name is required; silently cancel if empty
+    if (!name) return;
+
+    return this.actor.addStatus(name, isNaN(value) ? 0 : value);
   }
 
   /**
