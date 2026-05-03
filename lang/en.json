@@ -72,6 +72,11 @@
         "DcModeStatic": "Static DC",
         "DcDiceLabel": "Number of dice",
         "DcValueLabel": "Target number",
+        "DcVisibleLabel": "Players can see DC",
+        "DcHiddenLabel": "DC hidden from players",
+        "PromptLabel": "Situation prompt",
+        "PromptPlaceholder": "calls for a roll",
+        "DefaultPrompt": "calls for a roll",
         "CalledTokens": "Called to roll",
         "NoTokens": "No tokens selected.",
         "Confirm": "Post to Chat",
@@ -102,13 +107,22 @@
       "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
       "NoXpToSpend": "No XP to spend.",
       "XpAlreadySpent": "XP has already been spent on this roll.",
-      "NotEnoughXp": "Need {cost} XP to advance but you only have {xp}."
+      "NotEnoughXp": "Need {cost} XP to advance but you only have {xp}.",
+      "NoActor": "Could not find your character. Ask your GM.",
+      "NoSkill": "Could not find the selected skill."
+    },
+
+    "Widget": {
+      "ChooseSkill": "Choose your skill",
+      "SelectSkill": "select a skill",
+      "RollButton": "Roll!",
+      "AlreadyRolled": "Already rolled"
     },
 
     "Chat": {
       "SkillRoll": "rolls {skillName} ({level}d6)",
       "AllSixes": "✦ All sixes! Advancement opportunity!",
-      "Failure": "Fail — +1 XP",
+      "Failure": "Fail",
       "Success": "Success",
       "Difficulty": "{actorName} difficulty: {difficulty}",
       "OpposedRoll": "Opposed Roll",
@@ -122,8 +136,17 @@
         "Speaker": "Game Master",
         "DcRolled": "DC: rolled {dice}d6 → {result}",
         "DcStatic": "DC: {dc}",
+        "DcValue": "DC: {dc}",
+        "DcHidden": "DC: hidden",
         "CalledTo": "Called to roll:",
-        "Hint": "Roll a skill from your character sheet to respond."
+        "Hint": "Roll a skill from your character sheet to respond.",
+        "Pending": "waiting…",
+        "Complete": "✔ All players have rolled.",
+        "UnknownToken": "Unknown",
+        "ColName": "Character",
+        "ColSkill": "Skill",
+        "ColDice": "Dice",
+        "ColOutcome": "Result"
       }
     }
   }

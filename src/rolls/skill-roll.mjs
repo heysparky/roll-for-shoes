@@ -9,29 +9,31 @@
  *     - Rolls Nd6 where N = skill.level
  *     - Applies status modifiers to the total
  *     - Detects all-sixes (advancement trigger)
- *     - Posts a rich chat message with result
+ *     - On challenge: posts result to the shared challenge card via recordChallengeRoll
+ *     - On non-challenge roll: posts a standalone result card (same as before)
  *     - On failure: calls actor.addXp(1)
- *     - Checks for an active challenge and uses its DC if applicable
+ *
+ *   RfsSkillRoll.rollFromWidget(messageId, skillId)
+ *     - Called when a player clicks the big Roll button on their widget card
+ *     - Looks up actor + skill from widget flags, delegates to roll()
+ *     - Disables the widget after rolling so it can't be double-submitted
  *
  *   RfsSkillRoll.spendXpOnCard(messageId)
- *     - Called when player clicks "Spend XP" on a result card
- *     - Cost = number of non-six dice (must turn ALL to 6 for advancement)
- *     - Checks live actor XP at click time — NOT at render time
- *     - Spends the full cost, turns all non-six dice to 6
- *     - Result is always all-sixes → Claim Skill button appears
- *     - Updates the chat message in place via flags + _buildRollContent
+ *     - Called when player clicks "Spend XP" on a standalone result card
+ *     - Only relevant for non-challenge rolls (challenge results are on the shared card)
  *
  *   RfsSkillRoll.claimAdvancement(actorId, skillId, messageId)
  *     - Opens naming dialog, adds the new child skill
- *     - Locks the card via flags + _buildRollContent (never regex on HTML)
+ *     - Locks the card via flags + _buildRollContent
+ *
+ * CARD ARCHITECTURE:
+ *   Challenge roll  → result updates a row on the shared challenge card (no orphan card)
+ *   Standalone roll → posts its own result card as before
  *
  * XP SPEND RULE (per RFS rules):
  *   A player may spend XP to turn dice to 6 for advancement purposes only.
- *   Each XP turns one die. To trigger advancement, ALL dice must show 6.
- *   Cost = count of non-six dice. Checked at click time against live XP,
- *   because the roll itself just awarded +1 XP which isn't reflected until
- *   after the card renders.
- *   Success/failure against the DC is never affected by XP spend.
+ *   Cost = count of non-six dice. Checked at click time against live XP.
+ *   Success/failure against DC is never affected by XP spend.
  */
 
 import { getActiveChallenge, recordChallengeRoll } from "../helpers/settings.mjs";
@@ -42,6 +44,13 @@ export class RfsSkillRoll {
   /*  Public API                                  */
   /* -------------------------------------------- */
 
+  /**
+   * Core roll. Called from the sheet (direct roll) or from rollFromWidget.
+   *
+   * @param {RfsActor} actor
+   * @param {object}   skill   - { id, name, level }
+   * @param {object}   options - { difficulty, challengeId, flavor }
+   */
   static async roll(actor, skill, options = {}) {
     const { difficulty, challengeId } = RfsSkillRoll._resolveDifficulty(actor, options);
     options = { ...options, difficulty, challengeId };
@@ -56,19 +65,66 @@ export class RfsSkillRoll {
     const allSixes = dice.every(d => d === 6);
     const failed   = total < difficulty;
 
-    await RfsSkillRoll._postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options);
+    if (challengeId) {
+      // Challenge roll — update the shared card, no orphan card
+      await RfsSkillRoll._postChallengeResult({
+        actor, skill, roll, dice, rawTotal, modifier, total,
+        allSixes, failed, options,
+      });
+    } else {
+      // Standalone roll — post its own result card
+      await RfsSkillRoll._postStandaloneMessage({
+        actor, skill, roll, dice, rawTotal, modifier, total,
+        allSixes, failed, options,
+      });
+    }
 
     if (failed) await actor.addXp(1);
-
-    if (challengeId) {
-      const token = actor.getActiveTokens()?.[0];
-      if (token) await recordChallengeRoll(token.id);
-    }
   }
 
   /**
-   * Called when a player clicks "Spend XP" on a result card.
-   * Checks live actor XP at click time — NOT at render time.
+   * Called when a player clicks the Roll button on their whispered widget card.
+   * Reads actor + skill from the widget's flags, then delegates to roll().
+   * Disables the widget card after rolling so it can't be double-submitted.
+   *
+   * @param {string} messageId  - ID of the widget ChatMessage
+   * @param {string} skillId    - ID of the skill selected in the dropdown
+   */
+  static async rollFromWidget(messageId, skillId) {
+    const message = game.messages.get(messageId);
+    if (!message) return;
+
+    const flags = message.flags?.["roll-for-shoes"];
+    if (!flags || flags.type !== "playerWidget") return;
+
+    // Guard: already rolled from this widget
+    if (flags.rolled) return;
+
+    const actor = game.actors.get(flags.actorId);
+    if (!actor) {
+      ui.notifications.warn(game.i18n.localize("RFS.Warn.NoActor"));
+      return;
+    }
+
+    const skill = actor.getSkillById(skillId);
+    if (!skill) {
+      ui.notifications.warn(game.i18n.localize("RFS.Warn.NoSkill"));
+      return;
+    }
+
+    // Roll first, then delete the widget — if the roll errors the widget
+    // stays in chat so the player can try again.
+    await RfsSkillRoll.roll(actor, skill, {
+      challengeId: flags.challengeId,
+      tokenId:     flags.tokenId,
+    });
+
+    // Delete the widget card — result is now on the challenge card.
+    message.delete().catch(err => console.warn("RFS | Could not delete widget:", err));
+  }
+
+  /**
+   * Called when a player clicks "Spend XP" on a standalone result card.
    */
   static async spendXpOnCard(messageId) {
     const message = game.messages.get(messageId);
@@ -108,7 +164,7 @@ export class RfsSkillRoll {
     const skill = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
 
     await message.update({
-      content: RfsSkillRoll._buildRollContent(
+      content: RfsSkillRoll._buildStandaloneContent(
         flags.actorName, skill, newDice,
         flags.rawTotal, flags.modifier, flags.total,
         true, flags.failed, flags.difficulty,
@@ -119,13 +175,8 @@ export class RfsSkillRoll {
   }
 
   /**
-   * Called when a player clicks "Claim Skill" on a result card.
-   * Opens the naming dialog, adds the child skill, then locks the card
-   * by setting skillClaimed in flags and rebuilding via _buildRollContent.
-   *
-   * IMPORTANT: Never use regex on message.content to modify cards.
-   * Always update via flags + _buildRollContent so the card state stays
-   * consistent with the flags. Regex on HTML is fragile and breaks silently.
+   * Called when a player clicks "Claim Skill" on any result card.
+   * Works for both challenge rows and standalone cards.
    */
   static async claimAdvancement(actorId, skillId, messageId) {
     const actor = game.actors.get(actorId);
@@ -133,7 +184,6 @@ export class RfsSkillRoll {
     const skill = actor.getSkillById(skillId);
     if (!skill) return;
 
-    // Guard: if we have a messageId, check the card isn't already claimed
     if (messageId) {
       const message = game.messages.get(messageId);
       const flags   = message?.getFlag("roll-for-shoes", "rollData");
@@ -155,15 +205,15 @@ export class RfsSkillRoll {
 
     await actor.addSkill(name, skill.id);
 
-    // Lock the card — rebuild via flags so state stays consistent
     if (messageId) {
+      // Standalone card — lock it via flags + rebuild
       const message = game.messages.get(messageId);
       if (message) {
         const flags = message.getFlag("roll-for-shoes", "rollData");
         if (flags) {
           const newFlags   = { ...flags, skillClaimed: true, claimedSkillName: name };
           const skillObj   = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
-          const newContent = RfsSkillRoll._buildRollContent(
+          const newContent = RfsSkillRoll._buildStandaloneContent(
             flags.actorName, skillObj, flags.dice,
             flags.rawTotal, flags.modifier, flags.total,
             flags.allSixes, flags.failed, flags.difficulty,
@@ -173,6 +223,27 @@ export class RfsSkillRoll {
             content: newContent,
             flags: { "roll-for-shoes": { rollData: newFlags } },
           });
+        }
+      }
+    } else {
+      // Challenge card — update the result in settings so the card rebuilds
+      const { getActiveChallenge, rebuildChallengeCard } = await import("../helpers/settings.mjs");
+      const challenge = getActiveChallenge();
+      if (challenge) {
+        const token  = actor.getActiveTokens()?.[0];
+        const tokenId = token?.id;
+        if (tokenId && challenge.results?.[tokenId]) {
+          const updatedResults = {
+            ...challenge.results,
+            [tokenId]: {
+              ...challenge.results[tokenId],
+              skillClaimed:     true,
+              claimedSkillName: name,
+            },
+          };
+          const updated = { ...challenge, results: updatedResults };
+          await game.settings.set("roll-for-shoes", "activeChallenge", updated);
+          await rebuildChallengeCard(updated);
         }
       }
     }
@@ -237,27 +308,65 @@ export class RfsSkillRoll {
   }
 
   /* -------------------------------------------- */
-  /*  Internal Helpers                            */
+  /*  Challenge Result                            */
   /* -------------------------------------------- */
 
-  static _resolveDifficulty(actor, options) {
-    if (options.difficulty !== undefined) {
-      return { difficulty: options.difficulty, challengeId: null };
-    }
+  /**
+   * Handle a roll that's part of an active challenge.
+   * Records the result in settings → triggers challenge card rebuild.
+   * Also posts the Foundry dice roll to chat for dice-so-nice etc.
+   */
+  static async _postChallengeResult({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
+    const { challengeId } = options;
 
-    const challenge = getActiveChallenge();
-    if (challenge) {
-      const actorTokens = actor.getActiveTokens?.() ?? [];
-      const isCalledToken = actorTokens.some(t => challenge.tokenIds.includes(t.id));
-      if (isCalledToken) {
-        return { difficulty: challenge.dc, challengeId: challenge.challengeId };
-      }
-    }
+    const rollResult = {
+      actorName:  actor.name,
+      skillName:  skill.name,
+      skillLevel: skill.level,
+      dice,
+      rawTotal,
+      modifier,
+      total,
+      allSixes,
+      failed,
+      actorId:    actor.id,
+      skillId:    skill.id,
+      skillClaimed: false,
+    };
 
-    return { difficulty: 4, challengeId: null };
+    // Post the dice roll to chat (for Dice So Nice, roll history, etc.)
+    // Whisper to GM + the rolling player so it doesn't flood public chat
+    const rollingUser = game.users.find(u => u.character?.id === actor.id && !u.isGM);
+    const whisper = [
+      ...game.users.filter(u => u.isGM).map(u => u.id),
+      ...(rollingUser ? [rollingUser.id] : []),
+    ];
+
+    await roll.toMessage({
+      speaker:  ChatMessage.getSpeaker({ actor }),
+      flavor:   `${actor.name}: ${skill.name} (${skill.level}d6)`,
+      whisper,
+      flags: {
+        "roll-for-shoes": {
+          type:        "challengeRoll",
+          challengeId,
+          rollResult,
+        },
+      },
+    });
+
+    // Record result — this rebuilds the challenge card automatically.
+    // Prefer tokenId passed from the widget (reliable), fall back to
+    // canvas lookup (works for sheet rolls where no widget is involved).
+    const tokenId = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
+    if (tokenId) await recordChallengeRoll(tokenId, rollResult);
   }
 
-  static async _postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options) {
+  /* -------------------------------------------- */
+  /*  Standalone Result Card                      */
+  /* -------------------------------------------- */
+
+  static async _postStandaloneMessage({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
     const nonSixCount = dice.filter(d => d !== 6).length;
 
     const rollData = {
@@ -284,7 +393,7 @@ export class RfsSkillRoll {
     const message = await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor,
-      content: RfsSkillRoll._buildRollContent(
+      content: RfsSkillRoll._buildStandaloneContent(
         actor.name, skill, dice, rawTotal, modifier, total,
         allSixes, failed, options.difficulty, rollData, "PENDING", nonSixCount
       ),
@@ -292,26 +401,47 @@ export class RfsSkillRoll {
     });
 
     await message.update({
-      content: RfsSkillRoll._buildRollContent(
+      content: RfsSkillRoll._buildStandaloneContent(
         actor.name, skill, dice, rawTotal, modifier, total,
         allSixes, failed, options.difficulty, rollData, message.id, nonSixCount
       ),
     });
   }
 
+  /* -------------------------------------------- */
+  /*  Internal Helpers                            */
+  /* -------------------------------------------- */
+
+  static _resolveDifficulty(actor, options) {
+    if (options.difficulty !== undefined) {
+      return { difficulty: options.difficulty, challengeId: null };
+    }
+
+    // If a challengeId was passed directly (from widget), use it
+    if (options.challengeId) {
+      const challenge = getActiveChallenge();
+      if (challenge && challenge.challengeId === options.challengeId) {
+        return { difficulty: challenge.dc, challengeId: challenge.challengeId };
+      }
+    }
+
+    const challenge = getActiveChallenge();
+    if (challenge) {
+      const actorTokens = actor.getActiveTokens?.() ?? [];
+      const isCalledToken = actorTokens.some(t => challenge.tokenIds.includes(t.id));
+      if (isCalledToken) {
+        return { difficulty: challenge.dc, challengeId: challenge.challengeId };
+      }
+    }
+
+    return { difficulty: 4, challengeId: null };
+  }
+
   /**
-   * Build the HTML content for a roll result card.
-   *
-   * Card state is driven entirely by flags — never reconstruct state from HTML.
-   * All updates go through this function so the card stays consistent.
-   *
-   * Action area logic:
-   *   skillClaimed  → show claimed note, no button
-   *   allSixes      → show Claim Skill button (+ XP spent note if applicable)
-   *   failed+unspent+nonSixCount>0 → show Spend XP button
-   *   otherwise     → no action area
+   * Build HTML for a standalone result card.
+   * Card state is driven entirely by flags — never reconstruct from HTML.
    */
-  static _buildRollContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
+  static _buildStandaloneContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
     const modStr = RfsSkillRoll._modifierString(rawTotal, modifier);
     const flavor = `${actorName}: ${skill.name} (${skill.level}d6)`;
 
@@ -322,10 +452,8 @@ export class RfsSkillRoll {
     let actionArea = "";
 
     if (rollData.skillClaimed) {
-      // Card is locked — show what was claimed, no buttons
       actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.SkillClaimed", { name: rollData.claimedSkillName })}</div>`;
     } else if (allSixes) {
-      // All sixes — show XP spent note if applicable, then Claim Skill button
       if (rollData.xpSpent) {
         actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.XpSpentAllSixes", { cost: rollData.xpCost })}</div>`;
       }
@@ -335,9 +463,6 @@ export class RfsSkillRoll {
         messageId
       );
     } else if (failed && !rollData.xpSpent && nonSixCount > 0) {
-      // Only show Spend XP button if actor can currently afford the full cost.
-      // Read live XP here — not at render time from options — because addXp(1)
-      // runs after the initial render, so we check on each re-render instead.
       const actor  = game.actors.get(rollData.actorId);
       const liveXp = actor?.system.xp ?? 0;
       if (liveXp >= nonSixCount) {

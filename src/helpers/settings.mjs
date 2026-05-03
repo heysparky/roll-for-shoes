@@ -14,8 +14,6 @@ import { RFS } from "./config.mjs";
 export function registerSystemSettings() {
 
   // ── Theme ──────────────────────────────────────────────────────────────────
-  // Which CSS theme to load. The theme class is applied to <body> so every
-  // sheet and dialog picks it up automatically.
   game.settings.register(RFS.id, "theme", {
     name: "RFS.Settings.Theme.Name",
     hint: "RFS.Settings.Theme.Hint",
@@ -24,12 +22,11 @@ export function registerSystemSettings() {
     type: String,
     choices: RFS.themes,
     default: RFS.defaultTheme,
-    requiresReload: false, // We apply the class dynamically on change
+    requiresReload: false,
     onChange: (value) => applyTheme(value),
   });
 
   // ── NPC Default Mode ───────────────────────────────────────────────────────
-  // World-wide default for new NPCs. GMs can override per-actor on the sheet.
   game.settings.register(RFS.id, "npcDefaultMode", {
     name: "RFS.Settings.NpcMode.Name",
     hint: "RFS.Settings.NpcMode.Hint",
@@ -43,31 +40,27 @@ export function registerSystemSettings() {
 
   // ── Active Challenge ───────────────────────────────────────────────────────
   // Stores the currently active GM challenge so skill rolls can pick up
-  // the correct DC. Cleared automatically when all called tokens have rolled
-  // or when the challenge times out.
+  // the correct DC and widget cards know what challenge they belong to.
   //
   // Shape: {
-  //   challengeId: string,   — unique ID matching the chat card flag
-  //   dc:          number,   — the rolled or static difficulty
-  //   tokenIds:    string[], — token IDs called to roll
-  //   rolledIds:   string[], — token IDs that have already rolled
-  //   timestamp:   number,   — Date.now() when the challenge was posted
+  //   challengeId:  string,    — unique ID matching the challenge card flag
+  //   dc:           number,    — the rolled or static difficulty
+  //   dcVisible:    boolean,   — whether players can see the DC before rolling
+  //   prompt:       string,    — GM's situation prompt shown on player widget
+  //   tokenIds:     string[],  — token IDs called to roll
+  //   rolledIds:    string[],  — token IDs that have already rolled
+  //   widgetIds:    object,    — { [tokenId]: messageId } — player widget cards
+  //   challengeCardId: string, — messageId of the shared challenge card
+  //   timestamp:    number,    — Date.now() when the challenge was posted
   // }
-  //
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║  CHALLENGE TIMEOUT — change the default value below     ║
-  // ║  Default: 3 minutes (180000 ms)                         ║
-  // ║  To adjust: edit RFS_CHALLENGE_TIMEOUT_MS in config.mjs ║
-  // ╚══════════════════════════════════════════════════════════╝
   game.settings.register(RFS.id, "activeChallenge", {
     scope:  "world",
-    config: false,   // Hidden from the settings UI — managed programmatically
+    config: false,
     type:   Object,
     default: null,
   });
 
   // ── Apply theme on load ────────────────────────────────────────────────────
-  // We read the stored setting here; onChange handles runtime switches.
   Hooks.once("ready", () => {
     const storedTheme = game.settings.get(RFS.id, "theme");
     applyTheme(storedTheme);
@@ -76,9 +69,6 @@ export function registerSystemSettings() {
 
 /**
  * Apply a theme by toggling a data-attribute on <body>.
- * CSS files use `[data-rfs-theme="dark-factory"] { ... }` selectors,
- * which means themes stack cleanly without className pollution.
- *
  * @param {string} themeId - Key from RFS.themes
  */
 export function applyTheme(themeId) {
@@ -92,12 +82,13 @@ export function applyTheme(themeId) {
 /**
  * Set the active challenge. Called by RfsChallengeDialog when a card posts.
  *
- * @param {object} challenge  - { challengeId, dc, tokenIds }
+ * @param {object} challenge  - { challengeId, dc, dcVisible, prompt, tokenIds, challengeCardId }
  */
 export async function setActiveChallenge(challenge) {
   await game.settings.set(RFS.id, "activeChallenge", {
     ...challenge,
     rolledIds: [],
+    widgetIds: {},
     timestamp: Date.now(),
   });
 }
@@ -106,27 +97,15 @@ export async function setActiveChallenge(challenge) {
  * Get the active challenge if one exists and hasn't timed out.
  * Returns null if there's no challenge or it has expired.
  *
- * Timeout is checked here — no timer needed, just a staleness check
- * every time a roll happens.
- *
  * @returns {object|null}
  */
 export function getActiveChallenge() {
   const challenge = game.settings.get(RFS.id, "activeChallenge");
   if (!challenge) return null;
 
-  // ╔══════════════════════════════════════════════════════════╗
-  // ║  CHALLENGE TIMEOUT VALUE                                 ║
-  // ║  Default: 3 minutes. Increase for slower tables.        ║
-  // ║  Move to RFS.challengeTimeoutMs in config.mjs to make   ║
-  // ║  this a GM-configurable setting in the future.          ║
-  // ╚══════════════════════════════════════════════════════════╝
   const TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
-
   const age = Date.now() - (challenge.timestamp ?? 0);
   if (age > TIMEOUT_MS) {
-    // Expired — clear it silently and return null
-    // Fire-and-forget: don't await so rolls aren't blocked
     clearActiveChallenge();
     return null;
   }
@@ -136,31 +115,177 @@ export function getActiveChallenge() {
 
 /**
  * Record that a token has rolled for the active challenge.
- * If all called tokens have now rolled, clears the challenge automatically.
+ * Updates the challenge card row and clears the challenge if all have rolled.
  *
  * @param {string} tokenId
+ * @param {object} rollResult  - { actorName, skillName, skillLevel, dice, total, allSixes, failed }
  */
-export async function recordChallengeRoll(tokenId) {
+export async function recordChallengeRoll(tokenId, rollResult) {
   const challenge = getActiveChallenge();
   if (!challenge) return;
 
   const rolledIds = [...(challenge.rolledIds ?? []), tokenId];
+  const results   = { ...(challenge.results ?? {}), [tokenId]: rollResult };
 
-  // Check if everyone has rolled
   const allRolled = challenge.tokenIds.every(id => rolledIds.includes(id));
 
+  const updated = { ...challenge, rolledIds, results };
+
   if (allRolled) {
-    await clearActiveChallenge();
-  } else {
-    await game.settings.set(RFS.id, "activeChallenge", {
-      ...challenge,
-      rolledIds,
-    });
+    // Keep the challenge data for card rendering but mark it complete
+    updated.complete = true;
+  }
+
+  await game.settings.set(RFS.id, "activeChallenge", updated);
+
+  // Rebuild the challenge card so the new result row appears
+  await rebuildChallengeCard(updated);
+
+  if (allRolled) {
+    // Small delay so the final card update lands before we clear
+    setTimeout(() => clearActiveChallenge(), 2000);
   }
 }
 
 /**
- * Clear the active challenge. Called on timeout, completion, or manually.
+ * Rebuild the shared challenge card with current results.
+ * Called every time a player rolls so the card updates in place.
+ *
+ * @param {object} challenge  - current challenge state from settings
+ */
+export async function rebuildChallengeCard(challenge) {
+  if (!challenge?.challengeCardId) return;
+  const message = game.messages.get(challenge.challengeCardId);
+  if (!message) return;
+
+  const content = buildChallengeCardContent(challenge);
+  await message.update({ content });
+}
+
+/**
+ * Build the HTML content for the shared challenge card.
+ * Called on initial post and on every roll update.
+ *
+ * @param {object} challenge
+ * @returns {string}
+ */
+export function buildChallengeCardContent(challenge) {
+  const {
+    prompt, dc, dcVisible, tokenIds, results = {}, complete = false,
+  } = challenge;
+
+  const dcDisplay = dcVisible
+    ? `<span class="rfs-challenge__dc-value">${game.i18n.format("RFS.Chat.Challenge.DcValue", { dc })}</span>`
+    : `<span class="rfs-challenge__dc-hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span>`;
+
+  const rows = tokenIds.map(tokenId => {
+    const result = results[tokenId];
+
+    if (!result) {
+      // Player hasn't rolled yet
+      return `
+        <tr class="rfs-challenge__row rfs-challenge__row--pending">
+          <td class="rfs-challenge__name">${result?.actorName ?? "…"}</td>
+          <td class="rfs-challenge__skill">—</td>
+          <td class="rfs-challenge__dice">—</td>
+          <td class="rfs-challenge__outcome rfs-challenge__outcome--pending">
+            ${game.i18n.localize("RFS.Chat.Challenge.Pending")}
+          </td>
+        </tr>`;
+    }
+
+    const diceHtml = result.dice
+      .map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`)
+      .join("");
+
+    const outcomeClass = result.failed ? "rfs-challenge__outcome--fail" : "rfs-challenge__outcome--success";
+    const outcomeText  = result.failed
+      ? game.i18n.localize("RFS.Chat.Failure")
+      : game.i18n.localize("RFS.Chat.Success");
+
+    // All-sixes: badge + Claim Skill button (or claimed note if already done)
+    const allSixesHtml = result.allSixes ? `
+      <div class="rfs-challenge__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</div>
+      ${result.skillClaimed
+        ? `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.SkillClaimed", { name: result.claimedSkillName ?? "" })}</div>`
+        : `<button type="button"
+                   class="rfs-btn rfs-btn--advancement"
+                   data-action="rfsClaimAdvancement"
+                   data-actor-id="${result.actorId}"
+                   data-skill-id="${result.skillId}"
+                   data-message-id="">
+             ✦ ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
+           </button>`
+      }` : "";
+
+    return `
+      <tr class="rfs-challenge__row rfs-challenge__row--done">
+        <td class="rfs-challenge__name">${result.actorName}</td>
+        <td class="rfs-challenge__skill">${result.skillName} (${"\u25cf".repeat(result.skillLevel)})</td>
+        <td class="rfs-challenge__dice">${diceHtml}</td>
+        <td class="rfs-challenge__outcome ${outcomeClass}">
+          ${outcomeText}
+          ${allSixesHtml}
+        </td>
+      </tr>`;
+  });
+
+  // Pending rows for tokens with no result yet need actor names.
+  // We look them up from the canvas tokens.
+  const pendingRows = tokenIds
+    .filter(id => !results[id])
+    .map(id => {
+      const token = canvas.tokens?.get(id);
+      const name  = token?.name ?? game.i18n.localize("RFS.Chat.Challenge.UnknownToken");
+      return `
+        <tr class="rfs-challenge__row rfs-challenge__row--pending">
+          <td class="rfs-challenge__name">${name}</td>
+          <td class="rfs-challenge__skill">—</td>
+          <td class="rfs-challenge__dice">—</td>
+          <td class="rfs-challenge__outcome rfs-challenge__outcome--pending">
+            ${game.i18n.localize("RFS.Chat.Challenge.Pending")}
+          </td>
+        </tr>`;
+    });
+
+  // Merge: done rows first in tokenId order, pending rows fill the rest
+  const allRows = tokenIds.map(id => {
+    if (results[id]) {
+      return rows[tokenIds.indexOf(id)];
+    }
+    return pendingRows.shift() ?? "";
+  });
+
+  const completeNote = complete
+    ? `<div class="rfs-challenge__complete">${game.i18n.localize("RFS.Chat.Challenge.Complete")}</div>`
+    : "";
+
+  return `
+    <div class="rfs-challenge" data-challenge-id="${challenge.challengeId}">
+      <div class="rfs-challenge__header">
+        <strong>${game.i18n.localize("RFS.Chat.Challenge.Title")}</strong>
+      </div>
+      <div class="rfs-challenge__prompt">${prompt}</div>
+      <div class="rfs-challenge__dc">${dcDisplay}</div>
+      <table class="rfs-challenge__table">
+        <thead>
+          <tr>
+            <th>${game.i18n.localize("RFS.Chat.Challenge.ColName")}</th>
+            <th>${game.i18n.localize("RFS.Chat.Challenge.ColSkill")}</th>
+            <th>${game.i18n.localize("RFS.Chat.Challenge.ColDice")}</th>
+            <th>${game.i18n.localize("RFS.Chat.Challenge.ColOutcome")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${allRows.join("")}
+        </tbody>
+      </table>
+      ${completeNote}
+    </div>`;
+}
+
+/**
+ * Clear the active challenge.
  */
 export async function clearActiveChallenge() {
   await game.settings.set(RFS.id, "activeChallenge", null);

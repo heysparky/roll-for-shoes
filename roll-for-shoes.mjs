@@ -2,17 +2,6 @@
  * roll-for-shoes.mjs
  * ==================
  * Entry point for the Roll for Shoes game system.
- *
- * Load order matters in Foundry — everything here runs on Hooks.once("init"),
- * which fires before the world is ready but after the core API is available.
- *
- * Architecture:
- *  - Data Models (TypeDataModel) define the schema; template.json only names types.
- *  - Sheets (HandlebarsApplicationMixin + ActorSheetV2) handle rendering and input.
- *  - RfsActor extends Actor for derived data and roll methods.
- *  - rolls/ contains pure roll logic, decoupled from the sheet.
- *  - hud/ contains the token HUD override (shoe button → Call for Roll).
- *  - styles/ uses CSS custom properties for theming (one base file, N theme files).
  */
 
 import { CharacterData, NpcData } from "./src/data/actor-data.mjs";
@@ -77,12 +66,6 @@ Hooks.once("ready", function () {
 /*  Actor Creation Hook                         */
 /* -------------------------------------------- */
 
-/**
- * Ensure newly created character actors have their token linked by default.
- * This means the token on the canvas and the actor in the sidebar share
- * the same data — XP, skills, and statuses stay in sync automatically.
- * NPC tokens are intentionally left unlinked (each token is independent).
- */
 Hooks.on("preCreateActor", (actor, data, options, userId) => {
   if (actor.type === "character") {
     actor.updateSource({ "prototypeToken.actorLink": true });
@@ -95,9 +78,11 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
 
 /**
  * Wire up interactive buttons in RFS chat cards.
- * All RFS chat buttons use data-action to identify themselves.
- * This hook fires every time a chat message is rendered — including
- * after ChatMessage#update() calls, so updated cards get fresh listeners.
+ *
+ * Three card types:
+ *   rfsClaimAdvancement — standalone result cards and challenge card rows
+ *   rfsSpendXp          — standalone result cards only
+ *   rfsWidgetRoll       — player widget cards (the skill picker + roll button)
  */
 Hooks.on("renderChatMessageHTML", (message, html) => {
 
@@ -110,13 +95,46 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   });
 
   // ── Spend XP ──────────────────────────────────────────────────────────────
-  // Button only appears on failed roll cards where xpSpent is false.
-  // After clicking, the card updates in place via ChatMessage#update().
   html.querySelectorAll("[data-action='rfsSpendXp']").forEach(btn => {
     btn.addEventListener("click", () => {
       const { messageId } = btn.dataset;
       RfsSkillRoll.spendXpOnCard(messageId);
     });
   });
+
+  // ── Player Widget Roll Button ──────────────────────────────────────────────
+  // Enable/disable the roll button based on whether a skill is selected.
+  // Fire the roll when the button is clicked.
+  const widget = html.querySelector(".rfs-widget");
+  if (widget) {
+    const select = widget.querySelector(".rfs-widget__skill-select");
+    const rollBtn = widget.querySelector("[data-action='rfsWidgetRoll']");
+
+    if (select && rollBtn) {
+      const flags = message.getFlag("roll-for-shoes", null);
+
+      // If already rolled, disable everything permanently
+      if (flags?.rolled) {
+        select.disabled = true;
+        rollBtn.disabled = true;
+        rollBtn.textContent = game.i18n.localize("RFS.Widget.AlreadyRolled");
+        return;
+      }
+
+      // Enable button only when a skill is chosen
+      select.addEventListener("change", () => {
+        rollBtn.disabled = !select.value;
+      });
+
+      rollBtn.addEventListener("click", () => {
+        const skillId = select.value;
+        if (!skillId) return;
+        // Disable immediately for UX — server update will confirm
+        rollBtn.disabled = true;
+        select.disabled = true;
+        RfsSkillRoll.rollFromWidget(message.id, skillId);
+      });
+    }
+  }
 
 });
