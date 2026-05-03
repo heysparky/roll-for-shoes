@@ -19,10 +19,11 @@
  *     - Checks live actor XP at click time — NOT at render time
  *     - Spends the full cost, turns all non-six dice to 6
  *     - Result is always all-sixes → Claim Skill button appears
- *     - Updates the chat message in place
+ *     - Updates the chat message in place via flags + _buildRollContent
  *
- *   RfsSkillRoll.claimAdvancement(actorId, skillId)
+ *   RfsSkillRoll.claimAdvancement(actorId, skillId, messageId)
  *     - Opens naming dialog, adds the new child skill
+ *     - Locks the card via flags + _buildRollContent (never regex on HTML)
  *
  * XP SPEND RULE (per RFS rules):
  *   A player may spend XP to turn dice to 6 for advancement purposes only.
@@ -67,12 +68,7 @@ export class RfsSkillRoll {
 
   /**
    * Called when a player clicks "Spend XP" on a result card.
-   *
-   * Checks live actor XP at click time — the card was rendered before
-   * addXp(1) ran, so we cannot use render-time XP for the guard.
-   *
-   * Turns ALL non-six dice to 6 (costs 1 XP per die).
-   * Result is always all-sixes → Claim Skill button appears.
+   * Checks live actor XP at click time — NOT at render time.
    */
   static async spendXpOnCard(messageId) {
     const message = game.messages.get(messageId);
@@ -89,10 +85,8 @@ export class RfsSkillRoll {
     const actor = game.actors.get(flags.actorId);
     if (!actor) return;
 
-    // Cost = number of dice not showing 6 — read from flags (set at roll time)
     const nonSixCount = flags.nonSixCount ?? flags.dice.filter(d => d !== 6).length;
 
-    // Live XP check at click time
     if (actor.system.xp < nonSixCount) {
       ui.notifications.warn(game.i18n.format("RFS.Warn.NotEnoughXp", { cost: nonSixCount, xp: actor.system.xp }));
       return;
@@ -100,9 +94,7 @@ export class RfsSkillRoll {
 
     await actor.spendXp(nonSixCount);
 
-    // All dice become 6
-    const newDice = flags.dice.map(() => 6);
-
+    const newDice  = flags.dice.map(() => 6);
     const newFlags = {
       ...flags,
       dice:        newDice,
@@ -110,6 +102,7 @@ export class RfsSkillRoll {
       xpCost:      nonSixCount,
       allSixes:    true,
       nonSixCount: 0,
+      skillClaimed: false,
     };
 
     const skill = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
@@ -123,6 +116,66 @@ export class RfsSkillRoll {
       ),
       flags: { "roll-for-shoes": { rollData: newFlags } },
     });
+  }
+
+  /**
+   * Called when a player clicks "Claim Skill" on a result card.
+   * Opens the naming dialog, adds the child skill, then locks the card
+   * by setting skillClaimed in flags and rebuilding via _buildRollContent.
+   *
+   * IMPORTANT: Never use regex on message.content to modify cards.
+   * Always update via flags + _buildRollContent so the card state stays
+   * consistent with the flags. Regex on HTML is fragile and breaks silently.
+   */
+  static async claimAdvancement(actorId, skillId, messageId) {
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+    const skill = actor.getSkillById(skillId);
+    if (!skill) return;
+
+    // Guard: if we have a messageId, check the card isn't already claimed
+    if (messageId) {
+      const message = game.messages.get(messageId);
+      const flags   = message?.getFlag("roll-for-shoes", "rollData");
+      if (flags?.skillClaimed) return;
+    }
+
+    const result = await foundry.applications.api.DialogV2.input({
+      window: { title: game.i18n.localize("RFS.Dialog.Advancement.Title") },
+      content: `
+        <p>${game.i18n.format("RFS.Dialog.Advancement.Hint", { skill: skill.name, level: skill.level + 1 })}</p>
+        <input type="text" name="skillName"
+               placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+               autofocus style="width:100%">`,
+      ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
+    });
+
+    const name = result?.skillName?.trim();
+    if (!name) return;
+
+    await actor.addSkill(name, skill.id);
+
+    // Lock the card — rebuild via flags so state stays consistent
+    if (messageId) {
+      const message = game.messages.get(messageId);
+      if (message) {
+        const flags = message.getFlag("roll-for-shoes", "rollData");
+        if (flags) {
+          const newFlags   = { ...flags, skillClaimed: true, claimedSkillName: name };
+          const skillObj   = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
+          const newContent = RfsSkillRoll._buildRollContent(
+            flags.actorName, skillObj, flags.dice,
+            flags.rawTotal, flags.modifier, flags.total,
+            flags.allSixes, flags.failed, flags.difficulty,
+            newFlags, messageId, flags.nonSixCount ?? 0
+          );
+          await message.update({
+            content: newContent,
+            flags: { "roll-for-shoes": { rollData: newFlags } },
+          });
+        }
+      }
+    }
   }
 
   static async opposed(actorA, skillA, actorB, skillB) {
@@ -183,27 +236,6 @@ export class RfsSkillRoll {
     return RfsSkillRoll.roll(actor, skill, { difficulty });
   }
 
-  static async claimAdvancement(actorId, skillId) {
-    const actor = game.actors.get(actorId);
-    if (!actor) return;
-    const skill = actor.getSkillById(skillId);
-    if (!skill) return;
-
-    const result = await foundry.applications.api.DialogV2.input({
-      window: { title: game.i18n.localize("RFS.Dialog.Advancement.Title") },
-      content: `
-        <p>${game.i18n.format("RFS.Dialog.Advancement.Hint", { skill: skill.name, level: skill.level + 1 })}</p>
-        <input type="text" name="skillName"
-               placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
-               autofocus style="width:100%">`,
-      ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
-    });
-
-    const name = result?.skillName?.trim();
-    if (!name) return;
-    return actor.addSkill(name, skill.id);
-  }
-
   /* -------------------------------------------- */
   /*  Internal Helpers                            */
   /* -------------------------------------------- */
@@ -226,25 +258,25 @@ export class RfsSkillRoll {
   }
 
   static async _postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options) {
-    // nonSixCount stored in flags so spendXpOnCard can read it without recalculating
     const nonSixCount = dice.filter(d => d !== 6).length;
 
     const rollData = {
-      actorId:     actor.id,
-      actorName:   actor.name,
-      skillId:     skill.id,
-      skillName:   skill.name,
-      skillLevel:  skill.level,
+      actorId:      actor.id,
+      actorName:    actor.name,
+      skillId:      skill.id,
+      skillName:    skill.name,
+      skillLevel:   skill.level,
       dice,
       rawTotal,
       modifier,
       total,
-      difficulty:  options.difficulty,
+      difficulty:   options.difficulty,
       allSixes,
       failed,
-      xpSpent:     false,
-      xpCost:      0,
-      nonSixCount, // cost to spend for advancement — checked live at click time
+      xpSpent:      false,
+      xpCost:       0,
+      nonSixCount,
+      skillClaimed: false,
     };
 
     const flavor = options.flavor ?? `${actor.name}: ${skill.name} (${skill.level}d6)`;
@@ -259,7 +291,6 @@ export class RfsSkillRoll {
       flags: { "roll-for-shoes": { rollData } },
     });
 
-    // Update with real message ID so the Spend XP button's data-message-id is correct
     await message.update({
       content: RfsSkillRoll._buildRollContent(
         actor.name, skill, dice, rawTotal, modifier, total,
@@ -271,11 +302,14 @@ export class RfsSkillRoll {
   /**
    * Build the HTML content for a roll result card.
    *
-   * XP spend button:
-   *   - Shown whenever: failed && !xpSpent && nonSixCount > 0
-   *   - Affordability is NOT checked here — it's checked at click time
-   *     because addXp(1) runs after this renders, making render-time XP stale.
-   *   - nonSixCount is shown in the button label so players know the cost.
+   * Card state is driven entirely by flags — never reconstruct state from HTML.
+   * All updates go through this function so the card stays consistent.
+   *
+   * Action area logic:
+   *   skillClaimed  → show claimed note, no button
+   *   allSixes      → show Claim Skill button (+ XP spent note if applicable)
+   *   failed+unspent+nonSixCount>0 → show Spend XP button
+   *   otherwise     → no action area
    */
   static _buildRollContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
     const modStr = RfsSkillRoll._modifierString(rawTotal, modifier);
@@ -287,15 +321,22 @@ export class RfsSkillRoll {
 
     let actionArea = "";
 
-    if (allSixes) {
+    if (rollData.skillClaimed) {
+      // Card is locked — show what was claimed, no buttons
+      actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.SkillClaimed", { name: rollData.claimedSkillName })}</div>`;
+    } else if (allSixes) {
+      // All sixes — show XP spent note if applicable, then Claim Skill button
       if (rollData.xpSpent) {
         actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.XpSpentAllSixes", { cost: rollData.xpCost })}</div>`;
       }
       actionArea += RfsSkillRoll._advancementButton(
         { id: rollData.actorId },
-        { id: rollData.skillId }
+        { id: rollData.skillId },
+        messageId
       );
     } else if (failed && !rollData.xpSpent && nonSixCount > 0) {
+      // Failed, XP not yet spent — show Spend XP button
+      // Affordability checked at click time, not here
       actionArea = `
         <button type="button"
                 class="rfs-btn rfs-btn--spend-xp"
@@ -318,13 +359,14 @@ export class RfsSkillRoll {
       </div>`;
   }
 
-  static _advancementButton(actor, skill) {
+  static _advancementButton(actor, skill, messageId = "") {
     return `
       <button type="button"
               class="rfs-btn rfs-btn--advancement"
               data-action="rfsClaimAdvancement"
               data-actor-id="${actor.id}"
-              data-skill-id="${skill.id}">
+              data-skill-id="${skill.id}"
+              data-message-id="${messageId}">
         ✦ ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
       </button>`;
   }

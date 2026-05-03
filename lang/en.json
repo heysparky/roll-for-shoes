@@ -116,6 +116,7 @@
       "Tie": "Tie",
       "SpendXp": "Spend {cost} XP for advancement",
       "XpSpentAllSixes": "Spent {cost} XP — all sixes achieved!",
+      "SkillClaimed": "✦ {name} claimed!",
       "Challenge": {
         "Title": "Challenge",
         "Speaker": "Game Master",

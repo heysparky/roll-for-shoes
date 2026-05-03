@@ -88,8 +88,8 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
   // ── Claim Skill (advancement) ──────────────────────────────────────────────
   html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {
     btn.addEventListener("click", () => {
-      const { actorId, skillId } = btn.dataset;
-      RfsSkillRoll.claimAdvancement(actorId, skillId);
+      const { actorId, skillId, messageId } = btn.dataset;
+      RfsSkillRoll.claimAdvancement(actorId, skillId, messageId);
     });
   });
 
