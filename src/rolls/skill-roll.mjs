@@ -10,29 +10,27 @@
  *     - Applies status modifiers to the total
  *     - Detects all-sixes (advancement trigger)
  *     - Posts a rich chat message with result
- *     - On failure (vs difficulty): calls actor.addXp(1)
- *     - On all-sixes: embeds a "Claim Skill" button in the chat card
- *       The player clicks it when ready; the naming dialog opens then.
- *     - Checks for an active challenge (set by RfsChallengeDialog) and
- *       uses its DC if the rolling actor's token is in the called list.
+ *     - On failure: calls actor.addXp(1)
+ *     - Checks for an active challenge and uses its DC if applicable
  *
  *   RfsSkillRoll.spendXpOnCard(messageId)
- *     - Called when the player clicks "Spend XP" on a result card
- *     - Spends 1 XP from the actor
- *     - Turns the lowest die to a 6 (per RFS rules)
- *     - If all dice are now 6 → swaps button to "Claim Skill"
- *     - If not → shows "XP Spent" note, no claim button
+ *     - Called when player clicks "Spend XP" on a result card
+ *     - Cost = number of non-six dice (must turn ALL to 6 for advancement)
+ *     - Checks live actor XP at click time — NOT at render time
+ *     - Spends the full cost, turns all non-six dice to 6
+ *     - Result is always all-sixes → Claim Skill button appears
  *     - Updates the chat message in place
  *
  *   RfsSkillRoll.claimAdvancement(actorId, skillId)
- *     - Called when the player clicks the "Claim Skill" button in chat
- *     - Opens the naming dialog and adds the new skill
+ *     - Opens naming dialog, adds the new child skill
  *
- * OPTIONS shape:
- *   {
- *     flavor:     string,   // optional override for chat message flavor
- *     difficulty: number,   // static threshold (undefined = use challenge DC or default 4)
- *   }
+ * XP SPEND RULE (per RFS rules):
+ *   A player may spend XP to turn dice to 6 for advancement purposes only.
+ *   Each XP turns one die. To trigger advancement, ALL dice must show 6.
+ *   Cost = count of non-six dice. Checked at click time against live XP,
+ *   because the roll itself just awarded +1 XP which isn't reflected until
+ *   after the card renders.
+ *   Success/failure against the DC is never affected by XP spend.
  */
 
 import { getActiveChallenge, recordChallengeRoll } from "../helpers/settings.mjs";
@@ -43,21 +41,7 @@ export class RfsSkillRoll {
   /*  Public API                                  */
   /* -------------------------------------------- */
 
-  /**
-   * Roll a skill for an actor. The core RFS roll.
-   *
-   * DC resolution order:
-   *   1. options.difficulty if explicitly passed (e.g. rollVsDifficulty)
-   *   2. Active challenge DC if this actor's token is in the called list
-   *   3. Default DC of 4
-   *
-   * @param {RfsActor} actor
-   * @param {object}   skill    - skill object from actor.system.skills
-   * @param {object}   options
-   * @returns {Promise<void>}
-   */
   static async roll(actor, skill, options = {}) {
-    // Resolve difficulty from active challenge if applicable
     const { difficulty, challengeId } = RfsSkillRoll._resolveDifficulty(actor, options);
     options = { ...options, difficulty, challengeId };
 
@@ -73,13 +57,8 @@ export class RfsSkillRoll {
 
     await RfsSkillRoll._postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options);
 
-    // Every failed roll grants XP
-    if (failed) {
-      await actor.addXp(1);
-    }
+    if (failed) await actor.addXp(1);
 
-    // If this roll was part of a challenge, record it.
-    // This may clear the challenge if all tokens have now rolled.
     if (challengeId) {
       const token = actor.getActiveTokens()?.[0];
       if (token) await recordChallengeRoll(token.id);
@@ -87,21 +66,13 @@ export class RfsSkillRoll {
   }
 
   /**
-   * Called when a player clicks "Spend XP" on a result card in chat.
+   * Called when a player clicks "Spend XP" on a result card.
    *
-   * RFS rules: spending XP turns your lowest die to a 6 for advancement
-   * purposes only — it does NOT change success/failure against the DC.
+   * Checks live actor XP at click time — the card was rendered before
+   * addXp(1) ran, so we cannot use render-time XP for the guard.
    *
-   * Flow:
-   *   1. Read roll state from the message's flags
-   *   2. Verify the actor still has XP to spend
-   *   3. Spend 1 XP
-   *   4. Replace the lowest die with a 6
-   *   5. Check if all dice are now 6 → advancement trigger
-   *   6. Update the chat message in place with new state
-   *
-   * @param {string} messageId  - The ChatMessage document ID
-   * @returns {Promise<void>}
+   * Turns ALL non-six dice to 6 (costs 1 XP per die).
+   * Result is always all-sixes → Claim Skill button appears.
    */
   static async spendXpOnCard(messageId) {
     const message = game.messages.get(messageId);
@@ -110,65 +81,50 @@ export class RfsSkillRoll {
     const flags = message.getFlag("roll-for-shoes", "rollData");
     if (!flags) return;
 
-    const actor = game.actors.get(flags.actorId);
-    if (!actor) return;
-
-    // Guard: can't spend what you don't have, and can't spend twice
-    if (actor.system.xp < 1) {
-      ui.notifications.warn(game.i18n.localize("RFS.Warn.NoXpToSpend"));
-      return;
-    }
     if (flags.xpSpent) {
       ui.notifications.warn(game.i18n.localize("RFS.Warn.XpAlreadySpent"));
       return;
     }
 
-    // Spend the XP
-    await actor.spendXp(1);
+    const actor = game.actors.get(flags.actorId);
+    if (!actor) return;
 
-    // Turn the lowest die to a 6 (RFS advancement rule)
-    const newDice = [...flags.dice];
-    const lowestIdx = newDice.indexOf(Math.min(...newDice));
-    newDice[lowestIdx] = 6;
+    // Cost = number of dice not showing 6 — read from flags (set at roll time)
+    const nonSixCount = flags.nonSixCount ?? flags.dice.filter(d => d !== 6).length;
 
-    const allSixesAfterSpend = newDice.every(d => d === 6);
+    // Live XP check at click time
+    if (actor.system.xp < nonSixCount) {
+      ui.notifications.warn(game.i18n.format("RFS.Warn.NotEnoughXp", { cost: nonSixCount, xp: actor.system.xp }));
+      return;
+    }
 
-    // Update flags with new state
+    await actor.spendXp(nonSixCount);
+
+    // All dice become 6
+    const newDice = flags.dice.map(() => 6);
+
     const newFlags = {
       ...flags,
-      dice:     newDice,
-      xpSpent:  true,
-      allSixes: allSixesAfterSpend,
+      dice:        newDice,
+      xpSpent:     true,
+      xpCost:      nonSixCount,
+      allSixes:    true,
+      nonSixCount: 0,
     };
 
-    const skill = {
-      id:    flags.skillId,
-      name:  flags.skillName,
-      level: flags.skillLevel,
-    };
-
-    const newContent = RfsSkillRoll._buildRollContent(
-      flags.actorName, skill, newDice,
-      flags.rawTotal, flags.modifier, flags.total,
-      allSixesAfterSpend, flags.failed, flags.difficulty,
-      newFlags, messageId
-    );
+    const skill = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
 
     await message.update({
-      content: newContent,
+      content: RfsSkillRoll._buildRollContent(
+        flags.actorName, skill, newDice,
+        flags.rawTotal, flags.modifier, flags.total,
+        true, flags.failed, flags.difficulty,
+        newFlags, messageId, 0
+      ),
       flags: { "roll-for-shoes": { rollData: newFlags } },
     });
   }
 
-  /**
-   * Roll two actors against each other. Higher modified total wins.
-   *
-   * @param {RfsActor} actorA
-   * @param {object}   skillA
-   * @param {RfsActor} actorB
-   * @param {object}   skillB
-   * @returns {Promise<void>}
-   */
   static async opposed(actorA, skillA, actorB, skillB) {
     const rollA = new Roll(`${skillA.level}d6`);
     const rollB = new Roll(`${skillB.level}d6`);
@@ -187,9 +143,6 @@ export class RfsSkillRoll {
                  : totalB > totalA ? actorB.name
                  : game.i18n.localize("RFS.Chat.Tie");
 
-    const advA = allSixesA ? RfsSkillRoll._advancementButton(actorA, skillA) : "";
-    const advB = allSixesB ? RfsSkillRoll._advancementButton(actorB, skillB) : "";
-
     const content = `
       <div class="rfs-roll rfs-roll--opposed">
         <div class="rfs-roll__header">
@@ -201,7 +154,7 @@ export class RfsSkillRoll {
           <span class="rfs-roll__dice">[${diceA.join(", ")}]</span>
           <span class="rfs-roll__total">${RfsSkillRoll._modifierString(rollA.total, modA)} = <strong>${totalA}</strong></span>
           ${allSixesA ? `<span class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
-          ${advA}
+          ${allSixesA ? RfsSkillRoll._advancementButton(actorA, skillA) : ""}
         </div>
         <div class="rfs-roll__row">
           <span class="rfs-roll__actor">${actorB.name}</span>
@@ -209,7 +162,7 @@ export class RfsSkillRoll {
           <span class="rfs-roll__dice">[${diceB.join(", ")}]</span>
           <span class="rfs-roll__total">${RfsSkillRoll._modifierString(rollB.total, modB)} = <strong>${totalB}</strong></span>
           ${allSixesB ? `<span class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
-          ${advB}
+          ${allSixesB ? RfsSkillRoll._advancementButton(actorB, skillB) : ""}
         </div>
         <div class="rfs-roll__result">
           ${game.i18n.format("RFS.Chat.Winner", { name: winner })}
@@ -222,26 +175,14 @@ export class RfsSkillRoll {
       rolls: [rollA, rollB],
     });
 
-    // XP for the loser
     if (totalA < totalB) await actorA.addXp(1);
     else if (totalB < totalA) await actorB.addXp(1);
   }
 
-  /**
-   * Roll a skill against a static difficulty number.
-   */
   static async rollVsDifficulty(actor, skill, difficulty) {
     return RfsSkillRoll.roll(actor, skill, { difficulty });
   }
 
-  /**
-   * Called when a player clicks the "Claim Skill" button in a chat card.
-   * Opens the naming dialog and adds the new skill to the actor.
-   *
-   * @param {string} actorId
-   * @param {string} skillId
-   * @returns {Promise<void>}
-   */
   static async claimAdvancement(actorId, skillId) {
     const actor = game.actors.get(actorId);
     if (!actor) return;
@@ -267,10 +208,6 @@ export class RfsSkillRoll {
   /*  Internal Helpers                            */
   /* -------------------------------------------- */
 
-  /**
-   * Resolve the difficulty for a roll.
-   * @private
-   */
   static _resolveDifficulty(actor, options) {
     if (options.difficulty !== undefined) {
       return { difficulty: options.difficulty, challengeId: null };
@@ -288,101 +225,84 @@ export class RfsSkillRoll {
     return { difficulty: 4, challengeId: null };
   }
 
-  /**
-   * Build and post the initial chat message for a single-actor roll.
-   * Stores full roll state in flags so the card can be updated in place
-   * when the player spends XP.
-   * @private
-   */
   static async _postRollMessage(actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options) {
+    // nonSixCount stored in flags so spendXpOnCard can read it without recalculating
+    const nonSixCount = dice.filter(d => d !== 6).length;
+
     const rollData = {
-      actorId:    actor.id,
-      actorName:  actor.name,
-      skillId:    skill.id,
-      skillName:  skill.name,
-      skillLevel: skill.level,
+      actorId:     actor.id,
+      actorName:   actor.name,
+      skillId:     skill.id,
+      skillName:   skill.name,
+      skillLevel:  skill.level,
       dice,
       rawTotal,
       modifier,
       total,
-      difficulty: options.difficulty,
+      difficulty:  options.difficulty,
       allSixes,
       failed,
-      xpSpent:    false,
+      xpSpent:     false,
+      xpCost:      0,
+      nonSixCount, // cost to spend for advancement — checked live at click time
     };
 
     const flavor = options.flavor ?? `${actor.name}: ${skill.name} (${skill.level}d6)`;
 
-    // Post with placeholder message ID — we don't know the ID until after creation
     const message = await roll.toMessage({
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor,
       content: RfsSkillRoll._buildRollContent(
         actor.name, skill, dice, rawTotal, modifier, total,
-        allSixes, failed, options.difficulty, rollData, "PENDING"
+        allSixes, failed, options.difficulty, rollData, "PENDING", nonSixCount
       ),
       flags: { "roll-for-shoes": { rollData } },
     });
 
-    // Update with real message ID so the Spend XP button works
+    // Update with real message ID so the Spend XP button's data-message-id is correct
     await message.update({
       content: RfsSkillRoll._buildRollContent(
         actor.name, skill, dice, rawTotal, modifier, total,
-        allSixes, failed, options.difficulty, rollData, message.id
+        allSixes, failed, options.difficulty, rollData, message.id, nonSixCount
       ),
     });
   }
 
   /**
    * Build the HTML content for a roll result card.
-   * Called on initial post and on XP spend updates.
    *
-   * @param {string}   actorName
-   * @param {object}   skill        - { id, name, level }
-   * @param {number[]} dice         - current die values (may change after XP spend)
-   * @param {number}   rawTotal     - original roll total (never changes)
-   * @param {number}   modifier     - status modifier (never changes)
-   * @param {number}   total        - rawTotal + modifier (never changes)
-   * @param {boolean}  allSixes     - current all-sixes state (may change after XP spend)
-   * @param {boolean}  failed       - whether the roll failed vs DC (never changes)
-   * @param {number}   difficulty   - the DC (never changes)
-   * @param {object}   rollData     - full flag state
-   * @param {string}   messageId    - ChatMessage ID for button data attributes
-   * @returns {string} HTML
-   * @private
+   * XP spend button:
+   *   - Shown whenever: failed && !xpSpent && nonSixCount > 0
+   *   - Affordability is NOT checked here — it's checked at click time
+   *     because addXp(1) runs after this renders, making render-time XP stale.
+   *   - nonSixCount is shown in the button label so players know the cost.
    */
-  static _buildRollContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId) {
+  static _buildRollContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
     const modStr = RfsSkillRoll._modifierString(rawTotal, modifier);
     const flavor = `${actorName}: ${skill.name} (${skill.level}d6)`;
 
-    // Success/failure line — never changes even after XP spend
     const resultLine = failed
       ? `<div class="rfs-roll__result rfs-roll__result--failure">✘ ${game.i18n.localize("RFS.Chat.Failure")} (vs ${difficulty}) — +1 XP</div>`
       : `<div class="rfs-roll__result rfs-roll__result--success">✔ ${game.i18n.localize("RFS.Chat.Success")} (vs ${difficulty})</div>`;
 
-    // Action area: Claim Skill, Spend XP, or spent note
     let actionArea = "";
+
     if (allSixes) {
-      // Natural all-sixes OR achieved via XP spend
       if (rollData.xpSpent) {
-        actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.localize("RFS.Chat.XpSpentAllSixes")}</div>`;
+        actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.XpSpentAllSixes", { cost: rollData.xpCost })}</div>`;
       }
       actionArea += RfsSkillRoll._advancementButton(
         { id: rollData.actorId },
         { id: rollData.skillId }
       );
-    } else if (failed && !rollData.xpSpent) {
-      // Failed, XP not yet spent — offer the button
+    } else if (failed && !rollData.xpSpent && nonSixCount > 0) {
       actionArea = `
         <button type="button"
                 class="rfs-btn rfs-btn--spend-xp"
                 data-action="rfsSpendXp"
                 data-message-id="${messageId}">
-          🎲 ${game.i18n.localize("RFS.Chat.SpendXp")}
+          🎲 ${game.i18n.format("RFS.Chat.SpendXp", { cost: nonSixCount })}
         </button>`;
-    } else if (failed && rollData.xpSpent && !allSixes) {
-      // Spent XP but no all-sixes — show note only
-      actionArea = `<div class="rfs-roll__xp-note">${game.i18n.localize("RFS.Chat.XpSpentNoSixes")}</div>`;
     }
 
     return `
@@ -398,10 +318,6 @@ export class RfsSkillRoll {
       </div>`;
   }
 
-  /**
-   * Build the "Claim Skill" button HTML.
-   * @private
-   */
   static _advancementButton(actor, skill) {
     return `
       <button type="button"
@@ -413,10 +329,6 @@ export class RfsSkillRoll {
       </button>`;
   }
 
-  /**
-   * Format a raw total + modifier as a readable string.
-   * @private
-   */
   static _modifierString(rawTotal, modifier) {
     if (modifier === 0) return `${rawTotal}`;
     if (modifier > 0)   return `${rawTotal} + ${modifier}`;

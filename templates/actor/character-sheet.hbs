@@ -8,11 +8,15 @@
     system      – actor.system (CharacterData instance)
     skills      – sorted flat array, tree rendered via partials
     statuses    – array of status objects
+    xp          – current XP total
     isEditable  – boolean, controls input disabled states
 
   CSS targeting:
     All layout uses CSS custom properties defined in rfs-base.css.
     Theme overrides live in styles/themes/*.css via [data-rfs-theme].
+
+  Note: XP spend is NOT on this sheet. It lives on roll result cards
+  in chat. XP is displayed here for reference only.
 --}}
 
 <div class="rfs-sheet character">
@@ -32,6 +36,12 @@
              value="{{actor.name}}"
              placeholder="{{localize 'RFS.Placeholder.ActorName'}}"
              {{#unless isEditable}}disabled{{/unless}}>
+
+      {{!-- XP display — read-only, spend happens on roll cards in chat --}}
+      <div class="rfs-sheet__xp">
+        <span class="rfs-sheet__xp-label">{{labels.xp}}</span>
+        <span class="rfs-sheet__xp-value">{{xp}}</span>
+      </div>
     </div>
   </header>
 
