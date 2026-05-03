@@ -74,6 +74,22 @@ Hooks.once("ready", function () {
 });
 
 /* -------------------------------------------- */
+/*  Actor Creation Hook                         */
+/* -------------------------------------------- */
+
+/**
+ * Ensure newly created character actors have their token linked by default.
+ * This means the token on the canvas and the actor in the sidebar share
+ * the same data — XP, skills, and statuses stay in sync automatically.
+ * NPC tokens are intentionally left unlinked (each token is independent).
+ */
+Hooks.on("preCreateActor", (actor, data, options, userId) => {
+  if (actor.type === "character") {
+    actor.updateSource({ "prototypeToken.actorLink": true });
+  }
+});
+
+/* -------------------------------------------- */
 /*  Chat Message Hook                           */
 /* -------------------------------------------- */
 
