@@ -335,15 +335,20 @@ export class RfsSkillRoll {
         messageId
       );
     } else if (failed && !rollData.xpSpent && nonSixCount > 0) {
-      // Failed, XP not yet spent — show Spend XP button
-      // Affordability checked at click time, not here
-      actionArea = `
-        <button type="button"
-                class="rfs-btn rfs-btn--spend-xp"
-                data-action="rfsSpendXp"
-                data-message-id="${messageId}">
-          🎲 ${game.i18n.format("RFS.Chat.SpendXp", { cost: nonSixCount })}
-        </button>`;
+      // Only show Spend XP button if actor can currently afford the full cost.
+      // Read live XP here — not at render time from options — because addXp(1)
+      // runs after the initial render, so we check on each re-render instead.
+      const actor  = game.actors.get(rollData.actorId);
+      const liveXp = actor?.system.xp ?? 0;
+      if (liveXp >= nonSixCount) {
+        actionArea = `
+          <button type="button"
+                  class="rfs-btn rfs-btn--spend-xp"
+                  data-action="rfsSpendXp"
+                  data-message-id="${messageId}">
+            🎲 ${game.i18n.format("RFS.Chat.SpendXp", { cost: nonSixCount })}
+          </button>`;
+      }
     }
 
     return `
