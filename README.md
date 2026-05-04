@@ -3,7 +3,7 @@
 A Foundry VTT v14 game system implementation of [Roll for Shoes](https://rollforshoes.com/) by Ben Wray.
 
 Written by Claude.ai
-Designed by Karen McMullan (heysparky)
+Designed by heysparky (Karen McMullan)
 
 Assets
 - Game System Image by Linnaea Mallette (https://www.publicdomainpictures.net/en/view-image.php?image=390097&picture=tennis-shoes)
