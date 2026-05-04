@@ -17,6 +17,7 @@
   "esmodules": ["roll-for-shoes.mjs"],
   "styles": [
     "styles/rfs-base.css",
+    "styles/rfs-chat.css",
     "styles/themes/dark-factory.css"
   ],
   "languages": [

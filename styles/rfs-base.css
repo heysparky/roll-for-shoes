@@ -77,6 +77,16 @@
   --rfs-shadow-md: 0 2px 6px rgba(0,0,0,0.20);
   --rfs-shadow-panel: inset 0 1px 3px rgba(0,0,0,0.10);
 
+  /* Outcome colours — used by chat cards */
+  --rfs-color-success:     #1a5a3a;
+  --rfs-color-success-bg:  #eaf5ee;
+  --rfs-color-failure:     #8b1a1a;
+  --rfs-color-failure-bg:  #f5eaea;
+  --rfs-color-six:         #8b3a1a;   /* die face highlight */
+  --rfs-color-six-bg:      #fdf3ec;
+  --rfs-color-allsixes:    #5a3a00;   /* all-sixes badge */
+  --rfs-color-allsixes-bg: #fff8e6;
+
   /* Animations */
   --rfs-anim-fast:   150ms ease;
   --rfs-anim-normal: 250ms ease;
@@ -139,6 +149,27 @@
     outline: none;
     border-bottom-color: var(--rfs-color-accent);
   }
+}
+
+/* ── Sheet header XP inline display ─────────────────────────────────────── */
+.rfs-sheet__xp {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-sheet__xp-label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rfs-sheet__xp-value {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  color: var(--rfs-color-xp);
 }
 
 /* ── Body ────────────────────────────────────────────────────────────────── */

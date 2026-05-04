@@ -55,6 +55,16 @@
   --rfs-color-status-neg:     #9a2a1a;   /* furnace red */
   --rfs-color-status-neu:     #8a7a5a;   /* aged brass */
 
+  /* ── Outcome colours ─────────────────────────────────────────────────── */
+  --rfs-color-success:        #4a9a6a;   /* steam valve green */
+  --rfs-color-success-bg:     #0f1f18;
+  --rfs-color-failure:        #c04040;   /* furnace red */
+  --rfs-color-failure-bg:     #1f0f0f;
+  --rfs-color-six:            #e07a20;   /* molten copper die */
+  --rfs-color-six-bg:         #1e1008;
+  --rfs-color-allsixes:       #d4a842;   /* brass badge */
+  --rfs-color-allsixes-bg:    #1a1508;
+
   /* ── Roll / action buttons ────────────────────────────────────────────── */
   --rfs-color-roll-btn:       #2a3a5a;   /* dark steel blue */
   --rfs-color-roll-btn-hover: #3a4a7a;   /* lighter steel */

@@ -1,0 +1,516 @@
+/* =============================================================================
+   styles/rfs-chat.css
+   ====================
+   Styles for all Roll for Shoes chat cards and in-chat dialogs.
+   Uses custom properties defined in rfs-base.css — no hardcoded values.
+
+   Sections:
+     1. Shared — dice faces, shared result bits
+     2. Standalone roll card  (.rfs-roll)
+     3. Challenge card        (.rfs-challenge)
+     4. Button variants       (.rfs-btn--*)
+     5. Challenge player dialog  (.rfs-cpd)
+     6. Challenge GM dialog      (.rfs-challenge-dialog)
+   ============================================================================= */
+
+/* ── 1. Shared ────────────────────────────────────────────────────────────── */
+
+.rfs-die {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-md);
+  font-weight: bold;
+  background: var(--rfs-color-bg-panel);
+  color: var(--rfs-color-text);
+  box-shadow: var(--rfs-shadow-sm);
+}
+
+.rfs-die--six {
+  background: var(--rfs-color-six-bg);
+  border-color: var(--rfs-color-six);
+  color: var(--rfs-color-six);
+  box-shadow: 0 0 4px rgba(0,0,0,0.1);
+}
+
+/* ── 2. Standalone roll card ──────────────────────────────────────────────── */
+
+.rfs-roll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-sm);
+  padding: var(--rfs-space-sm) var(--rfs-space-md);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+}
+
+.rfs-roll__header {
+  font-size: var(--rfs-font-size-md);
+  color: var(--rfs-color-text-label);
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  padding-bottom: var(--rfs-space-xs);
+  margin-bottom: var(--rfs-space-xs);
+}
+
+.rfs-roll__dice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-roll__total {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-md);
+  color: var(--rfs-color-text-muted);
+}
+
+.rfs-roll__allsixes {
+  display: inline-block;
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  background: var(--rfs-color-allsixes-bg);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-allsixes);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-allsixes);
+  font-size: var(--rfs-font-size-sm);
+  font-weight: bold;
+}
+
+.rfs-roll__result {
+  font-size: var(--rfs-font-size-md);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  border-radius: var(--rfs-radius-sm);
+  border-left: 3px solid transparent;
+}
+
+.rfs-roll__result--success {
+  color: var(--rfs-color-success);
+  background: var(--rfs-color-success-bg);
+  border-left-color: var(--rfs-color-success);
+}
+
+.rfs-roll__result--failure {
+  color: var(--rfs-color-failure);
+  background: var(--rfs-color-failure-bg);
+  border-left-color: var(--rfs-color-failure);
+}
+
+.rfs-roll__xp-note {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+}
+
+/* Opposed roll layout */
+.rfs-roll--opposed .rfs-roll__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: var(--rfs-space-xs) 0;
+  border-bottom: var(--rfs-border-width) dashed var(--rfs-color-border);
+
+  &:last-of-type { border-bottom: none; }
+}
+
+.rfs-roll__actor {
+  font-weight: bold;
+  min-width: 6rem;
+}
+
+.rfs-roll__skill {
+  color: var(--rfs-color-text-muted);
+  font-size: var(--rfs-font-size-sm);
+}
+
+.rfs-roll__dice {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-sm);
+}
+
+/* ── 3. Challenge card ────────────────────────────────────────────────────── */
+
+.rfs-challenge {
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+}
+
+.rfs-challenge__header {
+  font-size: var(--rfs-font-size-lg);
+  color: var(--rfs-color-text-label);
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  padding-bottom: var(--rfs-space-xs);
+  margin-bottom: var(--rfs-space-sm);
+}
+
+.rfs-challenge__prompt {
+  font-style: italic;
+  color: var(--rfs-color-text-muted);
+  margin-bottom: var(--rfs-space-xs);
+}
+
+.rfs-challenge__dc {
+  font-size: var(--rfs-font-size-sm);
+  margin-bottom: var(--rfs-space-sm);
+}
+
+.rfs-challenge__dc-value {
+  font-family: var(--rfs-font-mono);
+  font-weight: bold;
+  color: var(--rfs-color-accent);
+}
+
+.rfs-challenge__dc-hidden {
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+}
+
+.rfs-challenge__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--rfs-font-size-sm);
+
+  th {
+    text-align: left;
+    color: var(--rfs-color-text-label);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.7rem;
+    padding: var(--rfs-space-xs) var(--rfs-space-sm);
+    border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  }
+
+  td {
+    padding: var(--rfs-space-xs) var(--rfs-space-sm);
+    vertical-align: middle;
+  }
+}
+
+.rfs-challenge__row--pending td {
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+}
+
+.rfs-challenge__dice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.rfs-challenge__outcome {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.rfs-challenge__outcome--success { color: var(--rfs-color-success); }
+.rfs-challenge__outcome--fail    { color: var(--rfs-color-failure); }
+.rfs-challenge__outcome--pending { color: var(--rfs-color-text-muted); font-weight: normal; }
+
+.rfs-challenge__allsixes {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-allsixes);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.rfs-challenge__name-btn {
+  background: none;
+  border: none;
+  color: var(--rfs-color-accent);
+  cursor: pointer;
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-sm);
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+
+  &:hover { color: var(--rfs-color-accent-hover); }
+}
+
+.rfs-challenge__complete {
+  margin-top: var(--rfs-space-sm);
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* ── 4. Button variants ───────────────────────────────────────────────────── */
+
+/* Already in rfs-base.css: --roll, --danger, --xp, --icon, --small */
+
+.rfs-btn--primary {
+  background: var(--rfs-color-accent);
+  border-color: var(--rfs-color-accent);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--rfs-color-accent-hover);
+    border-color: var(--rfs-color-accent-hover);
+  }
+}
+
+.rfs-btn--secondary {
+  color: var(--rfs-color-text-muted);
+  border-color: var(--rfs-color-border);
+
+  &:hover:not(:disabled) {
+    color: var(--rfs-color-text);
+    background: var(--rfs-color-bg-panel);
+  }
+}
+
+.rfs-btn--active {
+  background: var(--rfs-color-accent);
+  border-color: var(--rfs-color-accent);
+  color: #fff;
+}
+
+.rfs-btn--spend-xp {
+  background: var(--rfs-color-xp);
+  border-color: var(--rfs-color-xp);
+  color: #fff;
+  width: 100%;
+
+  &:hover:not(:disabled) { filter: brightness(1.15); }
+}
+
+.rfs-btn--advancement {
+  background: var(--rfs-color-allsixes-bg);
+  border-color: var(--rfs-color-allsixes);
+  color: var(--rfs-color-allsixes);
+  width: 100%;
+  font-weight: bold;
+
+  &:hover:not(:disabled) {
+    background: var(--rfs-color-allsixes);
+    color: #fff;
+  }
+}
+
+/* ── 5. Challenge player dialog ───────────────────────────────────────────── */
+
+.rfs-cpd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-md);
+  padding: var(--rfs-space-sm);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+}
+
+.rfs-cpd__prompt {
+  font-style: italic;
+  color: var(--rfs-color-text-muted);
+}
+
+.rfs-cpd__dc {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-accent);
+  font-family: var(--rfs-font-mono);
+}
+
+.rfs-cpd__skill-row {
+  display: flex;
+  gap: var(--rfs-space-sm);
+  align-items: center;
+}
+
+.rfs-cpd__skill-select {
+  flex: 1;
+  background: var(--rfs-color-bg-input);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
+}
+
+.rfs-cpd__waiting,
+.rfs-cpd__rolling {
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+  font-size: var(--rfs-font-size-sm);
+  text-align: center;
+  padding: var(--rfs-space-sm);
+}
+
+.rfs-cpd__dice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-cpd__total {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  color: var(--rfs-color-text);
+}
+
+.rfs-cpd__outcome {
+  font-size: var(--rfs-font-size-md);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  border-radius: var(--rfs-radius-sm);
+  border-left: 3px solid transparent;
+}
+
+.rfs-cpd__outcome--success {
+  color: var(--rfs-color-success);
+  background: var(--rfs-color-success-bg);
+  border-left-color: var(--rfs-color-success);
+}
+
+.rfs-cpd__outcome--fail {
+  color: var(--rfs-color-failure);
+  background: var(--rfs-color-failure-bg);
+  border-left-color: var(--rfs-color-failure);
+}
+
+.rfs-cpd__cant-afford {
+  color: var(--rfs-color-failure);
+  font-size: var(--rfs-font-size-sm);
+}
+
+.rfs-cpd__advancement-prompt {
+  color: var(--rfs-color-text-muted);
+  font-size: var(--rfs-font-size-sm);
+  font-style: italic;
+  margin-bottom: var(--rfs-space-xs);
+}
+
+.rfs-cpd__name-row {
+  display: flex;
+  gap: var(--rfs-space-sm);
+  align-items: center;
+}
+
+.rfs-cpd__skill-name-input {
+  flex: 1;
+  background: var(--rfs-color-bg-input);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
+}
+
+.rfs-cpd__done-note {
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+  font-size: var(--rfs-font-size-sm);
+  text-align: center;
+}
+
+/* ── 6. Challenge GM dialog ───────────────────────────────────────────────── */
+
+.rfs-challenge-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-md);
+  padding: var(--rfs-space-sm);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+}
+
+.rfs-challenge-dialog__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-xs);
+
+  &--inline {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.rfs-challenge-dialog__label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rfs-challenge-dialog__prompt-input {
+  background: var(--rfs-color-bg-input);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  width: 100%;
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
+}
+
+.rfs-challenge-dialog__dc-toggle {
+  display: flex;
+  gap: var(--rfs-space-xs);
+}
+
+.rfs-challenge-dialog__field {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+
+  label { color: var(--rfs-color-text-muted); font-size: var(--rfs-font-size-sm); }
+
+  input {
+    background: var(--rfs-color-bg-input);
+    border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+    border-radius: var(--rfs-radius-sm);
+    color: var(--rfs-color-text);
+    font-family: var(--rfs-font-mono);
+    padding: var(--rfs-space-xs) var(--rfs-space-sm);
+    text-align: center;
+
+    &:focus { outline: none; border-color: var(--rfs-color-accent); }
+  }
+}
+
+.rfs-challenge-dialog__token-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rfs-challenge-dialog__token {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  background: var(--rfs-color-bg-panel);
+  border-radius: var(--rfs-radius-sm);
+}
+
+.rfs-challenge-dialog__token-name {
+  font-size: var(--rfs-font-size-md);
+}
+
+.rfs-challenge-dialog__empty {
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+  font-size: var(--rfs-font-size-sm);
+}
+
+.rfs-challenge-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--rfs-space-sm);
+  padding-top: var(--rfs-space-sm);
+  border-top: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+}
