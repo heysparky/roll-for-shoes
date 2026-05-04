@@ -20,7 +20,7 @@ To develop, copy/symlink the repo into your Foundry `Data/systems/roll-for-shoes
 
 `roll-for-shoes.mjs` wires together all Foundry hooks:
 - `init`: registers sheets, settings, document classes
-- `ready`: applies theme
+- `ready`: socket listener (`system.roll-for-shoes`) — handles `openChallengeDialog`, `recordChallengeRoll`, `claimAdvancement`
 - `preCreateActor`: sets prototype token linking
 - `renderChatMessageHTML`: **all** interactive chat card button wiring
 
@@ -28,13 +28,15 @@ To develop, copy/symlink the repo into your Foundry `Data/systems/roll-for-shoes
 
 ```
 src/
-├── data/actor-data.mjs        TypeDataModel schemas (CharacterData, NpcData)
-├── documents/actor.mjs        RfsActor — skill helpers, addXp, getRollData
-├── dialogs/challenge-dialog.mjs  GM challenge UI → posts challenge card + widgets
-├── sheets/character-sheet.mjs    ActorSheetV2 with skill tree, XP, statuses
-├── sheets/npc-sheet.mjs          NPC sheet (fixed or full mode)
-├── hud/token-hud.mjs             Shoe button → opens challenge dialog
-├── rolls/skill-roll.mjs          Core roll logic — handles all roll types (~25KB)
+├── data/actor-data.mjs               TypeDataModel schemas (CharacterData, NpcData)
+├── documents/actor.mjs               RfsActor — skill helpers, addXp, getRollData
+├── dialogs/
+│   ├── challenge-dialog.mjs          GM challenge UI → posts challenge card, emits socket
+│   └── challenge-player-dialog.mjs   Player popup — skill pick → roll → XP spend | advancement → done
+├── sheets/character-sheet.mjs        ActorSheetV2 with skill tree, XP, statuses
+├── sheets/npc-sheet.mjs              NPC sheet (fixed or full mode)
+├── hud/token-hud.mjs                 Shoe button → opens challenge dialog
+├── rolls/skill-roll.mjs              Core roll logic — all roll types; returns result object
 └── helpers/
     ├── config.mjs              RFS constants, DC scale, themes, NPC modes
     ├── settings.mjs            Foundry settings + activeChallenge state machine
@@ -47,7 +49,7 @@ src/
 
 **Challenge State Machine**: The single source of truth for an active challenge is `game.settings.get("roll-for-shoes", "activeChallenge")`. The challenge card is always rebuilt from scratch via `rebuildChallengeCard(challenge)` — never read state from HTML or use regex on message content.
 
-**Button Wiring via `renderChatMessageHTML`**: Every interactive button uses a `[data-action]` attribute and is wired in the `renderChatMessageHTML` hook. Key actions: `rfsWidgetRoll`, `rfsClaimFromWidget`, `rfsWidgetSpendXp`, `rfsClaimAdvancement`, `rfsSpendXp`.
+**Button Wiring via `renderChatMessageHTML`**: Every interactive button uses a `[data-action]` attribute and is wired in the `renderChatMessageHTML` hook. Active actions: `rfsOpenChallengeDialog` (opens player popup), `rfsClaimAdvancement` (standalone roll), `rfsSpendXp` (standalone roll). Challenge player actions (`rfsDialogRoll`, `rfsDialogSpendXp`, `rfsDialogClaim`, `rfsDialogDismiss`) live in `RfsChallengePlayerDialog.DEFAULT_OPTIONS.actions`.
 
 **Foundry v14 Sheet Pattern**: Sheets use `HandlebarsApplicationMixin(ActorSheetV2)` with `DEFAULT_OPTIONS`, `PARTS`, `_prepareContext()`, and `submitOnChange: true` for auto-save.
 
@@ -73,7 +75,9 @@ All CSS values use custom properties from `styles/rfs-base.css` — no hardcoded
 
 ## Current Development State
 
-Core mechanics are complete and table-tested. Remaining work:
-1. CSS/visual polish for chat cards and sheets
-2. Visual skill tree with CSS tree lines and animations
-3. Advancement prompt text branching (natural all-sixes vs. XP-purchased) — see TODOs in `src/rolls/skill-roll.mjs`
+Core mechanics and challenge UX are complete and table-tested. Remaining work:
+1. CSS/visual polish — chat cards, challenge card table, player popup, sheets
+2. Visual skill tree — CSS tree lines and animations on the character sheet
+3. Advancement prompt text branching — natural all-sixes vs. XP-purchased flavour text
+
+**Socket pattern** (important): world-scoped settings can only be written by GMs. Player clients must emit socket events and let the GM-side listener call `game.settings.set()`. The three socket message types are `openChallengeDialog` (GM → players), `recordChallengeRoll` (player → GM), `claimAdvancement` (player → GM). `"socket": true` must be in `system.json` and requires a full world reload (not just browser refresh) to take effect.

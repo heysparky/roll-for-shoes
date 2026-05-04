@@ -14,14 +14,15 @@
 10. **Challenge flow** — full redesign (see RFS-Architecture.md for full detail)
     - GM shoe button → Challenge Dialog (prompt, DC mode, DC visibility toggle, token list)
     - Shared Challenge Card posts to public chat; live-updating table, one row per token
-    - Whispered Roll Widget posts to each called player (skill dropdown, Roll button)
-    - Player rolls → widget crystallises to "Roll sent" → challenge card row updates
-    - All-sixes → whispered Advancement Widget (type skill name inline, Enter or Claim)
-    - Failed with non-sixes → whispered XP Spend Widget (shows cost, one Spend button)
-    - XP spend → widget crystallises → Advancement Widget posts
-    - Advancement claimed → widget crystallises → challenge card row shows new skill name
-    - All whisper cards crystallise in place when done — never deleted (queue stability)
+    - GM posts → socket emits to called players → `RfsChallengePlayerDialog` popup auto-opens
+    - Popup handles full player flow: skill pick → roll → XP spend | advancement → done
+    - Player name cells on challenge card are buttons — re-open popup if closed early
+    - Roll results recorded via socket (player → GM) so world settings write is always GM-side
+    - All-sixes in popup → advancement step (inline name input, Enter or Claim)
+    - Failure with non-sixes → XP spend step (shows cost, one Spend button → advancement)
+    - Advancement claimed via socket → GM updates settings + rebuilds challenge card row
     - Challenge auto-completes when all tokens have rolled; times out after 3 minutes
+    - No per-player whisper cards — popup is the only player-side surface
 
 ---
 
@@ -41,19 +42,21 @@ The core rules loop is complete and tested at the table. All mechanical systems 
 ### Working
 - Character sheet: name, skills (editable, tree structure), XP, statuses
 - Skill rolls from sheet: posts result card, XP on failure, all-sixes claim
-- Challenge flow end-to-end: GM calls roll, players roll via widget, results land on shared card, advancement and XP spend flow through whisper cards
+- Challenge flow end-to-end: GM calls roll, players roll via popup dialog, results land on shared card, advancement and XP spend handled in popup
 - Opposed rolls, difficulty thresholds, status math
 
 ### Known Gaps
 - Visual design is plain — all chat cards and sheets are functional but unstyled. CSS pass is the next priority.
-- Advancement prompt text is the same for natural all-sixes and XP-purchased advancement. Needs distinct copy (TODO in code).
+- Advancement prompt text is the same for natural all-sixes and XP-purchased advancement. Needs distinct copy.
 - Skill tree is a flat list on the sheet. Visual tree with connecting lines is planned but not started.
 
-### Architecture Decisions Made This Session
-- Whisper cards crystallise in place rather than being deleted (queue stability)
-- Challenge state lives in settings, not in card HTML (single source of truth)
-- Advancement happens via inline whisper widget, not a dialog or button on the shared challenge card
-- Player roll widget is a whispered chat message, not a floating dialog — easy to pivot if this proves problematic at the table
+### Architecture Decisions
+- Challenge state lives in `game.settings` (world-scoped), never in card HTML — single source of truth
+- Challenge card is rebuilt from scratch on every update via `rebuildChallengeCard()` — no HTML patching
+- All player-side challenge interaction lives in `RfsChallengePlayerDialog` (ApplicationV2 popup), not chat cards
+- World-setting writes are GM-only; player clients delegate via socket events (`recordChallengeRoll`, `claimAdvancement`)
+- Popup is tracked in a static `Map<tokenId, dialog>` — duplicate opens bring the existing dialog to front
+- All Unicode symbols in JS/HBS source use HTML entities (&#x2726; etc.) — prevents Edit tool match failures
 
 ---
 
