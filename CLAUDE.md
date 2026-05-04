@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Non-Negotiables
+
+- If a Foundry API pattern isn't in the reference files, search before writing — not after
+- If a call can't be verified, flag it explicitly rather than guessing
+- Always write a descriptive commit message
+
 ## Project Overview
 
 Roll for Shoes is a **Foundry VTT v14 game system** — a pure JavaScript/Handlebars/CSS project with no build step, no package.json, and no external dependencies. Files are loaded directly by Foundry. There are no compile, test, or lint commands.
