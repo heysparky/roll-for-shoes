@@ -220,19 +220,9 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
   }
 
   /* -------------------------------------------- */
-  /*  Player Roll Widget                          */
+  /*  Player Roll Widget (unused — kept for ref)  */
   /* -------------------------------------------- */
 
-  /**
-   * Post a whispered roll widget for a single token/player.
-   * The widget shows the situation prompt, optionally the DC,
-   * a skill dropdown, and a big roll button.
-   *
-   * The widget is whispered to the player who owns this token's actor.
-   * If ownership can't be determined, it's whispered to all players.
-   *
-   * @param {object} opts
-   */
   static async _postPlayerWidget({ token, challengeId, challengeCardId, dc, dcVisible, prompt }) {
     // Find the actor linked to this token
     const actor = token.actor ?? game.actors.get(token.document?.actorId);
