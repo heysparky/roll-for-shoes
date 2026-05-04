@@ -20,7 +20,7 @@
  *   Success/failure against DC is never affected by XP spend.
  */
 
-import { getActiveChallenge, recordChallengeRoll } from "../helpers/settings.mjs";
+import { getActiveChallenge } from "../helpers/settings.mjs";
 
 export class RfsSkillRoll {
 
@@ -408,10 +408,15 @@ export class RfsSkillRoll {
       },
     });
 
-    // Record result — rebuilds the challenge card row automatically.
-    // Prefer tokenId from widget flags (reliable); fall back to canvas lookup.
+    // Ask the GM to record the result — world settings are GM-only writes.
     const tokenId = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
-    if (tokenId) await recordChallengeRoll(tokenId, rollResult);
+    if (tokenId) {
+      game.socket.emit("system.roll-for-shoes", {
+        type:       "recordChallengeRoll",
+        tokenId,
+        rollResult,
+      });
+    }
 
     // Personal whisper cards — challenge card stays clean, no buttons there
     if (allSixes) {

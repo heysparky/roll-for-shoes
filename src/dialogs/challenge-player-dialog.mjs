@@ -15,7 +15,7 @@
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-import { getActiveChallenge, rebuildChallengeCard } from "../helpers/settings.mjs";
+import { getActiveChallenge } from "../helpers/settings.mjs";
 import { RfsSkillRoll } from "../rolls/skill-roll.mjs";
 
 export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -288,22 +288,13 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
     await actor.addSkill(name, this._skillId);
     this._claimedSkillName = name;
 
-    // Update the challenge card row to show the claimed skill name
-    const challenge = getActiveChallenge();
-    if (challenge?.results?.[this._tokenId]) {
-      const updatedResults = {
-        ...challenge.results,
-        [this._tokenId]: {
-          ...challenge.results[this._tokenId],
-          skillClaimed:       true,
-          claimedSkillName:   name,
-          advancementPending: false,
-        },
-      };
-      const updated = { ...challenge, results: updatedResults };
-      await game.settings.set("roll-for-shoes", "activeChallenge", updated);
-      await rebuildChallengeCard(updated);
-    }
+    // Ask the GM to update the challenge card — world settings are GM-only writes.
+    game.socket.emit("system.roll-for-shoes", {
+      type:         "claimAdvancement",
+      tokenId:      this._tokenId,
+      challengeId:  this._challengeId,
+      newSkillName: name,
+    });
 
     this._step = "done";
     await this.render();

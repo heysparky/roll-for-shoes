@@ -10,7 +10,7 @@ import { RfsCharacterSheet } from "./src/sheets/character-sheet.mjs";
 import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
 import { RfsTokenHUD } from "./src/hud/token-hud.mjs";
 import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
-import { registerSystemSettings } from "./src/helpers/settings.mjs";
+import { registerSystemSettings, getActiveChallenge, recordChallengeRoll, rebuildChallengeCard } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
 import { RfsSkillRoll } from "./src/rolls/skill-roll.mjs";
 import { RfsChallengePlayerDialog } from "./src/dialogs/challenge-player-dialog.mjs";
@@ -63,14 +63,44 @@ Hooks.once("init", function () {
 Hooks.once("ready", function () {
   console.log("RFS | Roll for Shoes is ready.");
 
-  game.socket.on("system.roll-for-shoes", (data) => {
-    if (data.type !== "openChallengeDialog") return;
-    if (game.user.isGM) return;
+  game.socket.on("system.roll-for-shoes", async (data) => {
+    switch (data.type) {
 
-    for (const { tokenId, actorId } of data.tokens) {
-      const actor = game.actors.get(actorId);
-      if (actor?.testUserPermission(game.user, "OWNER")) {
-        RfsChallengePlayerDialog.open(tokenId, actorId, data.challengeId);
+      // ── Players receive: auto-open their challenge popup ────────────────
+      case "openChallengeDialog":
+        if (game.user.isGM) break;
+        for (const { tokenId, actorId } of data.tokens) {
+          const actor = game.actors.get(actorId);
+          if (actor?.testUserPermission(game.user, "OWNER")) {
+            RfsChallengePlayerDialog.open(tokenId, actorId, data.challengeId);
+            break;
+          }
+        }
+        break;
+
+      // ── GM receives: record a player's roll result in world settings ────
+      case "recordChallengeRoll":
+        if (!game.user.isGM) break;
+        await recordChallengeRoll(data.tokenId, data.rollResult);
+        break;
+
+      // ── GM receives: mark a skill as claimed on the challenge card ──────
+      case "claimAdvancement": {
+        if (!game.user.isGM) break;
+        const challenge = getActiveChallenge();
+        if (!challenge?.results?.[data.tokenId]) break;
+        const updatedResults = {
+          ...challenge.results,
+          [data.tokenId]: {
+            ...challenge.results[data.tokenId],
+            skillClaimed:       true,
+            claimedSkillName:   data.newSkillName,
+            advancementPending: false,
+          },
+        };
+        const updated = { ...challenge, results: updatedResults };
+        await game.settings.set("roll-for-shoes", "activeChallenge", updated);
+        await rebuildChallengeCard(updated);
         break;
       }
     }
