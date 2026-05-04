@@ -58,6 +58,13 @@
         "ValueLabel": "Modifier (negative = penalty)",
         "Confirm": "Add"
       },
+      "ChallengePlayer": {
+        "Title": "Challenge",
+        "WaitingRoll": "Waiting for {name} to roll…",
+        "WaitingAdvancement": "Waiting for {name} to name their new skill…",
+        "RollComplete": "Roll complete.",
+        "Close": "Close"
+      },
       "Challenge": {
         "Title": "Call for Roll",
         "DcModeRoll": "Roll for DC",
@@ -103,7 +110,8 @@
       "ChooseSkill": "Choose your skill",
       "SelectSkill": "select a skill",
       "RollButton": "Roll!",
-      "AlreadyRolled": "Already rolled"
+      "AlreadyRolled": "Already rolled",
+      "RollSent": "Roll sent"
     },
     "Chat": {
       "SkillRoll": "rolls {skillName} ({level}d6)",

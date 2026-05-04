@@ -13,6 +13,7 @@ import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/hel
 import { registerSystemSettings } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
 import { RfsSkillRoll } from "./src/rolls/skill-roll.mjs";
+import { RfsChallengePlayerDialog } from "./src/dialogs/challenge-player-dialog.mjs";
 
 /* -------------------------------------------- */
 /*  Init Hook                                   */
@@ -24,6 +25,7 @@ Hooks.once("init", function () {
   game.rfs = {
     RfsActor,
     RfsSkillRoll,
+    RfsChallengePlayerDialog,
     config: RFS,
   };
 
@@ -60,6 +62,19 @@ Hooks.once("init", function () {
 
 Hooks.once("ready", function () {
   console.log("RFS | Roll for Shoes is ready.");
+
+  game.socket.on("system.roll-for-shoes", (data) => {
+    if (data.type !== "openChallengeDialog") return;
+    if (game.user.isGM) return;
+
+    for (const { tokenId, actorId } of data.tokens) {
+      const actor = game.actors.get(actorId);
+      if (actor?.testUserPermission(game.user, "OWNER")) {
+        RfsChallengePlayerDialog.open(tokenId, actorId, data.challengeId);
+        break;
+      }
+    }
+  });
 });
 
 /* -------------------------------------------- */
@@ -87,6 +102,14 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
  *   standalone card    → rfsSpendXp          (standalone XP spend)
  */
 Hooks.on("renderChatMessageHTML", (message, html) => {
+
+  // ── Challenge Card: open player popup ─────────────────────────────────────
+  html.querySelectorAll("[data-action='rfsOpenChallengeDialog']").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const { tokenId, actorId, challengeId } = btn.dataset;
+      RfsChallengePlayerDialog.open(tokenId, actorId, challengeId);
+    });
+  });
 
   // ── Standalone: Claim Skill (opens dialog) ─────────────────────────────────
   html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {

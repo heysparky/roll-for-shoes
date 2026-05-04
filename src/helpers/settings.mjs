@@ -213,9 +213,15 @@ export function buildChallengeCardContent(challenge) {
           : `<em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em>`
       }</div>` : "";
 
+    const nameBtn = `<button type="button" class="rfs-challenge__name-btn"
+        data-action="rfsOpenChallengeDialog"
+        data-token-id="${tokenId}"
+        data-actor-id="${result.actorId}"
+        data-challenge-id="${challenge.challengeId}">${result.actorName}</button>`;
+
     return `
       <tr class="rfs-challenge__row rfs-challenge__row--done">
-        <td class="rfs-challenge__name">${result.actorName}</td>
+        <td class="rfs-challenge__name">${nameBtn}</td>
         <td class="rfs-challenge__skill">${result.skillName} (${"\u25cf".repeat(result.skillLevel)})</td>
         <td class="rfs-challenge__dice">${diceHtml}</td>
         <td class="rfs-challenge__outcome ${outcomeClass}">
@@ -230,11 +236,20 @@ export function buildChallengeCardContent(challenge) {
   const pendingRows = tokenIds
     .filter(id => !results[id])
     .map(id => {
-      const token = canvas.tokens?.get(id);
-      const name  = token?.name ?? game.i18n.localize("RFS.Chat.Challenge.UnknownToken");
+      const token   = canvas.tokens?.get(id);
+      const actor   = token?.actor;
+      const name    = token?.name ?? game.i18n.localize("RFS.Chat.Challenge.UnknownToken");
+      const actorId = actor?.id ?? "";
+
+      const nameBtn = `<button type="button" class="rfs-challenge__name-btn"
+          data-action="rfsOpenChallengeDialog"
+          data-token-id="${id}"
+          data-actor-id="${actorId}"
+          data-challenge-id="${challenge.challengeId}">${name}</button>`;
+
       return `
         <tr class="rfs-challenge__row rfs-challenge__row--pending">
-          <td class="rfs-challenge__name">${name}</td>
+          <td class="rfs-challenge__name">${nameBtn}</td>
           <td class="rfs-challenge__skill">—</td>
           <td class="rfs-challenge__dice">—</td>
           <td class="rfs-challenge__outcome rfs-challenge__outcome--pending">

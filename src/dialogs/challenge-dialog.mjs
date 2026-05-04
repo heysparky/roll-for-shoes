@@ -208,20 +208,15 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     // ── 3. Store the active challenge ────────────────────────────────────
     await setActiveChallenge(challengeState);
 
-    // ── 4. Whisper a roll widget to each called player ───────────────────
-    // We match tokens to users by looking for a player who has that token's
-    // actor as their character. If no match, widget goes to all players
-    // (edge case: GM-owned tokens, unlinked tokens, etc.).
-    for (const token of tokens) {
-      await RfsChallengeDialog._postPlayerWidget({
-        token,
-        challengeId,
-        challengeCardId: challengeCard.id,
-        dc:        finalDc,
-        dcVisible,
-        prompt,
-      });
-    }
+    // ── 4. Notify called players via socket — opens popup on their client ─
+    game.socket.emit("system.roll-for-shoes", {
+      type:        "openChallengeDialog",
+      challengeId,
+      dc:          finalDc,
+      dcVisible,
+      prompt,
+      tokens:      tokens.map(t => ({ tokenId: t.id, actorId: t.actor?.id ?? "" })),
+    });
   }
 
   /* -------------------------------------------- */

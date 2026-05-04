@@ -32,7 +32,7 @@
   "bugs": "https://github.com/heysparky/roll-for-shoes/issues",
   "changelog": "CHANGELOG.md",
   "license": "LICENSE",
-  "socket": false,
+  "socket": true,
   "packs": [],
   "packFolders": []
 }

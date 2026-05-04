@@ -55,6 +55,8 @@ export class RfsSkillRoll {
     }
 
     if (failed) await actor.addXp(1);
+
+    return { dice, allSixes, failed, nonSixCount: dice.filter(d => d !== 6).length, total, rawTotal, modifier };
   }
 
   /**

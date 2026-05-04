@@ -1,0 +1,119 @@
+<div class="rfs-cpd">
+
+  {{!-- Challenge context: always visible --}}
+  <div class="rfs-cpd__context">
+    <div class="rfs-cpd__prompt">{{prompt}}</div>
+    {{#if dcVisible}}
+      <div class="rfs-cpd__dc">{{localize "RFS.Chat.Challenge.DcValue" dc=dc}}</div>
+    {{/if}}
+  </div>
+
+  {{!-- Step: pick-skill --}}
+  {{#if isPickSkill}}
+    {{#if canInteract}}
+      <div class="rfs-cpd__skill-row">
+        <select class="rfs-cpd__skill-select" name="skillId">
+          <option value="" disabled selected>— {{localize "RFS.Widget.SelectSkill"}} —</option>
+          {{#each skills}}
+            <option value="{{id}}">{{name}} ({{level}}d6)</option>
+          {{/each}}
+        </select>
+        <button type="button"
+                data-action="rfsDialogRoll"
+                class="rfs-btn rfs-btn--roll"
+                disabled>
+          🎲 {{localize "RFS.Widget.RollButton"}}
+        </button>
+      </div>
+    {{else}}
+      <p class="rfs-cpd__waiting">
+        {{localize "RFS.Dialog.ChallengePlayer.WaitingRoll" name=actorName}}
+      </p>
+    {{/if}}
+  {{/if}}
+
+  {{!-- Step: rolling --}}
+  {{#if isRolling}}
+    <p class="rfs-cpd__rolling">Rolling…</p>
+  {{/if}}
+
+  {{!-- Roll result: shown once we have a result --}}
+  {{#if showResult}}
+    <div class="rfs-cpd__result">
+      <div class="rfs-cpd__dice-row">{{{diceHtml}}}</div>
+      <div class="rfs-cpd__total">{{rollResult.total}}</div>
+      {{#if rollResult.failed}}
+        <div class="rfs-cpd__outcome rfs-cpd__outcome--fail">
+          ✘ {{localize "RFS.Chat.Failure"}} — +1 XP
+        </div>
+      {{else}}
+        <div class="rfs-cpd__outcome rfs-cpd__outcome--success">
+          ✔ {{localize "RFS.Chat.Success"}}
+        </div>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  {{!-- Step: xp-spend --}}
+  {{#if isXpSpend}}
+    <div class="rfs-cpd__xpspend">
+      {{#if canInteract}}
+        {{#if canAffordXp}}
+          <button type="button"
+                  data-action="rfsDialogSpendXp"
+                  class="rfs-btn rfs-btn--spend-xp">
+            {{localize "RFS.Chat.SpendXp" cost=xpCost}}
+          </button>
+        {{else}}
+          <p class="rfs-cpd__cant-afford">
+            {{localize "RFS.Warn.NotEnoughXp" cost=xpCost xp=currentXp}}
+          </p>
+        {{/if}}
+      {{/if}}
+      <button type="button"
+              data-action="rfsDialogDismiss"
+              class="rfs-btn rfs-btn--secondary">
+        {{localize "RFS.Dialog.ChallengePlayer.Close"}}
+      </button>
+    </div>
+  {{/if}}
+
+  {{!-- Step: advancement --}}
+  {{#if isAdvancement}}
+    <div class="rfs-cpd__advancement">
+      <p class="rfs-cpd__advancement-prompt">{{newSkillPrompt}}</p>
+      {{#if canInteract}}
+        <div class="rfs-cpd__name-row">
+          <input type="text"
+                 name="newSkillName"
+                 class="rfs-cpd__skill-name-input"
+                 placeholder="{{localize "RFS.Dialog.NewSkill.Placeholder"}}"
+                 maxlength="60">
+          <button type="button"
+                  data-action="rfsDialogClaim"
+                  class="rfs-btn rfs-btn--primary"
+                  disabled>
+            ✦ {{localize "RFS.Dialog.Advancement.Confirm"}}
+          </button>
+        </div>
+      {{else}}
+        <p class="rfs-cpd__waiting">
+          {{localize "RFS.Dialog.ChallengePlayer.WaitingAdvancement" name=actorName}}
+        </p>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  {{!-- Step: done --}}
+  {{#if isDone}}
+    <div class="rfs-cpd__done">
+      <p class="rfs-cpd__done-note">{{doneNote}}</p>
+      <button type="button"
+              data-action="rfsDialogDismiss"
+              class="rfs-btn rfs-btn--secondary">
+        {{localize "RFS.Dialog.ChallengePlayer.Close"}}
+      </button>
+    </div>
+  {{/if}}
+
+</div>
