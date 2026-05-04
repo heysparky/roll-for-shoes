@@ -245,7 +245,7 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     const skillOptions = skills
       .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
       .map(s => {
-        const pips = "●".repeat(s.level);
+        const pips = "&#x25cf;".repeat(s.level);
         return `<option value="${s.id}" data-level="${s.level}">${pips} ${s.name} (${s.level}d6)</option>`;
       })
       .join("");

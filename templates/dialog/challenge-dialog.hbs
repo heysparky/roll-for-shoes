@@ -37,12 +37,12 @@
       <button type="button"
               class="rfs-btn {{#if isRollMode}}rfs-btn--active{{/if}}"
               data-action="toggleDcMode">
-        {{#if isRollMode}}✦ {{/if}}{{localize "RFS.Dialog.Challenge.DcModeRoll"}}
+        {{#if isRollMode}}&#x2726; {{/if}}{{localize "RFS.Dialog.Challenge.DcModeRoll"}}
       </button>
       <button type="button"
               class="rfs-btn {{#if isStaticMode}}rfs-btn--active{{/if}}"
               data-action="toggleDcMode">
-        {{#if isStaticMode}}✦ {{/if}}{{localize "RFS.Dialog.Challenge.DcModeStatic"}}
+        {{#if isStaticMode}}&#x2726; {{/if}}{{localize "RFS.Dialog.Challenge.DcModeStatic"}}
       </button>
     </div>
 
@@ -104,7 +104,7 @@
                     data-action="removeToken"
                     data-token-id="{{this.id}}"
                     title="Remove">
-              ✕
+              &#x2715;
             </button>
           </li>
         {{/each}}

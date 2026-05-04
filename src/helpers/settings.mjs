@@ -207,7 +207,7 @@ export function buildChallengeCardContent(challenge) {
     // The Claim Skill action happens on the player's personal advancement widget card.
     // Once claimed, show the new skill name in place of the pending note.
     const allSixesHtml = result.allSixes ? `
-      <div class="rfs-challenge__allsixes">✦ ${
+      <div class="rfs-challenge__allsixes">&#x2726; ${
         result.skillClaimed
           ? result.claimedSkillName ?? ""
           : `<em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em>`
@@ -222,7 +222,7 @@ export function buildChallengeCardContent(challenge) {
     return `
       <tr class="rfs-challenge__row rfs-challenge__row--done">
         <td class="rfs-challenge__name">${nameBtn}</td>
-        <td class="rfs-challenge__skill">${result.skillName} (${"\u25cf".repeat(result.skillLevel)})</td>
+        <td class="rfs-challenge__skill">${result.skillName} (${"&#x25cf;".repeat(result.skillLevel)})</td>
         <td class="rfs-challenge__dice">${diceHtml}</td>
         <td class="rfs-challenge__outcome ${outcomeClass}">
           ${outcomeText}

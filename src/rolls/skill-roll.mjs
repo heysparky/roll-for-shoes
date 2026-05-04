@@ -4,9 +4,9 @@
  * Core roll logic for Roll for Shoes.
  *
  * CARD ARCHITECTURE:
- *   Challenge roll  → result row on the shared challenge card (no orphan card)
- *                   → player popup handles advancement / XP spend (via socket)
- *   Standalone roll → posts its own result card with inline XP spend / claim
+ *   Challenge roll  -> result row on the shared challenge card (no orphan card)
+ *                   -> player popup handles advancement / XP spend (via socket)
+ *   Standalone roll -> posts its own result card with inline XP spend / claim
  *
  * XP SPEND RULE:
  *   Cost = count of non-six dice. Checked at click time against live XP.
@@ -183,7 +183,7 @@ export class RfsSkillRoll {
           <span class="rfs-roll__skill">${skillA.name} (${skillA.level}d6)</span>
           <span class="rfs-roll__dice">[${diceA.join(", ")}]</span>
           <span class="rfs-roll__total">${RfsSkillRoll._modifierString(rollA.total, modA)} = <strong>${totalA}</strong></span>
-          ${allSixesA ? `<span class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
+          ${allSixesA ? `<span class="rfs-roll__allsixes">&#x2726; ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
           ${allSixesA ? RfsSkillRoll._advancementButton(actorA, skillA) : ""}
         </div>
         <div class="rfs-roll__row">
@@ -191,7 +191,7 @@ export class RfsSkillRoll {
           <span class="rfs-roll__skill">${skillB.name} (${skillB.level}d6)</span>
           <span class="rfs-roll__dice">[${diceB.join(", ")}]</span>
           <span class="rfs-roll__total">${RfsSkillRoll._modifierString(rollB.total, modB)} = <strong>${totalB}</strong></span>
-          ${allSixesB ? `<span class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
+          ${allSixesB ? `<span class="rfs-roll__allsixes">&#x2726; ${game.i18n.localize("RFS.Chat.AllSixes")}</span>` : ""}
           ${allSixesB ? RfsSkillRoll._advancementButton(actorB, skillB) : ""}
         </div>
         <div class="rfs-roll__result">
@@ -253,7 +253,7 @@ export class RfsSkillRoll {
       },
     });
 
-    // Ask the GM to record the result — world settings are GM-only writes.
+    // Ask the GM to record the result -- world settings are GM-only writes.
     const tokenId = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
     if (tokenId) {
       game.socket.emit("system.roll-for-shoes", {
@@ -355,16 +355,16 @@ export class RfsSkillRoll {
     const flavor = `${actorName}: ${skill.name} (${skill.level}d6)`;
 
     const resultLine = failed
-      ? `<div class="rfs-roll__result rfs-roll__result--failure">✘ ${game.i18n.localize("RFS.Chat.Failure")} (vs ${difficulty}) — +1 XP</div>`
-      : `<div class="rfs-roll__result rfs-roll__result--success">✔ ${game.i18n.localize("RFS.Chat.Success")} (vs ${difficulty})</div>`;
+      ? `<div class="rfs-roll__result rfs-roll__result--failure">&#x2718; ${game.i18n.localize("RFS.Chat.Failure")} (vs ${difficulty}) &mdash; +1 XP</div>`
+      : `<div class="rfs-roll__result rfs-roll__result--success">&#x2714; ${game.i18n.localize("RFS.Chat.Success")} (vs ${difficulty})</div>`;
 
     let actionArea = "";
 
     if (rollData.skillClaimed) {
-      actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.SkillClaimed", { name: rollData.claimedSkillName })}</div>`;
+      actionArea = `<div class="rfs-roll__xp-note">&#x2726; ${game.i18n.format("RFS.Chat.SkillClaimed", { name: rollData.claimedSkillName })}</div>`;
     } else if (allSixes) {
       if (rollData.xpSpent) {
-        actionArea = `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.XpSpentAllSixes", { cost: rollData.xpCost })}</div>`;
+        actionArea = `<div class="rfs-roll__xp-note">&#x2726; ${game.i18n.format("RFS.Chat.XpSpentAllSixes", { cost: rollData.xpCost })}</div>`;
       }
       actionArea += RfsSkillRoll._advancementButton(
         { id: rollData.actorId },
@@ -392,7 +392,7 @@ export class RfsSkillRoll {
           ${dice.map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`).join("")}
         </div>
         <div class="rfs-roll__total">${modStr} = <strong>${total}</strong></div>
-        ${allSixes ? `<div class="rfs-roll__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</div>` : ""}
+        ${allSixes ? `<div class="rfs-roll__allsixes">&#x2726; ${game.i18n.localize("RFS.Chat.AllSixes")}</div>` : ""}
         ${actionArea}
         ${resultLine}
       </div>`;
@@ -406,13 +406,13 @@ export class RfsSkillRoll {
               data-actor-id="${actor.id}"
               data-skill-id="${skill.id}"
               data-message-id="${messageId}">
-        ✦ ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
+        &#x2726; ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
       </button>`;
   }
 
   static _modifierString(rawTotal, modifier) {
     if (modifier === 0) return `${rawTotal}`;
     if (modifier > 0)   return `${rawTotal} + ${modifier}`;
-    return `${rawTotal} − ${Math.abs(modifier)}`;
+    return `${rawTotal} &minus; ${Math.abs(modifier)}`;
   }
 }

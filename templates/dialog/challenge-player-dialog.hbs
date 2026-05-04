@@ -44,11 +44,11 @@
       <div class="rfs-cpd__total">{{rollResult.total}}</div>
       {{#if rollResult.failed}}
         <div class="rfs-cpd__outcome rfs-cpd__outcome--fail">
-          ✘ {{localize "RFS.Chat.Failure"}} — +1 XP
+          &#x2718; {{localize "RFS.Chat.Failure"}} &mdash; +1 XP
         </div>
       {{else}}
         <div class="rfs-cpd__outcome rfs-cpd__outcome--success">
-          ✔ {{localize "RFS.Chat.Success"}}
+          &#x2714; {{localize "RFS.Chat.Success"}}
         </div>
       {{/if}}
     </div>
@@ -93,7 +93,7 @@
                   data-action="rfsDialogClaim"
                   class="rfs-btn rfs-btn--primary"
                   disabled>
-            ✦ {{localize "RFS.Dialog.Advancement.Confirm"}}
+            &#x2726; {{localize "RFS.Dialog.Advancement.Confirm"}}
           </button>
         </div>
       {{else}}
