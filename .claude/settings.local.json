@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"D:\\\\Projects\\\\Roll for Shoes\\\\roll-for-shoes\" -Force)",
+      "Bash(Select-Object Name)"
+    ]
+  }
+}
