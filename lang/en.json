@@ -5,29 +5,23 @@
       "npc": "NPC"
     }
   },
-
   "RFS": {
-
     "ActorType": {
       "Character": "Character",
       "Npc": "NPC"
     },
-
     "SheetLabel": {
       "Character": "Roll for Shoes: Character Sheet",
       "Npc": "Roll for Shoes: NPC Sheet"
     },
-
     "NpcMode": {
       "Fixed": "Fixed",
       "Full": "Full Rules"
     },
-
     "Theme": {
       "DarkFactory": "Dark Factory (Steampunk)",
       "CleanLight": "Clean Light"
     },
-
     "Label": {
       "XP": "XP",
       "Skills": "Skills",
@@ -37,7 +31,6 @@
       "Description": "Description",
       "NoStatuses": "No active statuses."
     },
-
     "Action": {
       "AddSkill": "Add skill to root",
       "AddChildSkill": "Add child skill",
@@ -47,7 +40,6 @@
       "PostDifficulty": "Post Difficulty to Chat",
       "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)"
     },
-
     "Dialog": {
       "NewSkill": {
         "Title": "New Skill",
@@ -83,11 +75,9 @@
         "Cancel": "Cancel"
       }
     },
-
     "Placeholder": {
       "ActorName": "Character Name"
     },
-
     "Settings": {
       "Theme": {
         "Name": "Sheet Theme",
@@ -98,11 +88,9 @@
         "Hint": "New NPCs default to this mode. Fixed = single difficulty number. Full = complete PC skill tree."
       }
     },
-
     "HUD": {
       "CallForRoll": "Call for Roll"
     },
-
     "Warn": {
       "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
       "NoXpToSpend": "No XP to spend.",
@@ -111,14 +99,12 @@
       "NoActor": "Could not find your character. Ask your GM.",
       "NoSkill": "Could not find the selected skill."
     },
-
     "Widget": {
       "ChooseSkill": "Choose your skill",
       "SelectSkill": "select a skill",
       "RollButton": "Roll!",
       "AlreadyRolled": "Already rolled"
     },
-
     "Chat": {
       "SkillRoll": "rolls {skillName} ({level}d6)",
       "AllSixes": "✦ All sixes! Advancement opportunity!",
@@ -146,8 +132,10 @@
         "ColName": "Character",
         "ColSkill": "Skill",
         "ColDice": "Dice",
-        "ColOutcome": "Result"
-      }
+        "ColOutcome": "Result",
+        "AdvancementPending": "advancement pending…"
+      },
+      "XpSpendTitle": "Spend XP for Advancement?"
     }
   }
 }

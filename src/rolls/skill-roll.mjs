@@ -3,35 +3,13 @@
  * ============================
  * Core roll logic for Roll for Shoes.
  *
- * API:
- *
- *   RfsSkillRoll.roll(actor, skill, options)
- *     - Rolls Nd6 where N = skill.level
- *     - Applies status modifiers to the total
- *     - Detects all-sixes (advancement trigger)
- *     - On challenge: posts result to the shared challenge card via recordChallengeRoll
- *     - On non-challenge roll: posts a standalone result card (same as before)
- *     - On failure: calls actor.addXp(1)
- *
- *   RfsSkillRoll.rollFromWidget(messageId, skillId)
- *     - Called when a player clicks the big Roll button on their widget card
- *     - Looks up actor + skill from widget flags, delegates to roll()
- *     - Disables the widget after rolling so it can't be double-submitted
- *
- *   RfsSkillRoll.spendXpOnCard(messageId)
- *     - Called when player clicks "Spend XP" on a standalone result card
- *     - Only relevant for non-challenge rolls (challenge results are on the shared card)
- *
- *   RfsSkillRoll.claimAdvancement(actorId, skillId, messageId)
- *     - Opens naming dialog, adds the new child skill
- *     - Locks the card via flags + _buildRollContent
- *
  * CARD ARCHITECTURE:
- *   Challenge roll  → result updates a row on the shared challenge card (no orphan card)
+ *   Challenge roll  → result row on the shared challenge card (no orphan card)
+ *                   → advancement whisper card if all-sixes
+ *                   → XP spend whisper card if failed with non-sixes
  *   Standalone roll → posts its own result card as before
  *
- * XP SPEND RULE (per RFS rules):
- *   A player may spend XP to turn dice to 6 for advancement purposes only.
+ * XP SPEND RULE:
  *   Cost = count of non-six dice. Checked at click time against live XP.
  *   Success/failure against DC is never affected by XP spend.
  */
@@ -44,13 +22,6 @@ export class RfsSkillRoll {
   /*  Public API                                  */
   /* -------------------------------------------- */
 
-  /**
-   * Core roll. Called from the sheet (direct roll) or from rollFromWidget.
-   *
-   * @param {RfsActor} actor
-   * @param {object}   skill   - { id, name, level }
-   * @param {object}   options - { difficulty, challengeId, flavor }
-   */
   static async roll(actor, skill, options = {}) {
     const { difficulty, challengeId } = RfsSkillRoll._resolveDifficulty(actor, options);
     options = { ...options, difficulty, challengeId };
@@ -66,13 +37,11 @@ export class RfsSkillRoll {
     const failed   = total < difficulty;
 
     if (challengeId) {
-      // Challenge roll — update the shared card, no orphan card
       await RfsSkillRoll._postChallengeResult({
         actor, skill, roll, dice, rawTotal, modifier, total,
         allSixes, failed, options,
       });
     } else {
-      // Standalone roll — post its own result card
       await RfsSkillRoll._postStandaloneMessage({
         actor, skill, roll, dice, rawTotal, modifier, total,
         allSixes, failed, options,
@@ -84,11 +53,6 @@ export class RfsSkillRoll {
 
   /**
    * Called when a player clicks the Roll button on their whispered widget card.
-   * Reads actor + skill from the widget's flags, then delegates to roll().
-   * Disables the widget card after rolling so it can't be double-submitted.
-   *
-   * @param {string} messageId  - ID of the widget ChatMessage
-   * @param {string} skillId    - ID of the skill selected in the dropdown
    */
   static async rollFromWidget(messageId, skillId) {
     const message = game.messages.get(messageId);
@@ -96,8 +60,6 @@ export class RfsSkillRoll {
 
     const flags = message.flags?.["roll-for-shoes"];
     if (!flags || flags.type !== "playerWidget") return;
-
-    // Guard: already rolled from this widget
     if (flags.rolled) return;
 
     const actor = game.actors.get(flags.actorId);
@@ -112,19 +74,141 @@ export class RfsSkillRoll {
       return;
     }
 
-    // Roll first, then delete the widget — if the roll errors the widget
-    // stays in chat so the player can try again.
+    // Roll first — if it errors the widget stays so the player can retry
     await RfsSkillRoll.roll(actor, skill, {
       challengeId: flags.challengeId,
       tokenId:     flags.tokenId,
     });
 
-    // Delete the widget card — result is now on the challenge card.
+    // Delete the widget — result is now on the challenge card
     message.delete().catch(err => console.warn("RFS | Could not delete widget:", err));
   }
 
   /**
-   * Called when a player clicks "Spend XP" on a standalone result card.
+   * Called when a player clicks "Claim Skill" on their advancement widget card.
+   * xpPurchased is stored in the widget flags — used to pick prompt text.
+   */
+  static async claimFromAdvancementWidget(messageId) {
+    const message = game.messages.get(messageId);
+    if (!message) return;
+
+    const flags = message.flags?.["roll-for-shoes"];
+    if (!flags || flags.type !== "advancementWidget") return;
+    if (flags.claimed) return;
+
+    const actor = game.actors.get(flags.actorId);
+    if (!actor) return;
+    const skill = actor.getSkillById(flags.skillId);
+    if (!skill) return;
+
+    // Read the name the player typed directly from the widget input
+    // (passed in from the button click handler in roll-for-shoes.mjs)
+    // We re-read from the live DOM via the messageId — the handler passes the name.
+    // This method receives it as a second argument from the hook.
+    // See roll-for-shoes.mjs renderChatMessageHTML for the call site.
+  }
+
+  /**
+   * Finalise a skill claim. Called by the renderChatMessageHTML hook
+   * with the name the player typed. Separated so the hook can pass the
+   * input value without this method having to touch the DOM.
+   *
+   * @param {string}  messageId    - the advancement widget message ID
+   * @param {string}  newSkillName - name the player entered
+   */
+  static async finaliseAdvancement(messageId, newSkillName) {
+    const message = game.messages.get(messageId);
+    if (!message) return;
+
+    const flags = message.flags?.["roll-for-shoes"];
+    if (!flags || flags.type !== "advancementWidget") return;
+    if (flags.claimed) return;
+
+    const name = newSkillName?.trim();
+    if (!name) return;
+
+    const actor = game.actors.get(flags.actorId);
+    if (!actor) return;
+    const skill = actor.getSkillById(flags.skillId);
+    if (!skill) return;
+
+    // Add the new skill to the actor
+    await actor.addSkill(name, flags.skillId);
+
+    // Mark the widget as claimed so it can't fire again
+    await message.setFlag("roll-for-shoes", "claimed", true);
+
+    // Update the challenge card row to show the new skill name
+    if (flags.challengeId && flags.tokenId) {
+      const { getActiveChallenge, rebuildChallengeCard } = await import("../helpers/settings.mjs");
+      const challenge = getActiveChallenge();
+      if (challenge && challenge.results?.[flags.tokenId]) {
+        const updatedResults = {
+          ...challenge.results,
+          [flags.tokenId]: {
+            ...challenge.results[flags.tokenId],
+            skillClaimed:       true,
+            claimedSkillName:   name,
+            advancementPending: false,
+          },
+        };
+        const updated = { ...challenge, results: updatedResults };
+        await game.settings.set("roll-for-shoes", "activeChallenge", updated);
+        await rebuildChallengeCard(updated);
+      }
+    }
+
+    // Delete the advancement widget — it's done its job
+    message.delete().catch(err => console.warn("RFS | Could not delete advancement widget:", err));
+  }
+
+  /**
+   * Called when a player clicks "Spend XP" on their XP spend widget card.
+   * Spends XP, triggers advancement, posts an advancement widget, deletes itself.
+   */
+  static async spendXpFromWidget(messageId) {
+    const message = game.messages.get(messageId);
+    if (!message) return;
+
+    const flags = message.flags?.["roll-for-shoes"];
+    if (!flags || flags.type !== "xpSpendWidget") return;
+    if (flags.spent) return;
+
+    const actor = game.actors.get(flags.actorId);
+    if (!actor) return;
+
+    const nonSixCount = flags.nonSixCount;
+    if (actor.system.xp < nonSixCount) {
+      ui.notifications.warn(game.i18n.format("RFS.Warn.NotEnoughXp", {
+        cost: nonSixCount,
+        xp:   actor.system.xp,
+      }));
+      return;
+    }
+
+    await actor.spendXp(nonSixCount);
+
+    // Mark as spent so button can't fire twice
+    await message.setFlag("roll-for-shoes", "spent", true);
+
+    // Post the advancement widget — this spend triggers advancement
+    const skill = actor.getSkillById(flags.skillId);
+    if (skill) {
+      await RfsSkillRoll._postAdvancementWidget({
+        actor,
+        skill,
+        tokenId:     flags.tokenId,
+        challengeId: flags.challengeId,
+        xpPurchased: true,   // came from XP spend, not natural all-sixes
+      });
+    }
+
+    // Delete the XP spend widget
+    message.delete().catch(err => console.warn("RFS | Could not delete XP spend widget:", err));
+  }
+
+  /**
+   * Standalone card XP spend (non-challenge rolls). Preserved from original.
    */
   static async spendXpOnCard(messageId) {
     const message = game.messages.get(messageId);
@@ -153,11 +237,11 @@ export class RfsSkillRoll {
     const newDice  = flags.dice.map(() => 6);
     const newFlags = {
       ...flags,
-      dice:        newDice,
-      xpSpent:     true,
-      xpCost:      nonSixCount,
-      allSixes:    true,
-      nonSixCount: 0,
+      dice:         newDice,
+      xpSpent:      true,
+      xpCost:       nonSixCount,
+      allSixes:     true,
+      nonSixCount:  0,
       skillClaimed: false,
     };
 
@@ -175,8 +259,7 @@ export class RfsSkillRoll {
   }
 
   /**
-   * Called when a player clicks "Claim Skill" on any result card.
-   * Works for both challenge rows and standalone cards.
+   * Claim advancement on a standalone result card (non-challenge rolls).
    */
   static async claimAdvancement(actorId, skillId, messageId) {
     const actor = game.actors.get(actorId);
@@ -206,7 +289,6 @@ export class RfsSkillRoll {
     await actor.addSkill(name, skill.id);
 
     if (messageId) {
-      // Standalone card — lock it via flags + rebuild
       const message = game.messages.get(messageId);
       if (message) {
         const flags = message.getFlag("roll-for-shoes", "rollData");
@@ -223,27 +305,6 @@ export class RfsSkillRoll {
             content: newContent,
             flags: { "roll-for-shoes": { rollData: newFlags } },
           });
-        }
-      }
-    } else {
-      // Challenge card — update the result in settings so the card rebuilds
-      const { getActiveChallenge, rebuildChallengeCard } = await import("../helpers/settings.mjs");
-      const challenge = getActiveChallenge();
-      if (challenge) {
-        const token  = actor.getActiveTokens()?.[0];
-        const tokenId = token?.id;
-        if (tokenId && challenge.results?.[tokenId]) {
-          const updatedResults = {
-            ...challenge.results,
-            [tokenId]: {
-              ...challenge.results[tokenId],
-              skillClaimed:     true,
-              claimedSkillName: name,
-            },
-          };
-          const updated = { ...challenge, results: updatedResults };
-          await game.settings.set("roll-for-shoes", "activeChallenge", updated);
-          await rebuildChallengeCard(updated);
         }
       }
     }
@@ -311,41 +372,34 @@ export class RfsSkillRoll {
   /*  Challenge Result                            */
   /* -------------------------------------------- */
 
-  /**
-   * Handle a roll that's part of an active challenge.
-   * Records the result in settings → triggers challenge card rebuild.
-   * Also posts the Foundry dice roll to chat for dice-so-nice etc.
-   */
   static async _postChallengeResult({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
     const { challengeId } = options;
+    const nonSixCount = dice.filter(d => d !== 6).length;
 
     const rollResult = {
-      actorName:  actor.name,
-      skillName:  skill.name,
-      skillLevel: skill.level,
+      actorName:          actor.name,
+      skillName:          skill.name,
+      skillLevel:         skill.level,
       dice,
       rawTotal,
       modifier,
       total,
       allSixes,
       failed,
-      actorId:    actor.id,
-      skillId:    skill.id,
-      skillClaimed: false,
+      actorId:            actor.id,
+      skillId:            skill.id,
+      nonSixCount,
+      skillClaimed:       false,
+      advancementPending: allSixes,
     };
 
-    // Post the dice roll to chat (for Dice So Nice, roll history, etc.)
-    // Whisper to GM + the rolling player so it doesn't flood public chat
-    const rollingUser = game.users.find(u => u.character?.id === actor.id && !u.isGM);
-    const whisper = [
-      ...game.users.filter(u => u.isGM).map(u => u.id),
-      ...(rollingUser ? [rollingUser.id] : []),
-    ];
+    // Post the dice roll to chat whispered to GM + rolling player
+    const whisperTargets = RfsSkillRoll._whisperTargetsForActor(actor);
 
     await roll.toMessage({
       speaker:  ChatMessage.getSpeaker({ actor }),
       flavor:   `${actor.name}: ${skill.name} (${skill.level}d6)`,
-      whisper,
+      whisper:  whisperTargets,
       flags: {
         "roll-for-shoes": {
           type:        "challengeRoll",
@@ -355,11 +409,21 @@ export class RfsSkillRoll {
       },
     });
 
-    // Record result — this rebuilds the challenge card automatically.
-    // Prefer tokenId passed from the widget (reliable), fall back to
-    // canvas lookup (works for sheet rolls where no widget is involved).
+    // Record result — rebuilds the challenge card row automatically.
+    // Prefer tokenId from widget flags (reliable); fall back to canvas lookup.
     const tokenId = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
     if (tokenId) await recordChallengeRoll(tokenId, rollResult);
+
+    // Personal whisper cards — challenge card stays clean, no buttons there
+    if (allSixes) {
+      await RfsSkillRoll._postAdvancementWidget({
+        actor, skill, tokenId, challengeId, xpPurchased: false,
+      });
+    } else if (failed && nonSixCount > 0) {
+      await RfsSkillRoll._postXpSpendWidget({
+        actor, skill, dice, nonSixCount, tokenId, challengeId, whisperTargets,
+      });
+    }
   }
 
   /* -------------------------------------------- */
@@ -409,6 +473,145 @@ export class RfsSkillRoll {
   }
 
   /* -------------------------------------------- */
+  /*  Advancement & XP Spend Whisper Cards        */
+  /* -------------------------------------------- */
+
+  /**
+   * Post a whispered advancement card to the player who earned all sixes.
+   * The player types their new skill name here and clicks Claim.
+   * The shared challenge card has no button — this card is their personal moment.
+   *
+   * @param {object}   opts
+   * @param {RfsActor} opts.actor
+   * @param {object}   opts.skill        - { id, name, level }
+   * @param {string}   opts.tokenId
+   * @param {string}   opts.challengeId
+   * @param {boolean}  opts.xpPurchased  - true when triggered by XP spend, not natural all-sixes
+   */
+  static async _postAdvancementWidget({ actor, skill, tokenId, challengeId, xpPurchased }) {
+    const whisperTargets = RfsSkillRoll._whisperTargetsForActor(actor);
+
+    // ── Prompt text ───────────────────────────────────────────────────────────
+    // TODO: write distinct prompt copy for each advancement type.
+    //   Natural all-sixes (xpPurchased === false):
+    //     Celebratory — "All sixes! You've earned a new skill."
+    //   XP purchased  (xpPurchased === true):
+    //     Acknowledge the cost — "You push through. Name what you've learned."
+    // For now both paths use the same RFS.Dialog.Advancement.Hint text.
+    // Come back here once copy is finalised.
+    const promptText = game.i18n.format("RFS.Dialog.Advancement.Hint", {
+      skill: skill.name,
+      level: skill.level + 1,
+    });
+
+    const content = `
+      <div class="rfs-advancement-widget"
+           data-actor-id="${actor.id}"
+           data-skill-id="${skill.id}"
+           data-token-id="${tokenId ?? ""}"
+           data-challenge-id="${challengeId ?? ""}"
+           data-xp-purchased="${xpPurchased}">
+        <div class="rfs-advancement-widget__header">
+          <strong>✦ ${game.i18n.localize("RFS.Dialog.Advancement.Title")}</strong>
+        </div>
+        <div class="rfs-advancement-widget__prompt">${promptText}</div>
+        <div class="rfs-advancement-widget__input-row">
+          <input type="text"
+                 class="rfs-advancement-widget__name-input"
+                 placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+                 maxlength="60">
+          <button type="button"
+                  class="rfs-btn rfs-btn--primary rfs-advancement-widget__claim-btn"
+                  data-action="rfsClaimFromWidget"
+                  disabled>
+            ✦ ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
+          </button>
+        </div>
+      </div>`;
+
+    await ChatMessage.create({
+      content,
+      whisper: whisperTargets,
+      flags: {
+        "roll-for-shoes": {
+          type:        "advancementWidget",
+          actorId:     actor.id,
+          skillId:     skill.id,
+          tokenId:     tokenId ?? "",
+          challengeId: challengeId ?? "",
+          xpPurchased,
+          claimed:     false,
+        },
+      },
+    });
+  }
+
+  /**
+   * Post a whispered XP spend card for a failed challenge roll.
+   * Lets the player spend XP to force all-sixes and trigger advancement.
+   */
+  static async _postXpSpendWidget({ actor, skill, dice, nonSixCount, tokenId, challengeId, whisperTargets }) {
+    const liveXp    = actor.system.xp ?? 0;
+    const canAfford = liveXp >= nonSixCount;
+
+    const diceHtml = dice
+      .map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`)
+      .join("");
+
+    const content = `
+      <div class="rfs-xpspend-widget"
+           data-actor-id="${actor.id}"
+           data-skill-id="${skill.id}"
+           data-token-id="${tokenId ?? ""}"
+           data-challenge-id="${challengeId ?? ""}"
+           data-non-six-count="${nonSixCount}">
+        <div class="rfs-xpspend-widget__header">
+          <strong>${game.i18n.localize("RFS.Chat.XpSpendTitle")}</strong>
+        </div>
+        <div class="rfs-xpspend-widget__dice">${diceHtml}</div>
+        ${canAfford
+          ? `<button type="button"
+                     class="rfs-btn rfs-btn--spend-xp"
+                     data-action="rfsWidgetSpendXp">
+               🎲 ${game.i18n.format("RFS.Chat.SpendXp", { cost: nonSixCount })}
+             </button>`
+          : `<div class="rfs-xpspend-widget__cant-afford">
+               ${game.i18n.format("RFS.Warn.NotEnoughXp", { cost: nonSixCount, xp: liveXp })}
+             </div>`
+        }
+      </div>`;
+
+    await ChatMessage.create({
+      content,
+      whisper: whisperTargets,
+      flags: {
+        "roll-for-shoes": {
+          type:        "xpSpendWidget",
+          actorId:     actor.id,
+          skillId:     skill.id,
+          tokenId:     tokenId ?? "",
+          challengeId: challengeId ?? "",
+          nonSixCount,
+          spent:       false,
+        },
+      },
+    });
+  }
+
+  /**
+   * Whisper targets = GM(s) + the player who owns this actor.
+   * @param {RfsActor} actor
+   * @returns {string[]} user IDs
+   */
+  static _whisperTargetsForActor(actor) {
+    const rollingUser = game.users.find(u => u.character?.id === actor.id && !u.isGM);
+    return [
+      ...game.users.filter(u => u.isGM).map(u => u.id),
+      ...(rollingUser ? [rollingUser.id] : []),
+    ];
+  }
+
+  /* -------------------------------------------- */
   /*  Internal Helpers                            */
   /* -------------------------------------------- */
 
@@ -417,7 +620,6 @@ export class RfsSkillRoll {
       return { difficulty: options.difficulty, challengeId: null };
     }
 
-    // If a challengeId was passed directly (from widget), use it
     if (options.challengeId) {
       const challenge = getActiveChallenge();
       if (challenge && challenge.challengeId === options.challengeId) {
@@ -437,10 +639,6 @@ export class RfsSkillRoll {
     return { difficulty: 4, challengeId: null };
   }
 
-  /**
-   * Build HTML for a standalone result card.
-   * Card state is driven entirely by flags — never reconstruct from HTML.
-   */
   static _buildStandaloneContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
     const modStr = RfsSkillRoll._modifierString(rawTotal, modifier);
     const flavor = `${actorName}: ${skill.name} (${skill.level}d6)`;
@@ -504,6 +702,6 @@ export class RfsSkillRoll {
   static _modifierString(rawTotal, modifier) {
     if (modifier === 0) return `${rawTotal}`;
     if (modifier > 0)   return `${rawTotal} + ${modifier}`;
-    return `${rawTotal} − ${Math.abs(modifier)}`;
+    return `${rawTotal} \u2212 ${Math.abs(modifier)}`;
   }
 }

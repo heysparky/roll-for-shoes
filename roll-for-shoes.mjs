@@ -77,16 +77,18 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
 /* -------------------------------------------- */
 
 /**
- * Wire up interactive buttons in RFS chat cards.
+ * Wire up all interactive RFS chat card buttons.
  *
- * Three card types:
- *   rfsClaimAdvancement — standalone result cards and challenge card rows
- *   rfsSpendXp          — standalone result cards only
- *   rfsWidgetRoll       — player widget cards (the skill picker + roll button)
+ * Card types and their actions:
+ *   playerWidget       → rfsWidgetRoll       (skill picker + roll button)
+ *   advancementWidget  → rfsClaimFromWidget  (text input + claim button)
+ *   xpSpendWidget      → rfsWidgetSpendXp    (spend XP to force advancement)
+ *   standalone card    → rfsClaimAdvancement (old dialog-based flow)
+ *   standalone card    → rfsSpendXp          (standalone XP spend)
  */
 Hooks.on("renderChatMessageHTML", (message, html) => {
 
-  // ── Claim Skill (advancement) ──────────────────────────────────────────────
+  // ── Standalone: Claim Skill (opens dialog) ─────────────────────────────────
   html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {
     btn.addEventListener("click", () => {
       const { actorId, skillId, messageId } = btn.dataset;
@@ -94,34 +96,29 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     });
   });
 
-  // ── Spend XP ──────────────────────────────────────────────────────────────
+  // ── Standalone: Spend XP ──────────────────────────────────────────────────
   html.querySelectorAll("[data-action='rfsSpendXp']").forEach(btn => {
     btn.addEventListener("click", () => {
-      const { messageId } = btn.dataset;
-      RfsSkillRoll.spendXpOnCard(messageId);
+      RfsSkillRoll.spendXpOnCard(message.id);
     });
   });
 
-  // ── Player Widget Roll Button ──────────────────────────────────────────────
-  // Enable/disable the roll button based on whether a skill is selected.
-  // Fire the roll when the button is clicked.
-  const widget = html.querySelector(".rfs-widget");
-  if (widget) {
-    const select = widget.querySelector(".rfs-widget__skill-select");
-    const rollBtn = widget.querySelector("[data-action='rfsWidgetRoll']");
+  // ── Player Roll Widget ─────────────────────────────────────────────────────
+  const rollWidget = html.querySelector(".rfs-widget");
+  if (rollWidget) {
+    const select  = rollWidget.querySelector(".rfs-widget__skill-select");
+    const rollBtn = rollWidget.querySelector("[data-action='rfsWidgetRoll']");
 
     if (select && rollBtn) {
-      const flags = message.getFlag("roll-for-shoes", null);
+      const flags = message.flags?.["roll-for-shoes"];
 
-      // If already rolled, disable everything permanently
       if (flags?.rolled) {
-        select.disabled = true;
+        select.disabled  = true;
         rollBtn.disabled = true;
         rollBtn.textContent = game.i18n.localize("RFS.Widget.AlreadyRolled");
         return;
       }
 
-      // Enable button only when a skill is chosen
       select.addEventListener("change", () => {
         rollBtn.disabled = !select.value;
       });
@@ -129,10 +126,73 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
       rollBtn.addEventListener("click", () => {
         const skillId = select.value;
         if (!skillId) return;
-        // Disable immediately for UX — server update will confirm
         rollBtn.disabled = true;
-        select.disabled = true;
+        select.disabled  = true;
         RfsSkillRoll.rollFromWidget(message.id, skillId);
+      });
+    }
+  }
+
+  // ── Advancement Widget ─────────────────────────────────────────────────────
+  // Player types a skill name and clicks Claim. Button enables only when
+  // the input has content. On click: finaliseAdvancement deletes this card
+  // and updates the challenge card row with the new skill name.
+  const advWidget = html.querySelector(".rfs-advancement-widget");
+  if (advWidget) {
+    const nameInput = advWidget.querySelector(".rfs-advancement-widget__name-input");
+    const claimBtn  = advWidget.querySelector("[data-action='rfsClaimFromWidget']");
+
+    if (nameInput && claimBtn) {
+      const flags = message.flags?.["roll-for-shoes"];
+
+      if (flags?.claimed) {
+        nameInput.disabled = true;
+        claimBtn.disabled  = true;
+        return;
+      }
+
+      // Enable claim button only when the player has typed something
+      nameInput.addEventListener("input", () => {
+        claimBtn.disabled = !nameInput.value.trim();
+      });
+
+      // Also allow pressing Enter in the input field
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && nameInput.value.trim()) {
+          claimBtn.disabled = true;
+          nameInput.disabled = true;
+          RfsSkillRoll.finaliseAdvancement(message.id, nameInput.value.trim());
+        }
+      });
+
+      claimBtn.addEventListener("click", () => {
+        const name = nameInput.value.trim();
+        if (!name) return;
+        claimBtn.disabled  = true;
+        nameInput.disabled = true;
+        RfsSkillRoll.finaliseAdvancement(message.id, name);
+      });
+    }
+  }
+
+  // ── XP Spend Widget ───────────────────────────────────────────────────────
+  // Player clicks to spend XP and convert all dice to 6, triggering
+  // advancement. After spending, an advancement widget appears and this
+  // card deletes itself.
+  const xpWidget = html.querySelector(".rfs-xpspend-widget");
+  if (xpWidget) {
+    const spendBtn = xpWidget.querySelector("[data-action='rfsWidgetSpendXp']");
+    if (spendBtn) {
+      const flags = message.flags?.["roll-for-shoes"];
+
+      if (flags?.spent) {
+        spendBtn.disabled = true;
+        return;
+      }
+
+      spendBtn.addEventListener("click", () => {
+        spendBtn.disabled = true;
+        RfsSkillRoll.spendXpFromWidget(message.id);
       });
     }
   }

@@ -203,20 +203,15 @@ export function buildChallengeCardContent(challenge) {
       ? game.i18n.localize("RFS.Chat.Failure")
       : game.i18n.localize("RFS.Chat.Success");
 
-    // All-sixes: badge + Claim Skill button (or claimed note if already done)
+    // All-sixes: badge on the shared card only.
+    // The Claim Skill action happens on the player's personal advancement widget card.
+    // Once claimed, show the new skill name in place of the pending note.
     const allSixesHtml = result.allSixes ? `
-      <div class="rfs-challenge__allsixes">✦ ${game.i18n.localize("RFS.Chat.AllSixes")}</div>
-      ${result.skillClaimed
-        ? `<div class="rfs-roll__xp-note">✦ ${game.i18n.format("RFS.Chat.SkillClaimed", { name: result.claimedSkillName ?? "" })}</div>`
-        : `<button type="button"
-                   class="rfs-btn rfs-btn--advancement"
-                   data-action="rfsClaimAdvancement"
-                   data-actor-id="${result.actorId}"
-                   data-skill-id="${result.skillId}"
-                   data-message-id="">
-             ✦ ${game.i18n.localize("RFS.Dialog.Advancement.Confirm")}
-           </button>`
-      }` : "";
+      <div class="rfs-challenge__allsixes">✦ ${
+        result.skillClaimed
+          ? result.claimedSkillName ?? ""
+          : `<em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em>`
+      }</div>` : "";
 
     return `
       <tr class="rfs-challenge__row rfs-challenge__row--done">
