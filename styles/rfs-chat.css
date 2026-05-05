@@ -190,7 +190,10 @@
   padding: 0;
   flex-shrink: 0;
 
-  &:hover .rfs-challenge__portrait { filter: brightness(1.1); }
+  &:hover .rfs-challenge__portrait {
+    box-shadow: 0 0 0 3px var(--rfs-color-accent);
+    border-color: var(--rfs-color-accent);
+  }
 }
 
 .rfs-challenge__portrait {
@@ -199,7 +202,9 @@
   border-radius: var(--rfs-radius-sm);
   object-fit: cover;
   border: 2px solid var(--rfs-color-border);
+  box-shadow: var(--rfs-shadow-sm);
   display: block;
+  transition: box-shadow var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
 }
 
 /* Name + status stacked to the right of the portrait */
@@ -242,10 +247,6 @@
 }
 
 /* State-based overrides */
-.rfs-challenge__player--pending .rfs-challenge__portrait {
-  opacity: 0.5;
-}
-
 .rfs-challenge__player--success .rfs-challenge__portrait {
   border-color: var(--rfs-color-success);
 }
