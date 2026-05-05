@@ -202,7 +202,6 @@ export function buildChallengeCardContent(challenge) {
             <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
           </button>
           <div class="rfs-challenge__player-info">
-            <span class="rfs-challenge__player-name">${name}</span>
             <span class="rfs-challenge__player-waiting">Waiting&#x2026;</span>
           </div>
         </div>
@@ -229,7 +228,6 @@ export function buildChallengeCardContent(challenge) {
           <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
         </button>
         <div class="rfs-challenge__player-info">
-          <span class="rfs-challenge__player-name">${result.actorName}</span>
           <span class="rfs-challenge__player-total">${result.total}</span>
         </div>
       </div>

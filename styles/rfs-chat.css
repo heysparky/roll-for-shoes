@@ -180,6 +180,7 @@
   display: flex;
   align-items: center;
   gap: var(--rfs-space-sm);
+  padding-left: var(--rfs-space-md);
 }
 
 /* Portrait as a button that re-opens the player dialog */
@@ -207,35 +208,27 @@
   transition: box-shadow var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
 }
 
-/* Name + status stacked to the right of the portrait */
+/* Status area — centred to the right of the portrait */
 .rfs-challenge__player-info {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
   flex: 1;
-  min-width: 0;
-}
-
-.rfs-challenge__player-name {
-  font-size: var(--rfs-font-size-sm);
-  font-weight: bold;
-  color: var(--rfs-color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  align-items: center;
+  justify-content: center;
 }
 
 .rfs-challenge__player-waiting {
-  font-size: var(--rfs-font-size-sm);
+  font-size: var(--rfs-font-size-md);
   color: var(--rfs-color-text-muted);
   font-style: italic;
+  text-align: center;
 }
 
 .rfs-challenge__player-total {
   font-family: var(--rfs-font-mono);
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: bold;
   line-height: 1;
+  text-align: center;
 }
 
 /* "Rolling…" / "Rolled Skill (N)" line, centred below the row */
@@ -247,16 +240,8 @@
 }
 
 /* State-based overrides */
-.rfs-challenge__player--success .rfs-challenge__portrait {
-  border-color: var(--rfs-color-success);
-}
-
 .rfs-challenge__player--success .rfs-challenge__player-total {
   color: var(--rfs-color-success);
-}
-
-.rfs-challenge__player--failure .rfs-challenge__portrait {
-  border-color: var(--rfs-color-failure);
 }
 
 .rfs-challenge__player--failure .rfs-challenge__player-total {
