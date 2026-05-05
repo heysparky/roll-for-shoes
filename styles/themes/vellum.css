@@ -1,0 +1,1289 @@
+/* =============================================================================
+   Roll for Shoes — VELLUM theme
+   styles/themes/vellum.css
+
+   Drop-in theme stylesheet. All selectors are scoped to
+   `[data-rfs-theme="vellum"]` so this file can co-exist with other themes.
+
+   Class names assume the rfs- prefix convention:
+     .rfs-sheet, .rfs-sheet__top, .rfs-sheet__portrait, .rfs-sheet__name, ...
+     .rfs-skill-tree, .rfs-skill-node, .rfs-skill-node__card, ...
+     .rfs-challenge, .rfs-challenge__row, .rfs-challenge__total, ...
+     .rfs-popup, .rfs-popup__plate, .rfs-result, .rfs-die, .rfs-result__vs, ...
+     .rfs-btn, .rfs-btn--primary, .rfs-btn--ghost, .rfs-btn--gold
+
+   If your actual class names differ, search-and-replace the BEM stems below.
+   The token block at the top is the single source of truth — recolor by
+   editing those vars.
+============================================================================= */
+
+/* ─── Fonts ─────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* =============================================================================
+   TOKENS
+============================================================================= */
+[data-rfs-theme="vellum"] {
+  /* Surfaces */
+  --rfs-bg:           #1a0e0a;
+  --rfs-bg-alt:       #221410;
+  --rfs-bg-deep:      #100806;
+  --rfs-bg-input:     #2c1c14;
+
+  /* Borders + rules */
+  --rfs-border:        #5a3a22;
+  --rfs-border-strong: #6a4a2a;
+  --rfs-rule:          #3a2418;
+
+  /* Text */
+  --rfs-text:      #ecd9b8;
+  --rfs-text-mute: #8a6c4a;
+  --rfs-text-soft: #c2a878;
+
+  /* Accents */
+  --rfs-gold:      #c8995a;
+  --rfs-gold-hi:   #e2b378;
+  --rfs-oxblood:   #6a1e16;
+  --rfs-oxblood-hi:#8a2a1a;
+
+  /* Outcomes */
+  --rfs-success:   #9aba6a;
+  --rfs-failure:   #c84838;
+  --rfs-six:       #e2b378;
+
+  /* Type */
+  --rfs-serif:   "EB Garamond", Georgia, serif;
+  --rfs-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
+  --rfs-mono:    "IBM Plex Mono", monospace;
+
+  /* Misc */
+  --rfs-radius:    2px;
+  --rfs-radius-sm: 1px;
+
+  color: var(--rfs-text);
+  font-family: var(--rfs-serif);
+}
+
+/* =============================================================================
+   APP BACKDROP / WINDOW SHELL
+   Foundry application windows usually wrap their body in a class like
+   .rfs-app or .rfs-window. Style the outermost surface here.
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-app,
+[data-rfs-theme="vellum"] .rfs-window {
+  background:
+    radial-gradient(circle at 20% 12%, rgba(200,153,90,0.06), transparent 50%),
+    radial-gradient(circle at 80% 90%, rgba(106,30,22,0.08), transparent 55%),
+    var(--rfs-bg);
+  border: 1px solid var(--rfs-border);
+  border-radius: 3px;
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(200,153,90,0.04);
+  color: var(--rfs-text);
+  font-family: var(--rfs-serif);
+}
+
+/* Shared horizontal divider — use anywhere a dividing rule is wanted */
+[data-rfs-theme="vellum"] .rfs-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, var(--rfs-gold) 30%, var(--rfs-gold) 70%, transparent);
+  opacity: 0.5;
+  border: 0;
+}
+
+/* =============================================================================
+   SECTION HEADERS — "❦  Ars · Skills" pattern
+   Markup expected:
+     <header class="rfs-section">
+       <span class="rfs-section__mark">❦</span>
+       <h2 class="rfs-section__title">Ars · Skills</h2>
+       <span class="rfs-section__rule"></span>
+       <button class="rfs-section__action">⤢ Expand Map</button>  <!-- optional -->
+     </header>
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px 8px;
+}
+[data-rfs-theme="vellum"] .rfs-section__mark {
+  font-family: var(--rfs-display);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-section__title {
+  margin: 0;
+  font-family: var(--rfs-display);
+  font-size: 22px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+[data-rfs-theme="vellum"] .rfs-section__rule {
+  flex: 1;
+  height: 1px;
+  align-self: center;
+  background: linear-gradient(90deg, var(--rfs-rule), transparent);
+}
+[data-rfs-theme="vellum"] .rfs-section__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid var(--rfs-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-gold);
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 140ms ease;
+  flex-shrink: 0;
+}
+[data-rfs-theme="vellum"] .rfs-section__action:hover {
+  border-color: var(--rfs-gold);
+  background: rgba(200,153,90,0.1);
+  box-shadow: 0 0 12px rgba(200,153,90,0.2);
+}
+
+/* =============================================================================
+   CHARACTER SHEET
+============================================================================= */
+
+/* Top: portrait | identity | xp */
+[data-rfs-theme="vellum"] .rfs-sheet__top {
+  display: grid;
+  grid-template-columns: 152px 1fr auto;
+  gap: 22px;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--rfs-rule);
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__top::after {
+  content: "";
+  position: absolute;
+  left: 24px; right: 24px; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, var(--rfs-gold) 30%, var(--rfs-gold) 70%, transparent);
+  opacity: 0.5;
+}
+
+/* Portrait — image OR monogram fallback */
+[data-rfs-theme="vellum"] .rfs-sheet__portrait {
+  width: 152px;
+  height: 192px;
+  border-radius: var(--rfs-radius);
+  border: 1px solid var(--rfs-gold);
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(200,153,90,0.18), transparent 60%),
+    linear-gradient(160deg, #3a2418 0%, var(--rfs-bg) 60%, #0a0503 100%);
+  box-shadow:
+    0 0 0 4px var(--rfs-bg),
+    0 0 0 5px var(--rfs-border-strong),
+    inset 0 0 30px rgba(0,0,0,0.7),
+    0 6px 18px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(200,153,90,0.25);
+  pointer-events: none;
+  z-index: 1;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait-monogram {
+  font-family: var(--rfs-display);
+  font-size: 86px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 2px 0 rgba(0,0,0,0.6),
+               0 0 24px rgba(226,179,120,0.3);
+}
+
+/* Identity column */
+[data-rfs-theme="vellum"] .rfs-sheet__id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__name {
+  font-family: var(--rfs-display);
+  font-size: 36px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+[data-rfs-theme="vellum"] .rfs-sheet__subname {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text-mute);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__blurb {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text-soft);
+  line-height: 1.45;
+  border-left: 2px solid var(--rfs-rule);
+  padding: 4px 0 4px 12px;
+  margin-top: 4px;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__meta {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--rfs-text-mute);
+  text-transform: uppercase;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__meta b {
+  color: var(--rfs-text);
+  font-weight: 500;
+}
+
+/* XP readout */
+[data-rfs-theme="vellum"] .rfs-sheet__xp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: start;
+  padding: 10px 16px;
+  background: linear-gradient(180deg,
+    rgba(200,153,90,0.08), rgba(0,0,0,0.2));
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius);
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+}
+[data-rfs-theme="vellum"] .rfs-sheet__xp-label {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-sheet__xp-value {
+  font-family: var(--rfs-display);
+  font-size: 36px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(226,179,120,0.25);
+}
+
+/* Background block */
+[data-rfs-theme="vellum"] .rfs-sheet__background {
+  padding: 14px 24px 16px;
+  border-bottom: 1px solid var(--rfs-rule);
+}
+[data-rfs-theme="vellum"] .rfs-sheet__background-label {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+  margin-bottom: 6px;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__background-body {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text-soft);
+  line-height: 1.5;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__background-body p { margin: 0 0 6px 0; }
+[data-rfs-theme="vellum"] .rfs-sheet__background-body p:last-child { margin-bottom: 0; }
+
+/* =============================================================================
+   SKILL TREE — left-to-right bracket layout
+   Markup expected:
+     <div class="rfs-skill-tree">
+       <div class="rfs-skill-tree__canvas">
+         <div class="rfs-skill-node rfs-skill-node--branch">
+           <div class="rfs-skill-node__card rfs-skill-node__card--root">
+             <div class="rfs-skill-node__row">
+               <div class="rfs-skill-node__name">Do Anything</div>
+               <div class="rfs-skill-node__pips">
+                 <span class="rfs-skill-pip"></span>
+               </div>
+             </div>
+             <div class="rfs-skill-node__hint">Roll 1d6</div>
+           </div>
+           <div class="rfs-skill-node__children">
+             <div class="rfs-skill-node ...">...</div>
+             ...
+           </div>
+         </div>
+       </div>
+     </div>
+
+   Add `rfs-skill-node--branch` to any node that has children (it draws the
+   right-pointing stub from the parent's card to the children column).
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-skill-tree {
+  padding: 12px 24px 24px;
+  overflow-x: auto;
+  scrollbar-color: var(--rfs-gold) transparent;
+  scrollbar-width: thin;
+}
+[data-rfs-theme="vellum"] .rfs-skill-tree::-webkit-scrollbar { height: 6px; }
+[data-rfs-theme="vellum"] .rfs-skill-tree::-webkit-scrollbar-track { background: transparent; }
+[data-rfs-theme="vellum"] .rfs-skill-tree::-webkit-scrollbar-thumb {
+  background: var(--rfs-gold);
+  opacity: 0.5;
+  border-radius: 3px;
+}
+[data-rfs-theme="vellum"] .rfs-skill-tree__canvas {
+  display: flex;
+  align-items: center;
+  min-width: max-content;
+}
+
+/* Node — horizontal: card on the left, .__children stacked on the right */
+[data-rfs-theme="vellum"] .rfs-skill-node {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__card {
+  width: 168px;
+  padding: 9px 12px 10px;
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.04), rgba(0,0,0,0.2)),
+    var(--rfs-bg-alt);
+  border: 1px solid var(--rfs-border);
+  border-radius: var(--rfs-radius);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  cursor: pointer;
+  transition: all 160ms ease;
+  flex-shrink: 0;
+  text-align: left;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__card:hover {
+  border-color: var(--rfs-gold);
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.10), rgba(0,0,0,0.2)),
+    var(--rfs-bg-alt);
+  transform: translateX(2px);
+  box-shadow:
+    0 4px 14px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(200,153,90,0.2);
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__card--root {
+  width: 192px;
+  padding: 12px 14px 13px;
+  border-color: var(--rfs-gold);
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.12), rgba(106,30,22,0.15)),
+    var(--rfs-bg-alt);
+  box-shadow:
+    0 0 0 3px var(--rfs-bg),
+    0 0 0 4px var(--rfs-gold),
+    0 4px 14px rgba(0,0,0,0.5);
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--rfs-display);
+  font-size: 15px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--rfs-text);
+  line-height: 1.2;
+  word-break: break-word;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__card--root .rfs-skill-node__name {
+  font-size: 18px;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__pips {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+[data-rfs-theme="vellum"] .rfs-skill-pip {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--rfs-gold);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.3),
+    inset 0 -1px 1px rgba(0,0,0,0.4),
+    0 0 6px rgba(200,153,90,0.4);
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__hint {
+  display: block;
+  height: 0;
+  margin-top: 4px;
+  font-family: var(--rfs-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rfs-gold);
+  opacity: 0;
+  transition: all 180ms ease;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__card:hover .rfs-skill-node__hint {
+  opacity: 1;
+  height: auto;
+}
+
+/* Children column */
+[data-rfs-theme="vellum"] .rfs-skill-node__children {
+  display: flex;
+  flex-direction: column;
+  margin-left: 36px;
+  gap: 14px;
+  position: relative;
+  justify-content: center;
+}
+/* Vertical sibling bar (suppressed when only one child) */
+[data-rfs-theme="vellum"] .rfs-skill-node__children::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: var(--rfs-gold);
+  opacity: 0.4;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__children:has(> .rfs-skill-node:only-child)::before {
+  display: none;
+}
+/* Horizontal stub from sibling-bar into each child card */
+[data-rfs-theme="vellum"] .rfs-skill-node__children > .rfs-skill-node {
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-skill-node__children > .rfs-skill-node::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: 50%;
+  width: 18px;
+  height: 1px;
+  background: var(--rfs-gold);
+  opacity: 0.5;
+}
+/* Stub OUT of any branching parent's card */
+[data-rfs-theme="vellum"] .rfs-skill-node--branch::after {
+  content: "";
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  width: 18px;
+  height: 1px;
+  background: var(--rfs-gold);
+  opacity: 0.5;
+}
+
+/* =============================================================================
+   EXPANDED SKILL MAP (overlay)
+   Markup expected:
+     <div class="rfs-skill-map">
+       <div class="rfs-skill-map__title">✦ Ars Memoriae · Margot's Skill Codex ✦</div>
+       <button class="rfs-skill-map__close">× CLOSE</button>
+       <div class="rfs-skill-map__inner">
+         <div class="rfs-skill-tree__canvas"> ... </div>
+       </div>
+     </div>
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-skill-map {
+  position: relative;
+  width: min(1100px, 92vw);
+  height: min(540px, 76vh);
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(200,153,90,0.10), transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(106,30,22,0.12), transparent 55%),
+    var(--rfs-bg-deep);
+  border: 1px solid var(--rfs-gold);
+  box-shadow:
+    0 0 0 6px var(--rfs-bg),
+    0 0 0 7px var(--rfs-border-strong),
+    0 30px 80px rgba(0,0,0,0.7),
+    inset 0 0 60px rgba(0,0,0,0.6);
+  margin: 22px auto;
+}
+[data-rfs-theme="vellum"] .rfs-skill-map::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(200,153,90,0.18);
+  pointer-events: none;
+}
+[data-rfs-theme="vellum"] .rfs-skill-map__title {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 18px;
+  background: var(--rfs-bg);
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+  font-family: var(--rfs-display);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  letter-spacing: 0.04em;
+}
+[data-rfs-theme="vellum"] .rfs-skill-map__close {
+  position: absolute;
+  top: 14px; right: 14px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text-mute);
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+[data-rfs-theme="vellum"] .rfs-skill-map__inner {
+  position: absolute;
+  inset: 32px 24px 24px;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+}
+
+/* =============================================================================
+   STATUSES — Boons / Banes
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-statuses { padding: 0 24px 24px; }
+[data-rfs-theme="vellum"] .rfs-statuses__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+[data-rfs-theme="vellum"] .rfs-statuses__col-label {
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--rfs-rule);
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.15);
+  border-left: 2px solid var(--rfs-rule);
+}
+[data-rfs-theme="vellum"] .rfs-status--pos { border-left-color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-status--neg { border-left-color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-status__mod {
+  min-width: 28px;
+  font-family: var(--rfs-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-rfs-theme="vellum"] .rfs-status--pos .rfs-status__mod { color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-status--neg .rfs-status__mod { color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-status__name {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text);
+}
+
+/* =============================================================================
+   POPUP DIALOG — the Roll Moment
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-popup__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--rfs-rule);
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-popup__title::after {
+  content: "";
+  position: absolute;
+  left: 20px; right: 20px; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, var(--rfs-gold) 30%, var(--rfs-gold) 70%, transparent);
+  opacity: 0.5;
+}
+[data-rfs-theme="vellum"] .rfs-popup__title-text {
+  font-family: var(--rfs-display);
+  font-size: 20px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-popup__close {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--rfs-mono);
+  font-size: 14px;
+  color: var(--rfs-text-mute);
+}
+
+/* Challenge plate (prompt + DC) */
+[data-rfs-theme="vellum"] .rfs-popup__plate {
+  margin: 14px 20px 0;
+  padding: 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.06), transparent),
+    var(--rfs-bg-deep);
+  border: 1px solid var(--rfs-border);
+  border-left: 3px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+}
+[data-rfs-theme="vellum"] .rfs-popup__plate-prompt {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text-soft);
+  line-height: 1.4;
+}
+[data-rfs-theme="vellum"] .rfs-popup__plate-dc {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-popup__plate-dc-num {
+  font-family: var(--rfs-display);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Skill picker */
+[data-rfs-theme="vellum"] .rfs-skill-list {
+  margin: 14px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__label {
+  margin-bottom: 4px;
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--rfs-bg-alt);
+  border: 1px solid var(--rfs-border);
+  border-radius: var(--rfs-radius-sm);
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row:hover,
+[data-rfs-theme="vellum"] .rfs-skill-list__row.is-selected {
+  border-color: var(--rfs-gold);
+  background:
+    linear-gradient(90deg, rgba(200,153,90,0.10), rgba(0,0,0,0.2)),
+    var(--rfs-bg-alt);
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row-name {
+  font-family: var(--rfs-display);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--rfs-text);
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row.is-selected .rfs-skill-list__row-name {
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row-pips {
+  display: flex;
+  gap: 3px;
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row-pip {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-skill-list__row-dice {
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+
+/* Result moment — dice + total vs DC */
+[data-rfs-theme="vellum"] .rfs-result {
+  margin: 18px 20px 0;
+  padding: 16px 16px 12px;
+  background: var(--rfs-bg-deep);
+  border: 1px solid var(--rfs-border);
+  border-radius: var(--rfs-radius-sm);
+  text-align: center;
+}
+[data-rfs-theme="vellum"] .rfs-result__dice {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+[data-rfs-theme="vellum"] .rfs-die {
+  width: 38px; height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rfs-bg-alt);
+  border: 1px solid var(--rfs-border-strong);
+  border-radius: var(--rfs-radius);
+  font-family: var(--rfs-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rfs-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    inset 0 -2px 4px rgba(0,0,0,0.5);
+}
+[data-rfs-theme="vellum"] .rfs-die--six {
+  background: linear-gradient(180deg,
+    rgba(226,179,120,0.2), rgba(200,153,90,0.05));
+  border-color: var(--rfs-gold);
+  color: var(--rfs-gold-hi);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 0 12px rgba(226,179,120,0.35);
+}
+
+[data-rfs-theme="vellum"] .rfs-result__compare {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 6px;
+  font-family: var(--rfs-display);
+}
+[data-rfs-theme="vellum"] .rfs-result__total {
+  font-size: 44px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  color: var(--rfs-text);
+}
+[data-rfs-theme="vellum"] .rfs-result__total--success {
+  color: var(--rfs-success);
+  text-shadow: 0 0 16px rgba(154,186,106,0.25);
+}
+[data-rfs-theme="vellum"] .rfs-result__total--failure {
+  color: var(--rfs-failure);
+  text-shadow: 0 0 16px rgba(200,72,56,0.25);
+}
+[data-rfs-theme="vellum"] .rfs-result__vs {
+  font-family: var(--rfs-display);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-result__dc {
+  font-size: 32px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1;
+  color: var(--rfs-text-mute);
+}
+
+[data-rfs-theme="vellum"] .rfs-result__verdict {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rfs-rule);
+  font-family: var(--rfs-display);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+[data-rfs-theme="vellum"] .rfs-result__verdict--success { color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-result__verdict--failure { color: var(--rfs-failure); }
+
+/* +1 XP badge */
+[data-rfs-theme="vellum"] .rfs-result__xp-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(200,153,90,0.12);
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+  font-family: var(--rfs-display);
+}
+[data-rfs-theme="vellum"] .rfs-result__xp-badge-num {
+  font-size: 22px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-result__xp-badge-label {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rfs-gold);
+}
+
+/* XP-spend option (after failure) */
+[data-rfs-theme="vellum"] .rfs-xp-option {
+  margin: 12px 20px 0;
+  padding: 12px 14px;
+  background:
+    linear-gradient(90deg, rgba(200,153,90,0.04), transparent),
+    var(--rfs-bg-alt);
+  border: 1px dashed var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+}
+[data-rfs-theme="vellum"] .rfs-xp-option__hint {
+  margin-bottom: 10px;
+  font-family: var(--rfs-serif);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--rfs-text-soft);
+}
+[data-rfs-theme="vellum"] .rfs-xp-option__hint b {
+  color: var(--rfs-gold-hi);
+  font-style: normal;
+  font-family: var(--rfs-display);
+}
+
+/* Advancement panel */
+[data-rfs-theme="vellum"] .rfs-advance {
+  position: relative;
+  margin: 14px 20px 0;
+  padding: 18px 18px 16px;
+  background:
+    radial-gradient(ellipse at top, rgba(226,179,120,0.18), transparent 70%),
+    linear-gradient(180deg, var(--rfs-bg-alt), var(--rfs-bg-deep));
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius);
+  box-shadow:
+    inset 0 0 30px rgba(226,179,120,0.08),
+    0 0 24px rgba(226,179,120,0.15);
+  text-align: center;
+}
+[data-rfs-theme="vellum"] .rfs-advance::before {
+  content: "✦";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 12px;
+  background: var(--rfs-bg);
+  font-size: 22px;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 0 12px rgba(226,179,120,0.6);
+}
+[data-rfs-theme="vellum"] .rfs-advance__heading {
+  margin: 0 0 4px 0;
+  font-family: var(--rfs-display);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+}
+[data-rfs-theme="vellum"] .rfs-advance__sub {
+  margin-bottom: 14px;
+  font-family: var(--rfs-serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--rfs-text-soft);
+}
+[data-rfs-theme="vellum"] .rfs-advance__sub b {
+  color: var(--rfs-gold-hi);
+  font-style: normal;
+  font-family: var(--rfs-display);
+}
+[data-rfs-theme="vellum"] .rfs-advance__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-text);
+  font-family: var(--rfs-display);
+  font-size: 18px;
+  font-style: italic;
+  text-align: center;
+  outline: none;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+}
+[data-rfs-theme="vellum"] .rfs-advance__input::placeholder {
+  color: var(--rfs-text-mute);
+  font-style: italic;
+}
+
+/* =============================================================================
+   BUTTONS — universal .rfs-btn family
+   Variants: --primary (oxblood, the main "Roll" CTA), --gold (claim, success
+   advancement), --ghost (border-only, secondary actions like "Spend XP").
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-btn {
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  border-radius: var(--rfs-radius);
+  font-family: var(--rfs-display);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: filter 120ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+[data-rfs-theme="vellum"] .rfs-btn--block {
+  display: block;
+  width: 100%;
+}
+
+/* Primary — oxblood "Roll" button */
+[data-rfs-theme="vellum"] .rfs-btn--primary {
+  background: linear-gradient(180deg, var(--rfs-oxblood-hi), var(--rfs-oxblood));
+  border: 1px solid #4a140e;
+  color: var(--rfs-text);
+  font-size: 18px;
+  padding: 14px 20px;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+[data-rfs-theme="vellum"] .rfs-btn--primary:hover { filter: brightness(1.1); }
+
+/* Gold — claim / advancement CTA */
+[data-rfs-theme="vellum"] .rfs-btn--gold {
+  background: linear-gradient(180deg, var(--rfs-gold-hi), var(--rfs-gold));
+  border: 1px solid var(--rfs-gold-hi);
+  color: var(--rfs-bg);
+  font-weight: 700;
+  font-size: 17px;
+  padding: 12px 14px;
+  box-shadow:
+    0 4px 14px rgba(226,179,120,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+[data-rfs-theme="vellum"] .rfs-btn--gold:hover { filter: brightness(1.05); }
+
+/* Ghost — outlined secondary */
+[data-rfs-theme="vellum"] .rfs-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--rfs-gold);
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-btn--ghost:hover {
+  background: rgba(200,153,90,0.12);
+  box-shadow: 0 0 14px rgba(200,153,90,0.25);
+}
+
+[data-rfs-theme="vellum"] .rfs-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* =============================================================================
+   CHALLENGE CARD (chat message)
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-challenge {
+  background:
+    radial-gradient(circle at 20% 12%, rgba(200,153,90,0.06), transparent 50%),
+    var(--rfs-bg);
+  border: 1px solid var(--rfs-border);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.06), transparent),
+    var(--rfs-bg-deep);
+  border-bottom: 1px solid var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__head-mark {
+  font-family: var(--rfs-display);
+  font-size: 16px;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__head-title {
+  flex: 1;
+  font-family: var(--rfs-display);
+  font-size: 16px;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__head-dc {
+  padding: 3px 10px;
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border-strong);
+  border-radius: var(--rfs-radius-sm);
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--rfs-text-soft);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge__prompt {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rfs-rule);
+  font-family: var(--rfs-serif);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--rfs-text-soft);
+}
+
+/* Per-player row */
+[data-rfs-theme="vellum"] .rfs-challenge__row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--rfs-rule);
+  border-left: 3px solid var(--rfs-rule);
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__row:last-of-type { border-bottom: none; }
+[data-rfs-theme="vellum"] .rfs-challenge__row--success { border-left-color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-challenge__row--failure { border-left-color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-challenge__row--pending { border-left-color: var(--rfs-rule); }
+[data-rfs-theme="vellum"] .rfs-challenge__row--rolling { border-left-color: var(--rfs-gold); }
+[data-rfs-theme="vellum"] .rfs-challenge__row--advance {
+  border-left-color: var(--rfs-gold);
+  background: linear-gradient(90deg, rgba(200,153,90,0.08), transparent);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge__portrait {
+  width: 48px; height: 48px;
+  margin: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  border-radius: var(--rfs-radius-sm);
+  font-family: var(--rfs-display);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--rfs-gold);
+  overflow: hidden;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__portrait img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__info {
+  flex: 1;
+  padding: 4px 8px;
+  min-width: 0;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__name {
+  font-family: var(--rfs-display);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--rfs-text);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__skill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-family: var(--rfs-serif);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__skill--waiting { color: var(--rfs-text-mute); }
+[data-rfs-theme="vellum"] .rfs-challenge__rolling-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--rfs-gold);
+  animation: rfs-pulse 0.8s ease-in-out infinite;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__xp-badge {
+  margin-left: 4px;
+  padding: 1px 5px;
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+  font-family: var(--rfs-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rfs-gold);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge__result {
+  padding: 0 14px 0 8px;
+  text-align: right;
+  min-width: 64px;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__total {
+  font-family: var(--rfs-display);
+  font-size: 28px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__total--success { color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-challenge__total--failure { color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-challenge__total--waiting {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__total-old {
+  margin-right: 4px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--rfs-text-mute);
+  text-decoration: line-through;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__dice {
+  margin-top: 2px;
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  color: var(--rfs-text-mute);
+}
+
+/* Indented advancement sub-row */
+[data-rfs-theme="vellum"] .rfs-challenge__advance-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 8px 36px;
+  background: linear-gradient(90deg, rgba(200,153,90,0.06), transparent);
+  border-top: 1px solid var(--rfs-rule);
+  font-family: var(--rfs-display);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__advance-row::before {
+  content: "└ ✦";
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  color: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__advance-row b {
+  color: var(--rfs-gold-hi);
+  font-weight: 700;
+}
+
+/* Footer — pulsing waiting state OR resolved summary */
+[data-rfs-theme="vellum"] .rfs-challenge__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--rfs-bg-deep);
+  border-top: 1px solid var(--rfs-rule);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__foot-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--rfs-gold);
+  animation: rfs-pulse 1.5s ease-in-out infinite;
+}
+[data-rfs-theme="vellum"] .rfs-challenge__foot-text {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-challenge__foot-summary {
+  font-family: var(--rfs-display);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--rfs-gold-hi);
+}
+
+/* =============================================================================
+   ANIMATIONS
+============================================================================= */
+@keyframes rfs-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* End of vellum.css */
