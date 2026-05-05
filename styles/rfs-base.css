@@ -500,6 +500,14 @@
 }
 
 /* ── Challenge card ───────────────────────────────────────────────────────── */
+
+/* Defensive resets — Foundry chat applies text-align:center, display:block,
+   and margin:auto to images and paragraphs inside chat messages. */
+.rfs-challenge * { box-sizing: border-box; }
+.rfs-challenge p { margin: 0; text-align: left; }
+.rfs-challenge img { display: block; margin: 0; border: none; box-shadow: none; max-width: none; }
+.rfs-challenge button { line-height: 1; }
+
 .rfs-challenge {
   background: var(--rfs-challenge-bg);
   border: 1px solid var(--rfs-challenge-border);
