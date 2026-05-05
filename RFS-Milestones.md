@@ -33,14 +33,21 @@
 12. **Theme system** — `dark-factory`, `clean-light`, `vellum` (default)
     - `vellum.css` wired: dark academia, oxblood + gold, EB Garamond / Cormorant display type
     - Class name contract reconciled between vellum.css selectors and actual markup
+13. **Skill list on sheet + ⤢ popup tree**
+    - Character sheet shows a compact flat skill list (`skill-index.hbs`): pips + clickable name, depth-indented
+    - Skills panel fills sheet body height (`flex: 1`) — no blank void for new characters
+    - `⤢` button in panel header opens `RfsSkillMapDialog` — full horizontal bracket tree in a resizable popup
+    - `RfsSkillMapDialog` is a singleton per actor (static Map); re-renders rather than duplicating
+    - Vellum: skill names use inherited EB Garamond at 15px; root is bold + gold, no display font
+    - Bracket tree connector lines fixed in vellum: correct stub selectors, vertical bar offsets
 
 ---
 
 ## Up Next
 
-- **Visual QA** — reload with vellum active, check all surfaces against REGISTRATION.md checklist
-- **CSS polish** — skill tree connecting lines, challenge card spacing and portrait sizing, popup layout
+- **CSS polish — chat & dialogs** — propagate vellum visual language to standalone skill roll cards, challenge card, player popup
 - **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
+- **Skill map nits** — minor visual polish on the ⤢ popup bracket tree (user flagged, deferred)
 
 ---
 
@@ -49,16 +56,17 @@
 Core mechanics complete and table-tested. Challenge UX redesigned (popup-based). Theme system wired. CSS polish is the current priority.
 
 ### Working
-- Character sheet: name, skills (click-to-roll, pip display), XP, statuses, large portrait with native edit
+- Character sheet: name, skills (compact list, click-to-roll, pip display, depth-indented), XP, statuses, large portrait with native edit
+- ⤢ popup: full bracket skill tree in `RfsSkillMapDialog` (singleton per actor, resizable)
 - Skill rolls from sheet: posts result card, XP on failure, all-sixes claim
 - Challenge flow end-to-end: GM calls roll → popup auto-opens → player rolls → card updates → advancement/XP in popup
 - Opposed rolls, difficulty thresholds, status math
 - Three themes registered; vellum is default
 
 ### Known Gaps / Next Work
-- **Vellum visual QA**: theme wired but not yet verified in-game across all surfaces
-- **Skill tree layout**: currently a flat indented list. Vellum CSS assumes a horizontal bracket card tree (`rfs-skill-node__card`, `rfs-skill-node__children`). Our markup uses a simpler structure — vellum's tree-specific styles are currently orphans. Tree layout pass is needed.
+- **CSS polish — chat & dialogs**: standalone roll cards, challenge card, and player popup not yet styled to vellum spec. Next priority.
 - **Advancement prompt copy**: same text for natural all-sixes vs XP-purchased advancement. Needs distinct copy.
+- **Skill map nits**: minor bracket tree visual issues noted by user, deferred.
 - **GM skill override**: no UI button for adding/removing skills; GM needs a workaround (console or future override tool).
 
 ### Architecture Decisions

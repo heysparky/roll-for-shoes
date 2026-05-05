@@ -25,8 +25,9 @@ roll-for-shoes/                    ← repo root
 │   ├── data/
 │   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
 │   ├── dialogs/
-│   │   ├── challenge-dialog.mjs   ← GM challenge dialog; posts card, emits socket
-│   │   └── challenge-player-dialog.mjs  ← Player popup; pick-skill→roll→xp-spend|advancement→done
+│   │   ├── challenge-dialog.mjs        ← GM challenge dialog; posts card, emits socket
+│   │   ├── challenge-player-dialog.mjs ← Player popup; pick-skill→roll→xp-spend|advancement→done
+│   │   └── skill-map-dialog.mjs        ← Full bracket tree popup; singleton per actor via static Map
 │   ├── documents/
 │   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getSkillById
 │   ├── helpers/
@@ -54,13 +55,15 @@ roll-for-shoes/                    ← repo root
     │   ├── character-sheet.hbs
     │   ├── npc-sheet.hbs
     │   └── partials/
-    │       ├── skill-node.hbs     ← recursive skill tree node (click name to roll)
-    │       ├── skill-tree.hbs
+    │       ├── skill-index.hbs    ← compact flat skill list for character sheet panel
+    │       ├── skill-node.hbs     ← bracket tree node (used by skill-tree.hbs → skill-map-dialog)
+    │       ├── skill-tree.hbs     ← full bracket tree (rendered in ⤢ popup only)
     │       ├── status-list.hbs
     │       └── xp-tracker.hbs
     └── dialog/
         ├── challenge-dialog.hbs         ← GM challenge setup form
-        └── challenge-player-dialog.hbs  ← Player popup (all steps, boolean flags, no eq helper)
+        ├── challenge-player-dialog.hbs  ← Player popup (all steps, boolean flags, no eq helper)
+        └── skill-map-dialog.hbs         ← Full bracket tree popup wrapper
 ```
 
 ---

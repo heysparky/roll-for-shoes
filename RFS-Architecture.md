@@ -159,7 +159,19 @@ are wired in `RfsChallengePlayerDialog.DEFAULT_OPTIONS.actions` — not in `rend
 - Click a skill name → rolls that skill (`rollSkill` action)
 - Portrait uses `data-edit="img"` (Foundry native) — not a custom action
 - No add/remove skill buttons in the UI — progression happens via rolls
-- Pips (⚙ × level) only — no level number badge
+- Pips (× level) only — no level number badge
+- **Skill display**: compact flat list (`skill-index.hbs`) — pips + name, depth-indented by `--rfs-skill-depth` CSS var
+- **`⤢` button**: opens `RfsSkillMapDialog` — full horizontal bracket tree in a resizable popup
+- Skills panel is `flex: 1` in the sheet body, so it fills the height as skills grow
+
+## Skill Map Dialog
+
+`RfsSkillMapDialog` — `HandlebarsApplicationMixin(ApplicationV2)`.
+
+- Singleton per actor: tracked in `static #open: Map<actorId, dialog>`
+- `static open(actor)` — deduplicates; brings existing to front
+- Renders `skill-map-dialog.hbs` which wraps the existing `skill-tree.hbs` partial
+- Bracket tree connector lines are vellum-themed; see vellum.css SKILL TREE section
 
 ---
 
