@@ -127,7 +127,7 @@
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .rfs-sheet__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--rfs-space-md);
   padding: var(--rfs-space-md);
   border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
@@ -135,12 +135,16 @@
 }
 
 .rfs-sheet__portrait {
-  width: 52px;
-  height: 52px;
+  width: 8rem;
+  height: 8rem;
   object-fit: cover;
   border-radius: var(--rfs-radius-md);
   border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
   cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity var(--rfs-anim-fast);
+
+  &:hover { opacity: 0.85; }
 }
 
 .rfs-sheet__identity {
@@ -273,13 +277,21 @@
   flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 1px dashed transparent;
+  border-bottom: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
   color: var(--rfs-color-text);
   font-family: var(--rfs-font-body);
   font-size: var(--rfs-font-size-md);
   transition: border-color var(--rfs-anim-fast);
 
-  &:focus {
+  &:hover {
+    color: var(--rfs-color-accent);
+    border-bottom-color: var(--rfs-color-accent);
+  }
+
+  &:focus-visible {
     outline: none;
     border-bottom-color: var(--rfs-color-accent);
   }
@@ -288,20 +300,9 @@
 .rfs-skill-node__name--root {
   font-weight: bold;
   color: var(--rfs-color-skill-root);
-}
 
-.rfs-skill-node__level {
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-color-text-muted);
-  font-family: var(--rfs-font-mono);
-  min-width: 1.5rem;
-  text-align: center;
+  &:hover { color: var(--rfs-color-skill-root); border-bottom-color: var(--rfs-color-skill-root); }
 }
-
-.rfs-skill-node__actions {
-  display: flex;
-  gap: 2px;
-  opacity: 0;
   transition: opacity var(--rfs-anim-fast);
 
   .rfs-skill-node:hover & {

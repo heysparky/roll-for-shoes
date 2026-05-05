@@ -26,8 +26,8 @@
     <img class="rfs-sheet__portrait"
          src="{{actor.img}}"
          alt="{{actor.name}}"
-         data-edit="img"
-         title="{{actor.name}}">
+         data-action="editPortrait"
+         title="Click to change portrait">
 
     <div class="rfs-sheet__identity">
       <input class="rfs-sheet__name"
@@ -52,15 +52,6 @@
     <div class="rfs-panel rfs-panel--skills">
       <div class="rfs-panel__header">
         <h2 class="rfs-panel__title">{{localize 'RFS.Label.Skills'}}</h2>
-        {{#if isEditable}}
-          <button type="button"
-                  class="rfs-btn rfs-btn--icon"
-                  data-action="addSkill"
-                  data-skill-id="{{rootSkillId}}"
-                  title="{{localize 'RFS.Action.AddSkill'}}">
-            +
-          </button>
-        {{/if}}
       </div>
 
       {{!-- Skill tree rendered recursively from the root --}}

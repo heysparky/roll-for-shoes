@@ -42,11 +42,13 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       closeOnSubmit: false,
     },
     actions: {
+      // Portrait
+      editPortrait: RfsCharacterSheet._onEditPortrait,
+
       // Skill actions
       rollSkill:    RfsCharacterSheet._onRollSkill,
-      addSkill:     RfsCharacterSheet._onAddSkill,
-      deleteSkill:  RfsCharacterSheet._onDeleteSkill,
-      editSkill:    RfsCharacterSheet._onEditSkill,
+      addSkill:     RfsCharacterSheet._onAddSkill,    // GM override, no UI button
+      deleteSkill:  RfsCharacterSheet._onDeleteSkill, // GM override, no UI button
 
       // Status actions
       addStatus:    RfsCharacterSheet._onAddStatus,
@@ -145,6 +147,14 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
   /*  Action Handlers                             */
   /* -------------------------------------------- */
+
+  static _onEditPortrait(event, target) {
+    new FilePicker({
+      type: "image",
+      current: this.actor.img,
+      callback: (src) => this.actor.update({ img: src }),
+    }).render(true);
+  }
 
   static async _onRollSkill(event, target) {
     const skillId = target.dataset.skillId;
