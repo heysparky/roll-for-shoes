@@ -1,0 +1,10 @@
+{{!-- templates/dialog/skill-map-dialog.hbs --}}
+{{!-- Full horizontal bracket skill tree, scrollable. --}}
+
+<div class="rfs-skill-tree">
+  <div class="rfs-skill-tree__canvas">
+    {{> "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs"
+        skills=skills
+        isEditable=false }}
+  </div>
+</div>

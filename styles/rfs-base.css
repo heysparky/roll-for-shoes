@@ -264,9 +264,12 @@
 }
 
 .rfs-pip {
-  color: var(--rfs-color-pip);
-  font-size: var(--rfs-font-size-sm);
-  line-height: 1;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rfs-color-pip);
+  flex-shrink: 0;
 }
 
 .rfs-skill-node__name {
@@ -304,6 +307,90 @@
   .rfs-skill-node:hover & {
     opacity: 1;
   }
+}
+
+/* ── Compact skill index (sheet panel) ───────────────────────────────────── */
+.rfs-skill-index {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 var(--rfs-space-sm) var(--rfs-space-sm);
+}
+
+.rfs-skill-index__row {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: 4px var(--rfs-space-sm);
+  padding-left: calc(var(--rfs-space-sm) + var(--rfs-skill-depth, 0) * 1.1rem);
+  border-radius: var(--rfs-radius-sm);
+  transition: background var(--rfs-anim-fast);
+
+  &:hover {
+    background: rgba(0,0,0,0.04);
+  }
+}
+
+.rfs-skill-index__pips {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  min-width: 2rem;
+}
+
+.rfs-skill-index__name {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  transition: color var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
+
+  &:hover {
+    color: var(--rfs-color-accent);
+    border-bottom-color: var(--rfs-color-accent);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-bottom-color: var(--rfs-color-accent);
+  }
+
+  &--root {
+    font-weight: bold;
+    color: var(--rfs-color-skill-root);
+
+    &:hover {
+      color: var(--rfs-color-skill-root);
+      border-bottom-color: var(--rfs-color-skill-root);
+    }
+  }
+}
+
+/* ── Skill map dialog ─────────────────────────────────────────────────────── */
+.rfs-skill-map-dialog .window-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.rfs-skill-map-dialog .rfs-skill-tree {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  padding: var(--rfs-space-lg);
+  box-sizing: border-box;
+}
+
+.rfs-skill-map-dialog .rfs-skill-tree__canvas {
+  display: flex;
+  align-items: center;
+  min-width: max-content;
 }
 
 /* ── XP tracker ──────────────────────────────────────────────────────────── */

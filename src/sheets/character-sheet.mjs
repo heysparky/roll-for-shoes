@@ -22,6 +22,7 @@
  */
 
 import { RfsSkillRoll } from "../rolls/skill-roll.mjs";
+import { RfsSkillMapDialog } from "../dialogs/skill-map-dialog.mjs";
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -50,6 +51,9 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       // Status actions
       addStatus:    RfsCharacterSheet._onAddStatus,
       deleteStatus: RfsCharacterSheet._onDeleteStatus,
+
+      // Skill map
+      openSkillMap: RfsCharacterSheet._onOpenSkillMap,
     },
   };
 
@@ -95,22 +99,21 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    */
   _sortSkillsForDisplay(skills) {
     const root = skills.find((s) => s.parentId === "");
-    if (!root) return skills;
+    if (!root) return skills.map((s) => ({ ...s, depth: 0 }));
 
     const result = [];
-    const addWithChildren = (parentId) => {
-      const matches = skills.filter((s) => s.parentId === parentId);
-      for (const s of matches) {
-        result.push(s);
-        addWithChildren(s.id);
+    const addWithChildren = (parentId, depth) => {
+      for (const s of skills.filter((s) => s.parentId === parentId)) {
+        result.push({ ...s, depth });
+        addWithChildren(s.id, depth + 1);
       }
     };
 
-    result.push(root);
-    addWithChildren(root.id);
+    result.push({ ...root, depth: 0 });
+    addWithChildren(root.id, 1);
 
-    const orphans = skills.filter((s) => !result.includes(s));
-    return [...result, ...orphans];
+    const orphans = skills.filter((s) => !result.find((r) => r.id === s.id));
+    return [...result, ...orphans.map((s) => ({ ...s, depth: 0 }))];
   }
 
   /* -------------------------------------------- */
@@ -216,5 +219,9 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   static async _onDeleteStatus(event, target) {
     const statusId = target.dataset.statusId;
     return this.actor.removeStatus(statusId);
+  }
+
+  static async _onOpenSkillMap(event, target) {
+    return RfsSkillMapDialog.open(this.actor);
   }
 }
