@@ -121,41 +121,50 @@
 .rfs-challenge {
   font-family: var(--rfs-font-body);
   font-size: var(--rfs-font-size-md);
-  padding: var(--rfs-space-xs) 0;
 }
 
-/* "Target / 4" header */
-.rfs-challenge__target {
+/* Card header: gear icon · title · DC */
+.rfs-challenge__header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding-bottom: var(--rfs-space-sm);
-  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  gap: var(--rfs-space-xs);
+  padding-bottom: var(--rfs-space-xs);
   margin-bottom: var(--rfs-space-sm);
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
 }
 
-.rfs-challenge__target-label {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--rfs-color-text-label);
+.rfs-challenge__gear {
+  color: var(--rfs-color-text-muted);
+  font-size: 0.9rem;
   line-height: 1;
-  padding-bottom: 2px;
 }
 
-.rfs-challenge__target-value {
-  font-family: var(--rfs-font-mono);
-  font-size: 2.6rem;
+.rfs-challenge__title {
+  font-size: var(--rfs-font-size-md);
   font-weight: bold;
-  line-height: 1;
+  flex: 1;
+}
+
+.rfs-challenge__dc {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-md);
+  font-weight: bold;
   color: var(--rfs-color-accent);
 }
 
-.rfs-challenge__target-hidden {
-  font-size: var(--rfs-font-size-md);
+.rfs-challenge__dc--hidden {
   color: var(--rfs-color-text-muted);
   font-style: italic;
+  font-family: var(--rfs-font-body);
+  font-weight: normal;
+}
+
+/* Optional prompt */
+.rfs-challenge__prompt {
+  font-style: italic;
+  color: var(--rfs-color-text-muted);
+  font-size: var(--rfs-font-size-sm);
+  margin-bottom: var(--rfs-space-sm);
 }
 
 /* Player list — stacked rows */
@@ -164,26 +173,19 @@
   flex-direction: column;
 }
 
-/* One row per player */
+/* One player = portrait | info | result, all on one row */
 .rfs-challenge__player {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--rfs-space-sm);
   padding: var(--rfs-space-sm) 0;
   border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
 
   &:last-child { border-bottom: none; }
 }
 
-/* Portrait + info side by side */
-.rfs-challenge__player-main {
-  display: flex;
-  align-items: center;
-  gap: var(--rfs-space-sm);
-  padding-left: var(--rfs-space-md);
-}
-
-/* Portrait as a button that re-opens the player dialog */
+/* Pending portrait wrapped in a button (re-opens dialog) */
 .rfs-challenge__player-btn {
   background: none;
   border: none;
@@ -197,6 +199,7 @@
   }
 }
 
+/* Portrait — button or bare img */
 .rfs-challenge__portrait {
   width: 2.6rem;
   height: 2.6rem;
@@ -205,57 +208,107 @@
   border: 2px solid var(--rfs-color-border);
   box-shadow: var(--rfs-shadow-sm);
   display: block;
+  flex-shrink: 0;
   transition: box-shadow var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
 }
 
-/* Status area — centred to the right of the portrait */
+/* Name + skill, fills the middle */
 .rfs-challenge__player-info {
-  display: flex;
   flex: 1;
-  align-items: center;
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.rfs-challenge__player-waiting {
-  font-size: var(--rfs-font-size-md);
+.rfs-challenge__player-name {
+  font-size: var(--rfs-font-size-sm);
+  font-weight: bold;
+  color: var(--rfs-color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rfs-challenge__player-skill {
+  font-size: 0.7rem;
   color: var(--rfs-color-text-muted);
+}
+
+.rfs-challenge__player-skill--waiting {
   font-style: italic;
-  text-align: center;
+}
+
+/* Total + dice on the right */
+.rfs-challenge__player-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 1px;
 }
 
 .rfs-challenge__player-total {
   font-family: var(--rfs-font-mono);
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: bold;
   line-height: 1;
-  text-align: center;
 }
 
-/* "Rolling…" / "Rolled Skill (N)" line, centred below the row */
-.rfs-challenge__player-roll-line {
-  text-align: center;
+.rfs-challenge__player-total--waiting {
+  font-family: var(--rfs-font-body);
   font-size: var(--rfs-font-size-sm);
+  font-weight: normal;
   color: var(--rfs-color-text-muted);
-  font-style: italic;
 }
 
-/* State-based overrides */
-.rfs-challenge__player--success .rfs-challenge__player-total {
-  color: var(--rfs-color-success);
+.rfs-challenge__player-total--success { color: var(--rfs-color-success); }
+.rfs-challenge__player-total--failure { color: var(--rfs-color-failure); }
+.rfs-challenge__player-total--tie     { color: var(--rfs-color-text-label); }
+
+.rfs-challenge__player-dice {
+  font-family: var(--rfs-font-mono);
+  font-size: 0.65rem;
+  color: var(--rfs-color-text-muted);
+  text-align: right;
 }
 
-.rfs-challenge__player--failure .rfs-challenge__player-total {
-  color: var(--rfs-color-failure);
-}
-
-.rfs-challenge__complete {
-  margin-top: var(--rfs-space-sm);
+/* Footer: pulsing dot + roll count */
+.rfs-challenge__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-xs);
   padding-top: var(--rfs-space-sm);
+  margin-top: var(--rfs-space-xs);
+  border-top: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+}
+
+.rfs-challenge__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--rfs-color-text-muted);
+}
+
+.rfs-challenge__status-dot--pulsing {
+  background: var(--rfs-color-accent);
+  animation: rfs-dot-pulse 1.5s ease-in-out infinite;
+}
+
+.rfs-challenge__status-dot--complete {
+  background: var(--rfs-color-success);
+}
+
+@keyframes rfs-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+.rfs-challenge__status-text {
   font-size: var(--rfs-font-size-sm);
   color: var(--rfs-color-text-muted);
   font-style: italic;
-  text-align: center;
-  border-top: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
 }
 
 /* ── 4. Button variants ───────────────────────────────────────────────────── */

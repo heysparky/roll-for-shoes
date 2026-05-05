@@ -544,6 +544,8 @@
   align-items: flex-end !important;
   flex-shrink: 0 !important;
 }
+/* TODO: border-left color stripe (success/failure/tie) on .rfs-challenge__player
+   is being overridden by Foundry. Needs !important + specificity investigation. */
 
 .rfs-challenge {
   background: var(--rfs-challenge-bg);

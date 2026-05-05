@@ -236,13 +236,7 @@ export function buildChallengeCardContent(challenge) {
       : "";
 
     return `<div class="rfs-challenge__player ${outcomeClass}">
-      <button type="button" class="rfs-challenge__player-btn"
-              data-action="rfsOpenChallengeDialog"
-              data-token-id="${tokenId}"
-              data-actor-id="${result.actorId ?? ""}"
-              data-challenge-id="${challenge.challengeId}">
-        <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
-      </button>
+      <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
       <div class="rfs-challenge__player-info">
         <span class="rfs-challenge__player-name">${result.actorName}</span>
         <span class="rfs-challenge__player-skill">${skillLine}</span>
