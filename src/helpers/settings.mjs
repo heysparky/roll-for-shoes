@@ -172,11 +172,17 @@ export async function rebuildChallengeCard(challenge) {
 export function buildChallengeCardContent(challenge) {
   const { dc, dcVisible, tokenIds, results = {}, complete = false } = challenge;
 
-  const dcSection = dcVisible
-    ? `<div class="rfs-challenge__dc">DC<span class="rfs-challenge__dc-value">${dc}</span></div>`
-    : `<div class="rfs-challenge__dc"><span class="rfs-challenge__dc-hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span></div>`;
+  const targetSection = dcVisible
+    ? `<div class="rfs-challenge__target">
+        <span class="rfs-challenge__target-label">Target</span>
+        <span class="rfs-challenge__target-value">${dc}</span>
+      </div>`
+    : `<div class="rfs-challenge__target">
+        <span class="rfs-challenge__target-label">Target</span>
+        <span class="rfs-challenge__target-hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span>
+      </div>`;
 
-  const playerTiles = tokenIds.map(tokenId => {
+  const playerRows = tokenIds.map(tokenId => {
     const result = results[tokenId];
 
     if (!result) {
@@ -187,40 +193,47 @@ export function buildChallengeCardContent(challenge) {
       const img     = actor?.img ?? "icons/svg/mystery-man.svg";
 
       return `<div class="rfs-challenge__player rfs-challenge__player--pending">
-        <button type="button" class="rfs-challenge__player-btn"
-                data-action="rfsOpenChallengeDialog"
-                data-token-id="${tokenId}"
-                data-actor-id="${actorId}"
-                data-challenge-id="${challenge.challengeId}">
-          <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
-          <span class="rfs-challenge__player-name">${name}</span>
-        </button>
-        <div class="rfs-challenge__player-status">Waiting&#x2026;</div>
+        <div class="rfs-challenge__player-main">
+          <button type="button" class="rfs-challenge__player-btn"
+                  data-action="rfsOpenChallengeDialog"
+                  data-token-id="${tokenId}"
+                  data-actor-id="${actorId}"
+                  data-challenge-id="${challenge.challengeId}">
+            <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
+          </button>
+          <div class="rfs-challenge__player-info">
+            <span class="rfs-challenge__player-name">${name}</span>
+            <span class="rfs-challenge__player-waiting">Waiting&#x2026;</span>
+          </div>
+        </div>
+        <div class="rfs-challenge__player-roll-line">Rolling&#x2026;</div>
       </div>`;
     }
 
     const outcomeClass = result.failed ? "rfs-challenge__player--failure" : "rfs-challenge__player--success";
-    const pips = "&#x25cf;".repeat(result.skillLevel ?? 1);
 
-    let advNote = "";
+    let rollLine = `Rolled ${result.skillName} (${result.skillLevel ?? 1})`;
     if (result.allSixes) {
-      advNote = result.skillClaimed
-        ? `<div class="rfs-challenge__player-claimed">&#x2726; ${result.claimedSkillName}</div>`
-        : `<div class="rfs-challenge__player-pending-adv"><em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em></div>`;
+      rollLine += result.skillClaimed
+        ? ` &#x2192; &#x2726; ${result.claimedSkillName}`
+        : ` &#x2014; <em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em>`;
     }
 
     return `<div class="rfs-challenge__player ${outcomeClass}">
-      <button type="button" class="rfs-challenge__player-btn"
-              data-action="rfsOpenChallengeDialog"
-              data-token-id="${tokenId}"
-              data-actor-id="${result.actorId ?? ""}"
-              data-challenge-id="${challenge.challengeId}">
-        <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
-        <span class="rfs-challenge__player-name">${result.actorName}</span>
-      </button>
-      <div class="rfs-challenge__player-result">${result.total}</div>
-      <div class="rfs-challenge__player-skill">${result.skillName} <span class="rfs-challenge__pips">${pips}</span></div>
-      ${advNote}
+      <div class="rfs-challenge__player-main">
+        <button type="button" class="rfs-challenge__player-btn"
+                data-action="rfsOpenChallengeDialog"
+                data-token-id="${tokenId}"
+                data-actor-id="${result.actorId ?? ""}"
+                data-challenge-id="${challenge.challengeId}">
+          <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
+        </button>
+        <div class="rfs-challenge__player-info">
+          <span class="rfs-challenge__player-name">${result.actorName}</span>
+          <span class="rfs-challenge__player-total">${result.total}</span>
+        </div>
+      </div>
+      <div class="rfs-challenge__player-roll-line">${rollLine}</div>
     </div>`;
   });
 
@@ -229,9 +242,9 @@ export function buildChallengeCardContent(challenge) {
     : "";
 
   return `<div class="rfs-challenge" data-challenge-id="${challenge.challengeId}">
-    ${dcSection}
+    ${targetSection}
     <div class="rfs-challenge__players">
-      ${playerTiles.join("")}
+      ${playerRows.join("")}
     </div>
     ${completeNote}
   </div>`;

@@ -124,141 +124,133 @@
   padding: var(--rfs-space-xs) 0;
 }
 
-/* Big centred DC display */
-.rfs-challenge__dc {
+/* "Target / 4" header */
+.rfs-challenge__target {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: var(--rfs-font-size-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--rfs-color-text-label);
+  text-align: center;
   padding-bottom: var(--rfs-space-sm);
   border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
   margin-bottom: var(--rfs-space-sm);
 }
 
-.rfs-challenge__dc-value {
-  display: block;
+.rfs-challenge__target-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--rfs-color-text-label);
+  line-height: 1;
+  padding-bottom: 2px;
+}
+
+.rfs-challenge__target-value {
   font-family: var(--rfs-font-mono);
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   font-weight: bold;
   line-height: 1;
   color: var(--rfs-color-accent);
 }
 
-.rfs-challenge__dc-hidden {
+.rfs-challenge__target-hidden {
   font-size: var(--rfs-font-size-md);
   color: var(--rfs-color-text-muted);
   font-style: italic;
-  letter-spacing: 0;
-  text-transform: none;
 }
 
-/* Portrait tile row */
+/* Player list — stacked rows */
 .rfs-challenge__players {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--rfs-space-md);
-  justify-content: center;
-  padding: var(--rfs-space-xs) 0;
+  flex-direction: column;
 }
 
-/* Individual player tile */
+/* One row per player */
 .rfs-challenge__player {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  width: 5.5rem;
-  text-align: center;
+  gap: 2px;
+  padding: var(--rfs-space-sm) 0;
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+
+  &:last-child { border-bottom: none; }
 }
 
-/* Portrait + name as a clickable button */
-.rfs-challenge__player-btn {
+/* Portrait + info side by side */
+.rfs-challenge__player-main {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--rfs-space-sm);
+}
+
+/* Portrait as a button that re-opens the player dialog */
+.rfs-challenge__player-btn {
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  color: inherit;
-  width: 100%;
+  flex-shrink: 0;
 
   &:hover .rfs-challenge__portrait { filter: brightness(1.1); }
 }
 
-/* Portrait image */
 .rfs-challenge__portrait {
-  width: 3rem;
-  height: 3rem;
+  width: 2.6rem;
+  height: 2.6rem;
   border-radius: var(--rfs-radius-sm);
   object-fit: cover;
   border: 2px solid var(--rfs-color-border);
   display: block;
 }
 
-/* Player name */
+/* Name + status stacked to the right of the portrait */
+.rfs-challenge__player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
 .rfs-challenge__player-name {
-  font-size: 0.7rem;
-  color: var(--rfs-color-text-muted);
-  line-height: 1.2;
-  width: 100%;
+  font-size: var(--rfs-font-size-sm);
+  font-weight: bold;
+  color: var(--rfs-color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Pending "Waiting…" label */
-.rfs-challenge__player-status {
-  font-size: 0.7rem;
+.rfs-challenge__player-waiting {
+  font-size: var(--rfs-font-size-sm);
   color: var(--rfs-color-text-muted);
   font-style: italic;
 }
 
-/* Big result total */
-.rfs-challenge__player-result {
+.rfs-challenge__player-total {
   font-family: var(--rfs-font-mono);
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: bold;
   line-height: 1;
 }
 
-/* Skill name + pips */
-.rfs-challenge__player-skill {
-  font-size: 0.7rem;
+/* "Rolling…" / "Rolled Skill (N)" line, centred below the row */
+.rfs-challenge__player-roll-line {
+  text-align: center;
+  font-size: var(--rfs-font-size-sm);
   color: var(--rfs-color-text-muted);
-  line-height: 1.3;
+  font-style: italic;
 }
 
-.rfs-challenge__pips {
-  color: var(--rfs-color-accent);
-  letter-spacing: -1px;
-}
-
-/* Advancement notes */
-.rfs-challenge__player-claimed {
-  font-size: 0.65rem;
-  color: var(--rfs-color-allsixes);
-}
-
-.rfs-challenge__player-pending-adv {
-  font-size: 0.65rem;
-  color: var(--rfs-color-text-muted);
-}
-
-/* State-based colour overrides */
+/* State-based overrides */
 .rfs-challenge__player--pending .rfs-challenge__portrait {
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .rfs-challenge__player--success .rfs-challenge__portrait {
   border-color: var(--rfs-color-success);
 }
 
-.rfs-challenge__player--success .rfs-challenge__player-result {
+.rfs-challenge__player--success .rfs-challenge__player-total {
   color: var(--rfs-color-success);
 }
 
@@ -266,16 +258,18 @@
   border-color: var(--rfs-color-failure);
 }
 
-.rfs-challenge__player--failure .rfs-challenge__player-result {
+.rfs-challenge__player--failure .rfs-challenge__player-total {
   color: var(--rfs-color-failure);
 }
 
 .rfs-challenge__complete {
   margin-top: var(--rfs-space-sm);
+  padding-top: var(--rfs-space-sm);
   font-size: var(--rfs-font-size-sm);
   color: var(--rfs-color-text-muted);
   font-style: italic;
   text-align: center;
+  border-top: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
 }
 
 /* ── 4. Button variants ───────────────────────────────────────────────────── */
