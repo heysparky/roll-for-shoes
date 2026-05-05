@@ -140,11 +140,7 @@
   object-fit: cover;
   border-radius: var(--rfs-radius-md);
   border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
-  cursor: pointer;
   flex-shrink: 0;
-  transition: opacity var(--rfs-anim-fast);
-
-  &:hover { opacity: 0.85; }
 }
 
 .rfs-sheet__identity {
