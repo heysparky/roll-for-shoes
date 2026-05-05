@@ -1,91 +1,19 @@
 {{!-- templates/dialog/challenge-dialog.hbs --}}
-{{!--
-  GM-facing challenge dialog.
-  Rendered by RfsChallengeDialog.
-
-  Context:
-    dcMode        – "roll" | "static"
-    dcDice        – number of d6s to roll for DC
-    dcValue       – static DC value
-    dcVisible     – boolean, whether players see the DC
-    prompt        – GM situation prompt string
-    isRollMode    – boolean shorthand
-    isStaticMode  – boolean shorthand
-    tokens        – array of { id, name }
---}}
+{{!-- GM roll initiation: DC input + token list. --}}
 
 <section class="rfs-challenge-dialog">
 
-  {{!-- ── Situation Prompt ───────────────────────────────────────────────── --}}
-  <div class="rfs-challenge-dialog__section">
-    <label class="rfs-challenge-dialog__label" for="rfs-prompt">
-      {{localize "RFS.Dialog.Challenge.PromptLabel"}}
-    </label>
-    <input type="text"
-           id="rfs-prompt"
-           name="prompt"
-           class="rfs-challenge-dialog__prompt-input"
-           value="{{prompt}}"
-           placeholder="{{localize "RFS.Dialog.Challenge.PromptPlaceholder"}}">
-  </div>
-
-  {{!-- ── DC Mode Toggle ──────────────────────────────────────────────────── --}}
-  <div class="rfs-challenge-dialog__section">
-    <label class="rfs-challenge-dialog__label">DC</label>
-
-    <div class="rfs-challenge-dialog__dc-toggle">
-      <button type="button"
-              class="rfs-btn {{#if isRollMode}}rfs-btn--active{{/if}}"
-              data-action="toggleDcMode">
-        {{#if isRollMode}}&#x2726; {{/if}}{{localize "RFS.Dialog.Challenge.DcModeRoll"}}
-      </button>
-      <button type="button"
-              class="rfs-btn {{#if isStaticMode}}rfs-btn--active{{/if}}"
-              data-action="toggleDcMode">
-        {{#if isStaticMode}}&#x2726; {{/if}}{{localize "RFS.Dialog.Challenge.DcModeStatic"}}
-      </button>
-    </div>
-
-    {{!-- Roll mode: choose number of dice --}}
-    {{#if isRollMode}}
-      <div class="rfs-challenge-dialog__field">
-        <label for="rfs-dc-dice">{{localize "RFS.Dialog.Challenge.DcDiceLabel"}}</label>
-        <input type="number"
-               id="rfs-dc-dice"
-               name="dcDice"
-               value="{{dcDice}}"
-               min="1"
-               max="10"
-               style="width:4rem;">
-        <span>d6</span>
-      </div>
-    {{/if}}
-
-    {{!-- Static mode: enter a number --}}
-    {{#if isStaticMode}}
-      <div class="rfs-challenge-dialog__field">
-        <label for="rfs-dc-value">{{localize "RFS.Dialog.Challenge.DcValueLabel"}}</label>
-        <input type="number"
-               id="rfs-dc-value"
-               name="dcValue"
-               value="{{dcValue}}"
-               min="1"
-               style="width:4rem;">
-      </div>
-    {{/if}}
-  </div>
-
-  {{!-- ── DC Visibility Toggle ──────────────────────────────────────────────── --}}
-  <div class="rfs-challenge-dialog__section rfs-challenge-dialog__section--inline">
-    <button type="button"
-            class="rfs-btn {{#if dcVisible}}rfs-btn--active{{/if}}"
-            data-action="toggleDcVisible">
-      {{#if dcVisible}}
-        👁 {{localize "RFS.Dialog.Challenge.DcVisibleLabel"}}
-      {{else}}
-        🙈 {{localize "RFS.Dialog.Challenge.DcHiddenLabel"}}
-      {{/if}}
-    </button>
+  {{!-- ── DC ────────────────────────────────────────────────────────────────── --}}
+  <div class="rfs-challenge-dialog__section rfs-challenge-dialog__section--dc">
+    <label class="rfs-challenge-dialog__label" for="rfs-dc">DC</label>
+    <input type="number"
+           id="rfs-dc"
+           name="dc"
+           value="{{dc}}"
+           min="1"
+           max="99"
+           class="rfs-challenge-dialog__dc-input"
+           autofocus>
   </div>
 
   {{!-- ── Called Tokens ───────────────────────────────────────────────────── --}}
@@ -119,7 +47,7 @@
   {{!-- ── Footer ────────────────────────────────────────────────────────────── --}}
   <div class="rfs-challenge-dialog__footer">
     <button type="submit" class="rfs-btn rfs-btn--primary">
-      🎲 {{localize "RFS.Dialog.Challenge.Confirm"}}
+      {{localize "RFS.Dialog.Challenge.Confirm"}}
     </button>
     <button type="button"
             class="rfs-btn"

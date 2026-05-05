@@ -102,6 +102,10 @@
     "HUD": {
       "CallForRoll": "Call for Roll"
     },
+    "Keybinding": {
+      "CallForRoll": "Call for Roll",
+      "CallForRollHint": "Open the roll initiation dialog for selected tokens (GM only)"
+    },
     "Warn": {
       "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
       "NoXpToSpend": "No XP to spend.",

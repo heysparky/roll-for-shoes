@@ -454,9 +454,25 @@
   &:focus { outline: none; border-color: var(--rfs-color-accent); }
 }
 
-.rfs-challenge-dialog__dc-toggle {
-  display: flex;
-  gap: var(--rfs-space-xs);
+.rfs-challenge-dialog__section--dc {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--rfs-space-md);
+}
+
+.rfs-challenge-dialog__dc-input {
+  background: var(--rfs-color-bg-input);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-xl);
+  font-weight: bold;
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  text-align: center;
+  width: 5rem;
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
 }
 
 .rfs-challenge-dialog__field {

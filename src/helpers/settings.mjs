@@ -171,7 +171,7 @@ export async function rebuildChallengeCard(challenge) {
  */
 export function buildChallengeCardContent(challenge) {
   const {
-    prompt, dc, dcVisible, tokenIds, results = {}, complete = false,
+    dc, dcVisible, tokenIds, results = {}, complete = false,
   } = challenge;
 
   const dcDisplay = dcVisible
@@ -275,7 +275,6 @@ export function buildChallengeCardContent(challenge) {
       <div class="rfs-challenge__header">
         <strong>${game.i18n.localize("RFS.Chat.Challenge.Title")}</strong>
       </div>
-      <div class="rfs-challenge__prompt">${prompt}</div>
       <div class="rfs-challenge__dc">${dcDisplay}</div>
       <table class="rfs-challenge__table">
         <thead>

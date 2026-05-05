@@ -31,6 +31,22 @@ Hooks.once("init", function () {
 
   registerSystemSettings();
 
+  game.keybindings.register("roll-for-shoes", "callForRoll", {
+    name:       "RFS.Keybinding.CallForRoll",
+    hint:       "RFS.Keybinding.CallForRollHint",
+    editable:   [{ key: "KeyQ", modifiers: [] }],
+    restricted: true,
+    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+    onDown:     async () => {
+      if (!game.user.isGM) return false;
+      const tokens = canvas.tokens?.controlled ?? [];
+      if (!tokens.length) return false;
+      const { RfsChallengeDialog } = await import("./src/dialogs/challenge-dialog.mjs");
+      RfsChallengeDialog.open(tokens);
+      return true;
+    },
+  });
+
   CONFIG.Actor.dataModels.character = CharacterData;
   CONFIG.Actor.dataModels.npc = NpcData;
   CONFIG.Actor.documentClass = RfsActor;
