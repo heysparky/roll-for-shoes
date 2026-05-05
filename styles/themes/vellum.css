@@ -349,8 +349,7 @@
   background: rgba(200,153,90,0.06);
 }
 [data-rfs-theme="vellum"] .rfs-skill-index__name {
-  font-family: var(--rfs-serif);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--rfs-text);
   text-align: left;
 }
@@ -359,10 +358,8 @@
   border-bottom-color: var(--rfs-gold);
 }
 [data-rfs-theme="vellum"] .rfs-skill-index__name--root {
-  font-family: var(--rfs-display);
   font-size: 15px;
   font-weight: 600;
-  font-style: italic;
   color: var(--rfs-gold-hi);
 }
 [data-rfs-theme="vellum"] .rfs-skill-index__name--root:hover {

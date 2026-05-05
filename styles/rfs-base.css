@@ -207,6 +207,10 @@
   box-shadow: var(--rfs-shadow-panel);
 }
 
+.rfs-panel--skills {
+  flex: 1;
+}
+
 .rfs-panel__header {
   display: flex;
   align-items: center;
