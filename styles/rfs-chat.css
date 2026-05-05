@@ -63,23 +63,6 @@
   gap: var(--rfs-space-xs);
 }
 
-.rfs-roll__total {
-  font-family: var(--rfs-font-mono);
-  font-size: var(--rfs-font-size-md);
-  color: var(--rfs-color-text-muted);
-}
-
-.rfs-roll__allsixes {
-  display: inline-block;
-  padding: var(--rfs-space-xs) var(--rfs-space-sm);
-  background: var(--rfs-color-allsixes-bg);
-  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-allsixes);
-  border-radius: var(--rfs-radius-sm);
-  color: var(--rfs-color-allsixes);
-  font-size: var(--rfs-font-size-sm);
-  font-weight: bold;
-}
-
 .rfs-roll__result {
   font-size: var(--rfs-font-size-md);
   padding: var(--rfs-space-xs) var(--rfs-space-sm);
@@ -99,10 +82,11 @@
   border-left-color: var(--rfs-color-failure);
 }
 
-.rfs-roll__xp-note {
+.rfs-roll__claimed {
   font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-color-text-muted);
+  color: var(--rfs-color-allsixes);
   font-style: italic;
+  padding: var(--rfs-space-xs) 0;
 }
 
 /* Opposed roll layout */
@@ -275,20 +259,36 @@
   border-color: var(--rfs-color-xp);
   color: #fff;
   width: 100%;
+  padding: var(--rfs-space-sm) var(--rfs-space-md);
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  margin-top: var(--rfs-space-xs);
+  box-shadow: var(--rfs-shadow-md);
 
-  &:hover:not(:disabled) { filter: brightness(1.15); }
+  &:hover:not(:disabled) {
+    filter: brightness(1.15);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
 }
 
 .rfs-btn--advancement {
   background: var(--rfs-color-allsixes-bg);
-  border-color: var(--rfs-color-allsixes);
+  border: 2px solid var(--rfs-color-allsixes);
   color: var(--rfs-color-allsixes);
   width: 100%;
+  padding: var(--rfs-space-sm) var(--rfs-space-md);
+  font-size: var(--rfs-font-size-lg);
   font-weight: bold;
+  letter-spacing: 0.02em;
+  margin-top: var(--rfs-space-xs);
+  box-shadow: var(--rfs-shadow-md), 0 0 0 0 var(--rfs-color-allsixes);
+  transition: background var(--rfs-anim-fast), box-shadow var(--rfs-anim-fast), color var(--rfs-anim-fast);
 
   &:hover:not(:disabled) {
     background: var(--rfs-color-allsixes);
     color: #fff;
+    box-shadow: var(--rfs-shadow-md), 0 0 12px rgba(90,58,0,0.4);
   }
 }
 

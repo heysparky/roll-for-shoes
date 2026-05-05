@@ -49,7 +49,11 @@
       "Advancement": {
         "Title": "Advancement — All Sixes!",
         "Hint": "All dice showed 6! Name your new skill (child of {skill}, level {level}):",
-        "Confirm": "Claim Skill"
+        "Confirm": "Claim Skill",
+        "SpendTitle": "Spend XP & Advance",
+        "SpendHint": "Name your new skill (child of {skill}, level {level}):",
+        "SpendCost": "Costs {cost} XP — you can cancel if you change your mind.",
+        "SpendConfirm": "Spend {cost} XP & Advance"
       },
       "NewStatus": {
         "Title": "Add Status",
@@ -122,9 +126,9 @@
       "OpposedRoll": "Opposed Roll",
       "Winner": "{name} wins!",
       "Tie": "Tie",
-      "SpendXp": "Spend {cost} XP for advancement",
-      "XpSpentAllSixes": "Spent {cost} XP — all sixes achieved!",
-      "SkillClaimed": "✦ {name} claimed!",
+      "SpendXp": "Spend {cost} XP & Advance",
+      "Claimed": "✦ {name} claimed!",
+      "ClaimedXp": "✦ {name} claimed ({cost} XP spent)",
       "Challenge": {
         "Title": "Challenge",
         "Speaker": "Game Master",

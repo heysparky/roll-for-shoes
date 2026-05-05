@@ -54,6 +54,7 @@ export class RfsSkillRoll {
 
   /**
    * Standalone card XP spend (non-challenge rolls).
+   * Opens a single dialog: name the new skill + confirm cost. Cancel = no-op.
    */
   static async spendXpOnCard(messageId) {
     const message = game.messages.get(messageId);
@@ -77,20 +78,38 @@ export class RfsSkillRoll {
       return;
     }
 
+    const skill = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
+
+    const result = await foundry.applications.api.DialogV2.input({
+      window: { title: game.i18n.localize("RFS.Dialog.Advancement.SpendTitle") },
+      content: `
+        <p>${game.i18n.format("RFS.Dialog.Advancement.SpendHint", { skill: skill.name, level: skill.level + 1 })}</p>
+        <p style="color:var(--color-text-secondary);font-size:0.85em">
+          ${game.i18n.format("RFS.Dialog.Advancement.SpendCost", { cost: nonSixCount })}
+        </p>
+        <input type="text" name="skillName"
+               placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+               autofocus style="width:100%;margin-top:0.5em">`,
+      ok: { label: game.i18n.format("RFS.Dialog.Advancement.SpendConfirm", { cost: nonSixCount }) },
+    });
+
+    const name = result?.skillName?.trim();
+    if (!name) return;
+
     await actor.spendXp(nonSixCount);
+    await actor.addSkill(name, flags.skillId);
 
     const newDice  = flags.dice.map(() => 6);
     const newFlags = {
       ...flags,
-      dice:         newDice,
-      xpSpent:      true,
-      xpCost:       nonSixCount,
-      allSixes:     true,
-      nonSixCount:  0,
-      skillClaimed: false,
+      dice:             newDice,
+      xpSpent:          true,
+      xpCost:           nonSixCount,
+      allSixes:         true,
+      nonSixCount:      0,
+      skillClaimed:     true,
+      claimedSkillName: name,
     };
-
-    const skill = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
 
     await message.update({
       content: RfsSkillRoll._buildStandaloneContent(
@@ -351,22 +370,19 @@ export class RfsSkillRoll {
   }
 
   static _buildStandaloneContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
-    const modStr = RfsSkillRoll._modifierString(rawTotal, modifier);
-    const flavor = `${actorName}: ${skill.name} (${skill.level}d6)`;
-
     const resultLine = failed
-      ? `<div class="rfs-roll__result rfs-roll__result--failure">&#x2718; ${game.i18n.localize("RFS.Chat.Failure")} (vs ${difficulty}) &mdash; +1 XP</div>`
-      : `<div class="rfs-roll__result rfs-roll__result--success">&#x2714; ${game.i18n.localize("RFS.Chat.Success")} (vs ${difficulty})</div>`;
+      ? `<div class="rfs-roll__result rfs-roll__result--failure">&#x2718; ${game.i18n.localize("RFS.Chat.Failure")} (${total} vs ${difficulty}) &mdash; +1 XP</div>`
+      : `<div class="rfs-roll__result rfs-roll__result--success">&#x2714; ${game.i18n.localize("RFS.Chat.Success")} (${total} vs ${difficulty})</div>`;
 
     let actionArea = "";
 
     if (rollData.skillClaimed) {
-      actionArea = `<div class="rfs-roll__xp-note">&#x2726; ${game.i18n.format("RFS.Chat.SkillClaimed", { name: rollData.claimedSkillName })}</div>`;
+      const note = rollData.xpSpent
+        ? game.i18n.format("RFS.Chat.ClaimedXp", { name: rollData.claimedSkillName, cost: rollData.xpCost })
+        : game.i18n.format("RFS.Chat.Claimed",   { name: rollData.claimedSkillName });
+      actionArea = `<div class="rfs-roll__claimed">${note}</div>`;
     } else if (allSixes) {
-      if (rollData.xpSpent) {
-        actionArea = `<div class="rfs-roll__xp-note">&#x2726; ${game.i18n.format("RFS.Chat.XpSpentAllSixes", { cost: rollData.xpCost })}</div>`;
-      }
-      actionArea += RfsSkillRoll._advancementButton(
+      actionArea = RfsSkillRoll._advancementButton(
         { id: rollData.actorId },
         { id: rollData.skillId },
         messageId
@@ -387,14 +403,11 @@ export class RfsSkillRoll {
 
     return `
       <div class="rfs-roll">
-        <div class="rfs-roll__header"><strong>${flavor}</strong></div>
         <div class="rfs-roll__dice-row">
           ${dice.map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`).join("")}
         </div>
-        <div class="rfs-roll__total">${modStr} = <strong>${total}</strong></div>
-        ${allSixes ? `<div class="rfs-roll__allsixes">&#x2726; ${game.i18n.localize("RFS.Chat.AllSixes")}</div>` : ""}
-        ${actionArea}
         ${resultLine}
+        ${actionArea}
       </div>`;
   }
 
