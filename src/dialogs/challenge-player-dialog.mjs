@@ -62,6 +62,11 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
    * @returns {RfsChallengePlayerDialog|null}
    */
   static open(tokenId, actorId, challengeId) {
+    // Close any dialogs belonging to a different challenge
+    for (const [tid, dlg] of RfsChallengePlayerDialog._openDialogs) {
+      if (dlg._challengeId !== challengeId) dlg.close();
+    }
+
     const existing = RfsChallengePlayerDialog._openDialogs.get(tokenId);
     if (existing) {
       existing.render({ force: true });
@@ -253,6 +258,7 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
     }
 
     await this.render();
+    if (this._step === "done") setTimeout(() => this.close(), 1200);
   }
 
   static async _onSpendXp(event, target) {
@@ -298,6 +304,7 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
 
     this._step = "done";
     await this.render();
+    setTimeout(() => this.close(), 1200);
   }
 
   static async _onDismiss(event, target) {
