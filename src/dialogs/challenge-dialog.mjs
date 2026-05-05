@@ -6,9 +6,9 @@
  * Opened via the shoe button on a token HUD or the Q keybinding
  * with tokens selected on the canvas.
  *
- * GM sets a DC number, reviews the called tokens, and posts.
- * The challenge card appears in public chat; each called player's
- * popup opens automatically via socket.
+ * GM sets a DC (typed or rolled as Nd6), reviews the called tokens,
+ * and posts. The challenge card appears in public chat; each called
+ * player's popup opens automatically via socket.
  *
  * Static entry point:
  *   RfsChallengeDialog.open(selectedTokens)
@@ -36,13 +36,14 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
       title: "RFS.Dialog.Challenge.Title",
       resizable: false,
     },
-    position: { width: 320, height: "auto" },
+    position: { width: 340, height: "auto" },
     form: {
       handler: RfsChallengeDialog._onSubmit,
       closeOnSubmit: true,
     },
     actions: {
       removeToken: RfsChallengeDialog._onRemoveToken,
+      rollDc:      RfsChallengeDialog._onRollDc,
     },
   };
 
@@ -52,6 +53,19 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
       template: "systems/roll-for-shoes/templates/dialog/challenge-dialog.hbs",
     },
   };
+
+  /* -------------------------------------------- */
+  /*  Dynamic Title                               */
+  /* -------------------------------------------- */
+
+  /** Show "Roll for [name(s)]" in the title bar. */
+  get title() {
+    const names = this._tokens.map(t => t.name);
+    if (!names.length) return game.i18n.localize("RFS.Dialog.Challenge.Title");
+    if (names.length === 1) return `Roll for ${names[0]}`;
+    if (names.length <= 3) return `Roll for ${names.slice(0, -1).join(", ")} & ${names.at(-1)}`;
+    return `Roll for ${names.length} characters`;
+  }
 
   /* -------------------------------------------- */
   /*  Static Entry Point                          */
@@ -69,8 +83,10 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   constructor(options = {}) {
     super(options);
-    this._tokens = [...(options.tokens ?? [])];
-    this._dc     = 4;
+    this._tokens       = [...(options.tokens ?? [])];
+    this._dc           = 4;
+    this._dcDice       = 1;
+    this._dcRollResult = null;
   }
 
   /* -------------------------------------------- */
@@ -79,10 +95,19 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   /** @override */
   async _prepareContext(options) {
+    const dcRollHtml = this._dcRollResult
+      ? this._dcRollResult.dice
+          .map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`)
+          .join("") +
+        ` <span class="rfs-challenge-dialog__dc-total">= ${this._dcRollResult.total}</span>`
+      : "";
+
     return {
       ...await super._prepareContext(options),
-      tokens: this._tokens.map(t => ({ id: t.id, name: t.name })),
-      dc:     this._dc,
+      tokens:     this._tokens.map(t => ({ id: t.id, name: t.name })),
+      dc:         this._dc,
+      dcDice:     this._dcDice,
+      dcRollHtml,
     };
   }
 
@@ -93,6 +118,21 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
   static async _onRemoveToken(event, target) {
     const tokenId = target.dataset.tokenId;
     this._tokens  = this._tokens.filter(t => t.id !== tokenId);
+    await this.render();
+  }
+
+  static async _onRollDc(event, target) {
+    const diceInput = this.element?.querySelector("[name='dcDice']");
+    this._dcDice    = Math.max(1, parseInt(diceInput?.value ?? 1, 10) || 1);
+
+    const roll = new Roll(`${this._dcDice}d6`);
+    await roll.evaluate();
+
+    this._dc           = roll.total;
+    this._dcRollResult = {
+      dice:  roll.terms[0].results.map(r => r.result),
+      total: roll.total,
+    };
     await this.render();
   }
 
@@ -170,7 +210,6 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     }
 
     const skills = actor?.system?.skills ?? [{ id: "root", name: "Do Anything", level: 1 }];
-
     const skillOptions = skills
       .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
       .map(s => {

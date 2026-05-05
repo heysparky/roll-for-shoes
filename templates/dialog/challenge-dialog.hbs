@@ -1,19 +1,37 @@
 {{!-- templates/dialog/challenge-dialog.hbs --}}
-{{!-- GM roll initiation: DC input + token list. --}}
+{{!-- GM roll initiation: DC input (type or roll Nd6) + token list. --}}
 
 <section class="rfs-challenge-dialog">
 
   {{!-- ── DC ────────────────────────────────────────────────────────────────── --}}
-  <div class="rfs-challenge-dialog__section rfs-challenge-dialog__section--dc">
-    <label class="rfs-challenge-dialog__label" for="rfs-dc">DC</label>
-    <input type="number"
-           id="rfs-dc"
-           name="dc"
-           value="{{dc}}"
-           min="1"
-           max="99"
-           class="rfs-challenge-dialog__dc-input"
-           autofocus>
+  <div class="rfs-challenge-dialog__section">
+    <label class="rfs-challenge-dialog__label">DC</label>
+    <div class="rfs-challenge-dialog__dc-row">
+      <input type="number"
+             name="dc"
+             value="{{dc}}"
+             min="1"
+             max="99"
+             class="rfs-challenge-dialog__dc-input"
+             autofocus>
+      <span class="rfs-challenge-dialog__dc-sep">or roll</span>
+      <input type="number"
+             name="dcDice"
+             value="{{dcDice}}"
+             min="1"
+             max="10"
+             class="rfs-challenge-dialog__dc-dice">
+      <span class="rfs-challenge-dialog__dc-label">d6</span>
+      <button type="button"
+              data-action="rollDc"
+              class="rfs-btn rfs-btn--roll rfs-challenge-dialog__dc-roll-btn">
+        Roll
+      </button>
+    </div>
+
+    {{#if dcRollHtml}}
+      <div class="rfs-challenge-dialog__dc-result">{{{dcRollHtml}}}</div>
+    {{/if}}
   </div>
 
   {{!-- ── Called Tokens ───────────────────────────────────────────────────── --}}

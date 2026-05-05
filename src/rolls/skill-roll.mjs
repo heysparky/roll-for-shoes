@@ -242,6 +242,7 @@ export class RfsSkillRoll {
 
     const rollResult = {
       actorName:          actor.name,
+      actorImg:           actor.img,
       skillName:          skill.name,
       skillLevel:         skill.level,
       dice,

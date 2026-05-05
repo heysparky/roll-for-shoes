@@ -170,127 +170,71 @@ export async function rebuildChallengeCard(challenge) {
  * @returns {string}
  */
 export function buildChallengeCardContent(challenge) {
-  const {
-    dc, dcVisible, tokenIds, results = {}, complete = false,
-  } = challenge;
+  const { dc, dcVisible, tokenIds, results = {}, complete = false } = challenge;
 
-  const dcDisplay = dcVisible
-    ? `<span class="rfs-challenge__dc-value">${game.i18n.format("RFS.Chat.Challenge.DcValue", { dc })}</span>`
-    : `<span class="rfs-challenge__dc-hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span>`;
+  const dcSection = dcVisible
+    ? `<div class="rfs-challenge__dc">DC<span class="rfs-challenge__dc-value">${dc}</span></div>`
+    : `<div class="rfs-challenge__dc"><span class="rfs-challenge__dc-hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span></div>`;
 
-  const rows = tokenIds.map(tokenId => {
+  const playerTiles = tokenIds.map(tokenId => {
     const result = results[tokenId];
 
     if (!result) {
-      // Player hasn't rolled yet
-      return `
-        <tr class="rfs-challenge__row rfs-challenge__row--pending">
-          <td class="rfs-challenge__name">${result?.actorName ?? "…"}</td>
-          <td class="rfs-challenge__skill">—</td>
-          <td class="rfs-challenge__dice">—</td>
-          <td class="rfs-challenge__outcome rfs-challenge__outcome--pending">
-            ${game.i18n.localize("RFS.Chat.Challenge.Pending")}
-          </td>
-        </tr>`;
-    }
-
-    const diceHtml = result.dice
-      .map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`)
-      .join("");
-
-    const outcomeClass = result.failed ? "rfs-challenge__outcome--fail" : "rfs-challenge__outcome--success";
-    const outcomeText  = result.failed
-      ? game.i18n.localize("RFS.Chat.Failure")
-      : game.i18n.localize("RFS.Chat.Success");
-
-    // All-sixes: badge on the shared card only.
-    // The Claim Skill action happens on the player's personal advancement widget card.
-    // Once claimed, show the new skill name in place of the pending note.
-    const allSixesHtml = result.allSixes ? `
-      <div class="rfs-challenge__allsixes">&#x2726; ${
-        result.skillClaimed
-          ? result.claimedSkillName ?? ""
-          : `<em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em>`
-      }</div>` : "";
-
-    const nameBtn = `<button type="button" class="rfs-challenge__name-btn"
-        data-action="rfsOpenChallengeDialog"
-        data-token-id="${tokenId}"
-        data-actor-id="${result.actorId}"
-        data-challenge-id="${challenge.challengeId}">${result.actorName}</button>`;
-
-    return `
-      <tr class="rfs-challenge__row rfs-challenge__row--done">
-        <td class="rfs-challenge__name">${nameBtn}</td>
-        <td class="rfs-challenge__skill">${result.skillName} (${"&#x25cf;".repeat(result.skillLevel)})</td>
-        <td class="rfs-challenge__dice">${diceHtml}</td>
-        <td class="rfs-challenge__outcome ${outcomeClass}">
-          ${outcomeText}
-          ${allSixesHtml}
-        </td>
-      </tr>`;
-  });
-
-  // Pending rows for tokens with no result yet need actor names.
-  // We look them up from the canvas tokens.
-  const pendingRows = tokenIds
-    .filter(id => !results[id])
-    .map(id => {
-      const token   = canvas.tokens?.get(id);
+      const token   = canvas.tokens?.get(tokenId);
       const actor   = token?.actor;
       const name    = token?.name ?? game.i18n.localize("RFS.Chat.Challenge.UnknownToken");
       const actorId = actor?.id ?? "";
+      const img     = actor?.img ?? "icons/svg/mystery-man.svg";
 
-      const nameBtn = `<button type="button" class="rfs-challenge__name-btn"
-          data-action="rfsOpenChallengeDialog"
-          data-token-id="${id}"
-          data-actor-id="${actorId}"
-          data-challenge-id="${challenge.challengeId}">${name}</button>`;
-
-      return `
-        <tr class="rfs-challenge__row rfs-challenge__row--pending">
-          <td class="rfs-challenge__name">${nameBtn}</td>
-          <td class="rfs-challenge__skill">—</td>
-          <td class="rfs-challenge__dice">—</td>
-          <td class="rfs-challenge__outcome rfs-challenge__outcome--pending">
-            ${game.i18n.localize("RFS.Chat.Challenge.Pending")}
-          </td>
-        </tr>`;
-    });
-
-  // Merge: done rows first in tokenId order, pending rows fill the rest
-  const allRows = tokenIds.map(id => {
-    if (results[id]) {
-      return rows[tokenIds.indexOf(id)];
+      return `<div class="rfs-challenge__player rfs-challenge__player--pending">
+        <button type="button" class="rfs-challenge__player-btn"
+                data-action="rfsOpenChallengeDialog"
+                data-token-id="${tokenId}"
+                data-actor-id="${actorId}"
+                data-challenge-id="${challenge.challengeId}">
+          <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
+          <span class="rfs-challenge__player-name">${name}</span>
+        </button>
+        <div class="rfs-challenge__player-status">Waiting&#x2026;</div>
+      </div>`;
     }
-    return pendingRows.shift() ?? "";
+
+    const outcomeClass = result.failed ? "rfs-challenge__player--failure" : "rfs-challenge__player--success";
+    const pips = "&#x25cf;".repeat(result.skillLevel ?? 1);
+
+    let advNote = "";
+    if (result.allSixes) {
+      advNote = result.skillClaimed
+        ? `<div class="rfs-challenge__player-claimed">&#x2726; ${result.claimedSkillName}</div>`
+        : `<div class="rfs-challenge__player-pending-adv"><em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em></div>`;
+    }
+
+    return `<div class="rfs-challenge__player ${outcomeClass}">
+      <button type="button" class="rfs-challenge__player-btn"
+              data-action="rfsOpenChallengeDialog"
+              data-token-id="${tokenId}"
+              data-actor-id="${result.actorId ?? ""}"
+              data-challenge-id="${challenge.challengeId}">
+        <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
+        <span class="rfs-challenge__player-name">${result.actorName}</span>
+      </button>
+      <div class="rfs-challenge__player-result">${result.total}</div>
+      <div class="rfs-challenge__player-skill">${result.skillName} <span class="rfs-challenge__pips">${pips}</span></div>
+      ${advNote}
+    </div>`;
   });
 
   const completeNote = complete
     ? `<div class="rfs-challenge__complete">${game.i18n.localize("RFS.Chat.Challenge.Complete")}</div>`
     : "";
 
-  return `
-    <div class="rfs-challenge" data-challenge-id="${challenge.challengeId}">
-      <div class="rfs-challenge__header">
-        <strong>${game.i18n.localize("RFS.Chat.Challenge.Title")}</strong>
-      </div>
-      <div class="rfs-challenge__dc">${dcDisplay}</div>
-      <table class="rfs-challenge__table">
-        <thead>
-          <tr>
-            <th>${game.i18n.localize("RFS.Chat.Challenge.ColName")}</th>
-            <th>${game.i18n.localize("RFS.Chat.Challenge.ColSkill")}</th>
-            <th>${game.i18n.localize("RFS.Chat.Challenge.ColDice")}</th>
-            <th>${game.i18n.localize("RFS.Chat.Challenge.ColOutcome")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${allRows.join("")}
-        </tbody>
-      </table>
-      ${completeNote}
-    </div>`;
+  return `<div class="rfs-challenge" data-challenge-id="${challenge.challengeId}">
+    ${dcSection}
+    <div class="rfs-challenge__players">
+      ${playerTiles.join("")}
+    </div>
+    ${completeNote}
+  </div>`;
 }
 
 /**
