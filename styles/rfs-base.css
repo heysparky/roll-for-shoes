@@ -501,12 +501,49 @@
 
 /* ── Challenge card ───────────────────────────────────────────────────────── */
 
-/* Defensive resets — Foundry chat applies text-align:center, display:block,
-   and margin:auto to images and paragraphs inside chat messages. */
-.rfs-challenge * { box-sizing: border-box; }
-.rfs-challenge p { margin: 0; text-align: left; }
-.rfs-challenge img { display: block; margin: 0; border: none; box-shadow: none; max-width: none; }
-.rfs-challenge button { line-height: 1; }
+/* Defensive resets — Foundry's .message-content applies centering, image
+   margins, and block display that fight our flex layout. We use
+   .message-content .rfs-challenge to beat that specificity. */
+.message-content .rfs-challenge * { box-sizing: border-box; }
+.message-content .rfs-challenge p  { margin: 0; padding: 0; text-align: left; }
+.message-content .rfs-challenge img {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  max-width: none;
+  width: 40px;
+  height: 40px;
+}
+.message-content .rfs-challenge button { line-height: 1; margin: 0; }
+.message-content .rfs-challenge .rfs-challenge__player {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  text-align: left !important;
+}
+.message-content .rfs-challenge .rfs-challenge__player-btn {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  width: 52px !important;
+  height: 52px !important;
+}
+.message-content .rfs-challenge .rfs-challenge__player-info {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  text-align: left !important;
+}
+.message-content .rfs-challenge .rfs-challenge__player-result {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  flex-shrink: 0 !important;
+}
 
 .rfs-challenge {
   background: var(--rfs-challenge-bg);
