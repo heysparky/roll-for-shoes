@@ -34,8 +34,8 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
   /** @override */
   static DEFAULT_OPTIONS = {
-    classes: ["roll-for-shoes", "sheet", "actor", "character"],
-    position: { width: 600, height: 700 },
+    classes: ["roll-for-shoes", "rfs-app", "sheet", "actor", "character"],
+    position: { width: 680, height: 760 },
     resizable: true,
     form: {
       submitOnChange: true,

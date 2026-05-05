@@ -85,4 +85,13 @@ export function registerHandlebarsHelpers() {
   Handlebars.registerHelper("add", function (a, b) {
     return a + b;
   });
+
+  /**
+   * {{eq a b}} — strict equality check.
+   * Used by skill-node.hbs to match child skills to their parent id.
+   * Also useful anywhere a template needs to compare two values.
+   */
+  Handlebars.registerHelper("eq", function (a, b) {
+    return a === b;
+  });
 }

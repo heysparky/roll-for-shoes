@@ -1,22 +1,17 @@
 {{!-- templates/actor/partials/skill-tree.hbs --}}
 {{!--
-  Renders the top-level of the skill tree.
-  Finds the root skill (parentId = "") and passes it to skill-node,
-  which recurses for each generation of children.
+  Entry point for the skill tree. Finds the root node (parentId = "")
+  and passes it to skill-node.hbs, which recurses for each generation.
 
-  This partial is the entry point — skill-node.hbs handles each node + its children.
-
-  We use {{#each skills}} here so @index is the true flat-array position,
-  which we pass as skillIndex so input names like system.skills.N.name are correct.
+  The rfs-skill-tree__canvas wrapper lives in character-sheet.hbs so the
+  sheet controls scroll/overflow at the right level.
 --}}
 
 {{#each skills}}
   {{#unless this.parentId}}
     {{> "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs"
         skill=this
-        skillIndex=@index
         allSkills=../skills
-        isEditable=../isEditable
-        depth=0 }}
+        isEditable=../isEditable }}
   {{/unless}}
 {{/each}}

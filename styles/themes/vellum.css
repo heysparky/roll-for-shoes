@@ -1,4 +1,4 @@
-﻿/* =============================================================================
+/* =============================================================================
    Roll for Shoes — VELLUM theme
    styles/themes/vellum.css
 
@@ -500,8 +500,8 @@
   background: var(--rfs-gold);
   opacity: 0.5;
 }
-/* Stub OUT of any branching parent's card */
-[data-rfs-theme="vellum"] .rfs-skill-node--branch::after {
+/* Stub OUT of any branching parent's card — hidden when children div is empty */
+[data-rfs-theme="vellum"] .rfs-skill-node--branch:has(.rfs-skill-node__children:not(:empty))::after {
   content: "";
   position: absolute;
   right: -18px;

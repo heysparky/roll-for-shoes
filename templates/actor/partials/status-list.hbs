@@ -2,16 +2,21 @@
 {{!--
   Status list. Each status has a name and a numeric modifier.
   Positive values are advantages, negative are penalties.
-  Examples: +2 Clean Shoe, -3 Broken Nose, -4 Raining
+
+  Class name contract (must match vellum.css):
+    .rfs-status--pos   — positive modifier
+    .rfs-status--neg   — negative modifier
+    .rfs-status__mod   — the number display
+    .rfs-status__name  — the label
 --}}
 
 <div class="rfs-statuses">
   {{#if statuses.length}}
     {{#each statuses}}
-      <div class="rfs-status {{#if (gt value 0)}}rfs-status--positive{{else if (lt value 0)}}rfs-status--negative{{else}}rfs-status--neutral{{/if}}"
+      <div class="rfs-status {{#if (gt value 0)}}rfs-status--pos{{else if (lt value 0)}}rfs-status--neg{{/if}}"
            data-status-id="{{id}}">
 
-        <span class="rfs-status__modifier">{{rfsSignedNumber value}}</span>
+        <span class="rfs-status__mod">{{rfsSignedNumber value}}</span>
 
         {{#if ../isEditable}}
           <input class="rfs-status__name"
@@ -24,7 +29,7 @@
                  value="{{value}}"
                  style="width: 3.5rem">
           <button type="button"
-                  class="rfs-btn rfs-btn--icon rfs-btn--danger"
+                  class="rfs-btn rfs-btn--icon"
                   data-action="deleteStatus"
                   data-status-id="{{id}}"
                   title="{{localize 'RFS.Action.DeleteStatus'}}">
