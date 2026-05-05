@@ -170,17 +170,22 @@ export async function rebuildChallengeCard(challenge) {
  * @returns {string}
  */
 export function buildChallengeCardContent(challenge) {
-  const { dc, dcVisible, tokenIds, results = {}, complete = false } = challenge;
+  const { dc, dcVisible, prompt, tokenIds, results = {}, complete = false } = challenge;
 
-  const targetSection = dcVisible
-    ? `<div class="rfs-challenge__target">
-        <span class="rfs-challenge__target-label">Target</span>
-        <span class="rfs-challenge__target-value">${dc}</span>
-      </div>`
-    : `<div class="rfs-challenge__target">
-        <span class="rfs-challenge__target-label">Target</span>
-        <span class="rfs-challenge__target-hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span>
-      </div>`;
+  const dcDisplay = dcVisible
+    ? `<span class="rfs-challenge__dc">DC ${dc}</span>`
+    : `<span class="rfs-challenge__dc rfs-challenge__dc--hidden">${game.i18n.localize("RFS.Chat.Challenge.DcHidden")}</span>`;
+
+  const promptHtml = prompt
+    ? `<div class="rfs-challenge__prompt">${prompt}</div>`
+    : "";
+
+  const rolledCount = tokenIds.filter(id => results[id]).length;
+  const total       = tokenIds.length;
+  const dotClass    = complete ? "rfs-challenge__status-dot--complete" : "rfs-challenge__status-dot--pulsing";
+  const statusText  = complete
+    ? game.i18n.localize("RFS.Chat.Challenge.Complete")
+    : `${rolledCount} / ${total} ${game.i18n.localize("RFS.Chat.Challenge.Rolled")}`;
 
   const playerRows = tokenIds.map(tokenId => {
     const result = results[tokenId];
@@ -193,58 +198,76 @@ export function buildChallengeCardContent(challenge) {
       const img     = actor?.img ?? "icons/svg/mystery-man.svg";
 
       return `<div class="rfs-challenge__player rfs-challenge__player--pending">
-        <div class="rfs-challenge__player-main">
-          <button type="button" class="rfs-challenge__player-btn"
-                  data-action="rfsOpenChallengeDialog"
-                  data-token-id="${tokenId}"
-                  data-actor-id="${actorId}"
-                  data-challenge-id="${challenge.challengeId}">
-            <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
-          </button>
-          <div class="rfs-challenge__player-info">
-            <span class="rfs-challenge__player-waiting">Waiting&#x2026;</span>
-          </div>
+        <button type="button" class="rfs-challenge__player-btn"
+                data-action="rfsOpenChallengeDialog"
+                data-token-id="${tokenId}"
+                data-actor-id="${actorId}"
+                data-challenge-id="${challenge.challengeId}">
+          <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
+        </button>
+        <div class="rfs-challenge__player-info">
+          <span class="rfs-challenge__player-name">${name}</span>
+          <span class="rfs-challenge__player-skill rfs-challenge__player-skill--waiting">${game.i18n.localize("RFS.Chat.Challenge.Waiting")}</span>
         </div>
-        <div class="rfs-challenge__player-roll-line">Rolling&#x2026;</div>
+        <div class="rfs-challenge__player-result">
+          <span class="rfs-challenge__player-total rfs-challenge__player-total--waiting">--</span>
+        </div>
       </div>`;
     }
 
-    const outcomeClass = result.failed ? "rfs-challenge__player--failure" : "rfs-challenge__player--success";
+    const succeeded = !result.failed;
+    const tied      = result.total === dc;
+    const outcomeClass = tied ? "rfs-challenge__player--tie"
+                       : succeeded ? "rfs-challenge__player--success"
+                       : "rfs-challenge__player--failure";
+    const totalClass   = tied ? "rfs-challenge__player-total--tie"
+                       : succeeded ? "rfs-challenge__player-total--success"
+                       : "rfs-challenge__player-total--failure";
 
-    let rollLine = `Rolled ${result.skillName} (${result.skillLevel ?? 1})`;
+    let skillLine = `${result.skillName} ${result.skillLevel ?? 1}`;
     if (result.allSixes) {
-      rollLine += result.skillClaimed
+      skillLine += result.skillClaimed
         ? ` &#x2192; &#x2726; ${result.claimedSkillName}`
         : ` &#x2014; <em>${game.i18n.localize("RFS.Chat.Challenge.AdvancementPending")}</em>`;
     }
 
+    const diceDisplay = result.dice?.length
+      ? `<span class="rfs-challenge__player-dice">[${result.dice.join(", ")}]</span>`
+      : "";
+
     return `<div class="rfs-challenge__player ${outcomeClass}">
-      <div class="rfs-challenge__player-main">
-        <button type="button" class="rfs-challenge__player-btn"
-                data-action="rfsOpenChallengeDialog"
-                data-token-id="${tokenId}"
-                data-actor-id="${result.actorId ?? ""}"
-                data-challenge-id="${challenge.challengeId}">
-          <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
-        </button>
-        <div class="rfs-challenge__player-info">
-          <span class="rfs-challenge__player-total">${result.total}</span>
-        </div>
+      <button type="button" class="rfs-challenge__player-btn"
+              data-action="rfsOpenChallengeDialog"
+              data-token-id="${tokenId}"
+              data-actor-id="${result.actorId ?? ""}"
+              data-challenge-id="${challenge.challengeId}">
+        <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
+      </button>
+      <div class="rfs-challenge__player-info">
+        <span class="rfs-challenge__player-name">${result.actorName}</span>
+        <span class="rfs-challenge__player-skill">${skillLine}</span>
       </div>
-      <div class="rfs-challenge__player-roll-line">${rollLine}</div>
+      <div class="rfs-challenge__player-result">
+        <span class="rfs-challenge__player-total ${totalClass}">${result.total}</span>
+        ${diceDisplay}
+      </div>
     </div>`;
   });
 
-  const completeNote = complete
-    ? `<div class="rfs-challenge__complete">${game.i18n.localize("RFS.Chat.Challenge.Complete")}</div>`
-    : "";
-
   return `<div class="rfs-challenge" data-challenge-id="${challenge.challengeId}">
-    ${targetSection}
+    <div class="rfs-challenge__header">
+      <span class="rfs-challenge__gear">&#9881;</span>
+      <span class="rfs-challenge__title">${game.i18n.localize("RFS.Chat.Challenge.Title")}</span>
+      ${dcDisplay}
+    </div>
+    ${promptHtml}
     <div class="rfs-challenge__players">
       ${playerRows.join("")}
     </div>
-    ${completeNote}
+    <div class="rfs-challenge__footer">
+      <span class="rfs-challenge__status-dot ${dotClass}"></span>
+      <span class="rfs-challenge__status-text">${statusText}</span>
+    </div>
   </div>`;
 }
 

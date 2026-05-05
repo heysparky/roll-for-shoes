@@ -25,6 +25,21 @@
   --rfs-color-roll-btn:       #1a56a0;
   --rfs-color-roll-btn-hover: #2066c0;
 
+  /* Challenge card — light, minimal, high contrast */
+  --rfs-challenge-bg:          #f8f8f8;
+  --rfs-challenge-bg-header:   #eeeeee;
+  --rfs-challenge-bg-portrait: #e0e0e0;
+  --rfs-challenge-border:      #d0d0d0;
+  --rfs-challenge-border-sub:  #e8e8e8;
+  --rfs-challenge-accent:      #1a56a0;
+  --rfs-challenge-text:        #111111;
+  --rfs-challenge-text-muted:  #999999;
+  --rfs-challenge-text-skill:  #1a56a0;
+  --rfs-challenge-text-dc:     #666666;
+  --rfs-challenge-text-title:  #111111;
+  --rfs-challenge-row-waiting: #cccccc;
+  --rfs-challenge-portrait-hover: #d0d0d0;
+
   --rfs-font-body:    "Inter", "Segoe UI", system-ui, sans-serif;
   --rfs-font-display: "Inter", system-ui, sans-serif;
   --rfs-font-mono:    "JetBrains Mono", "Fira Code", monospace;

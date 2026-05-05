@@ -149,7 +149,9 @@
         "ColSkill": "Skill",
         "ColDice": "Dice",
         "ColOutcome": "Result",
-        "AdvancementPending": "advancement pending…"
+        "AdvancementPending": "advancement pending…",
+        "Waiting": "choosing skill…",
+        "Rolled": "rolled"
       },
       "XpSpendTitle": "Spend XP for Advancement?"
     }
