@@ -51,6 +51,26 @@
   --rfs-failure:   #c84838;
   --rfs-six:       #e2b378;
 
+  /* ── rfs-base.css token bridge ──────────────────────────────────────────
+     rfs-base.css layout rules use --rfs-color-* properties. These map
+     them to vellum's palette so the base layout picks up the dark theme. */
+  --rfs-color-bg:          #1a0e0a;
+  --rfs-color-bg-panel:    #1e1208;
+  --rfs-color-bg-input:    #2c1c14;
+  --rfs-color-border:      #5a3a22;
+  --rfs-color-text:        #ecd9b8;
+  --rfs-color-text-muted:  #8a6c4a;
+  --rfs-color-text-label:  #c8995a;
+  --rfs-color-accent:      #c8995a;
+  --rfs-color-accent-hover:#e2b378;
+  --rfs-color-skill-root:  #e2b378;
+  --rfs-color-pip:         #c8995a;
+  --rfs-color-xp:          #e2b378;
+  --rfs-color-success:     #9aba6a;
+  --rfs-color-failure:     #c84838;
+  --rfs-color-status-pos:  #9aba6a;
+  --rfs-color-status-neg:  #c84838;
+
   /* Type */
   --rfs-serif:   "EB Garamond", Georgia, serif;
   --rfs-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
@@ -387,6 +407,7 @@
   transition: all 160ms ease;
   flex-shrink: 0;
   text-align: left;
+  position: relative;
 }
 [data-rfs-theme="vellum"] .rfs-skill-node__card:hover {
   border-color: var(--rfs-gold);
@@ -426,6 +447,9 @@
   color: var(--rfs-text);
   line-height: 1.2;
   word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 [data-rfs-theme="vellum"] .rfs-skill-node__card--root .rfs-skill-node__name {
   font-size: 18px;
@@ -500,8 +524,8 @@
   background: var(--rfs-gold);
   opacity: 0.5;
 }
-/* Stub OUT of any branching parent's card — hidden when children div is empty */
-[data-rfs-theme="vellum"] .rfs-skill-node--branch:has(.rfs-skill-node__children:not(:empty))::after {
+/* Stub OUT of a parent card's right edge — only when children exist */
+[data-rfs-theme="vellum"] .rfs-skill-node:has(> .rfs-skill-node__children:not(:empty)) > .rfs-skill-node__card::after {
   content: "";
   position: absolute;
   right: -18px;
