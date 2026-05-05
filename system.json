@@ -18,7 +18,8 @@
   "styles": [
     "styles/rfs-base.css",
     "styles/rfs-chat.css",
-    "styles/themes/dark-factory.css"
+    "styles/themes/dark-factory.css",
+    "styles/themes/vellum.css"
   ],
   "languages": [
     {

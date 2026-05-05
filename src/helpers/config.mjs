@@ -51,6 +51,7 @@ export const RFS = {
   themes: {
     "dark-factory": "RFS.Theme.DarkFactory",
     "clean-light":  "RFS.Theme.CleanLight",
+    "vellum":       "RFS.Theme.Vellum",
   },
 
   // ── Default Theme ─────────────────────────────────────────────────────────

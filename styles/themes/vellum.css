@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
    Roll for Shoes — VELLUM theme
    styles/themes/vellum.css
 
@@ -6,9 +6,9 @@
    `[data-rfs-theme="vellum"]` so this file can co-exist with other themes.
 
    Class names assume the rfs- prefix convention:
-     .rfs-sheet, .rfs-sheet__top, .rfs-sheet__portrait, .rfs-sheet__name, ...
+     .rfs-sheet, .rfs-sheet__header, .rfs-sheet__portrait, .rfs-sheet__name, ...
      .rfs-skill-tree, .rfs-skill-node, .rfs-skill-node__card, ...
-     .rfs-challenge, .rfs-challenge__row, .rfs-challenge__total, ...
+     .rfs-challenge, .rfs-challenge__player, .rfs-challenge__player-total, ...
      .rfs-popup, .rfs-popup__plate, .rfs-result, .rfs-die, .rfs-result__vs, ...
      .rfs-btn, .rfs-btn--primary, .rfs-btn--ghost, .rfs-btn--gold
 
@@ -98,12 +98,12 @@
    Markup expected:
      <header class="rfs-section">
        <span class="rfs-section__mark">❦</span>
-       <h2 class="rfs-section__title">Ars · Skills</h2>
+       <h2 class="rfs-panel__title">Ars · Skills</h2>
        <span class="rfs-section__rule"></span>
        <button class="rfs-section__action">⤢ Expand Map</button>  <!-- optional -->
      </header>
 ============================================================================= */
-[data-rfs-theme="vellum"] .rfs-section {
+[data-rfs-theme="vellum"] .rfs-panel__header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -115,7 +115,7 @@
   font-style: italic;
   color: var(--rfs-gold);
 }
-[data-rfs-theme="vellum"] .rfs-section__title {
+[data-rfs-theme="vellum"] .rfs-panel__title {
   margin: 0;
   font-family: var(--rfs-display);
   font-size: 22px;
@@ -159,7 +159,7 @@
 ============================================================================= */
 
 /* Top: portrait | identity | xp */
-[data-rfs-theme="vellum"] .rfs-sheet__top {
+[data-rfs-theme="vellum"] .rfs-sheet__header {
   display: grid;
   grid-template-columns: 152px 1fr auto;
   gap: 22px;
@@ -167,7 +167,7 @@
   border-bottom: 1px solid var(--rfs-rule);
   position: relative;
 }
-[data-rfs-theme="vellum"] .rfs-sheet__top::after {
+[data-rfs-theme="vellum"] .rfs-sheet__header::after {
   content: "";
   position: absolute;
   left: 24px; right: 24px; bottom: -1px;
@@ -220,7 +220,7 @@
 }
 
 /* Identity column */
-[data-rfs-theme="vellum"] .rfs-sheet__id {
+[data-rfs-theme="vellum"] .rfs-sheet__identity {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -332,7 +332,7 @@
              <div class="rfs-skill-node__row">
                <div class="rfs-skill-node__name">Do Anything</div>
                <div class="rfs-skill-node__pips">
-                 <span class="rfs-skill-pip"></span>
+                 <span class="rfs-pip"></span>
                </div>
              </div>
              <div class="rfs-skill-node__hint">Roll 1d6</div>
@@ -437,7 +437,7 @@
   gap: 4px;
   flex-shrink: 0;
 }
-[data-rfs-theme="vellum"] .rfs-skill-pip {
+[data-rfs-theme="vellum"] .rfs-pip {
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--rfs-gold);
@@ -662,7 +662,7 @@
 }
 
 /* Challenge plate (prompt + DC) */
-[data-rfs-theme="vellum"] .rfs-popup__plate {
+[data-rfs-theme="vellum"] .rfs-cpd__context {
   margin: 14px 20px 0;
   padding: 12px 14px;
   background:
@@ -672,7 +672,7 @@
   border-left: 3px solid var(--rfs-gold);
   border-radius: var(--rfs-radius-sm);
 }
-[data-rfs-theme="vellum"] .rfs-popup__plate-prompt {
+[data-rfs-theme="vellum"] .rfs-cpd__prompt {
   font-family: var(--rfs-serif);
   font-size: 14px;
   font-style: italic;
@@ -762,7 +762,7 @@
 }
 
 /* Result moment — dice + total vs DC */
-[data-rfs-theme="vellum"] .rfs-result {
+[data-rfs-theme="vellum"] .rfs-cpd__result {
   margin: 18px 20px 0;
   padding: 16px 16px 12px;
   background: var(--rfs-bg-deep);
@@ -770,7 +770,7 @@
   border-radius: var(--rfs-radius-sm);
   text-align: center;
 }
-[data-rfs-theme="vellum"] .rfs-result__dice {
+[data-rfs-theme="vellum"] .rfs-cpd__dice-row {
   display: flex;
   gap: 8px;
   justify-content: center;
@@ -810,7 +810,7 @@
   margin-top: 6px;
   font-family: var(--rfs-display);
 }
-[data-rfs-theme="vellum"] .rfs-result__total {
+[data-rfs-theme="vellum"] .rfs-cpd__total {
   font-size: 44px;
   font-weight: 700;
   font-style: italic;
@@ -841,7 +841,7 @@
   color: var(--rfs-text-mute);
 }
 
-[data-rfs-theme="vellum"] .rfs-result__verdict {
+[data-rfs-theme="vellum"] .rfs-cpd__outcome {
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -855,8 +855,8 @@
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-[data-rfs-theme="vellum"] .rfs-result__verdict--success { color: var(--rfs-success); }
-[data-rfs-theme="vellum"] .rfs-result__verdict--failure { color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-cpd__outcome--success { color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-cpd__outcome--fail { color: var(--rfs-failure); }
 
 /* +1 XP badge */
 [data-rfs-theme="vellum"] .rfs-result__xp-badge {
@@ -885,7 +885,7 @@
 }
 
 /* XP-spend option (after failure) */
-[data-rfs-theme="vellum"] .rfs-xp-option {
+[data-rfs-theme="vellum"] .rfs-cpd__xpspend {
   margin: 12px 20px 0;
   padding: 12px 14px;
   background:
@@ -909,7 +909,7 @@
 }
 
 /* Advancement panel */
-[data-rfs-theme="vellum"] .rfs-advance {
+[data-rfs-theme="vellum"] .rfs-cpd__advancement {
   position: relative;
   margin: 14px 20px 0;
   padding: 18px 18px 16px;
@@ -923,7 +923,7 @@
     0 0 24px rgba(226,179,120,0.15);
   text-align: center;
 }
-[data-rfs-theme="vellum"] .rfs-advance::before {
+[data-rfs-theme="vellum"] .rfs-cpd__advancement::before {
   content: "✦";
   position: absolute;
   top: -14px;
@@ -944,19 +944,19 @@
   color: var(--rfs-gold-hi);
   text-shadow: 0 1px 0 rgba(0,0,0,0.4);
 }
-[data-rfs-theme="vellum"] .rfs-advance__sub {
+[data-rfs-theme="vellum"] .rfs-cpd__advancement-prompt {
   margin-bottom: 14px;
   font-family: var(--rfs-serif);
   font-size: 13px;
   font-style: italic;
   color: var(--rfs-text-soft);
 }
-[data-rfs-theme="vellum"] .rfs-advance__sub b {
+[data-rfs-theme="vellum"] .rfs-cpd__advancement-prompt b {
   color: var(--rfs-gold-hi);
   font-style: normal;
   font-family: var(--rfs-display);
 }
-[data-rfs-theme="vellum"] .rfs-advance__input {
+[data-rfs-theme="vellum"] .rfs-cpd__skill-name-input {
   width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
@@ -971,7 +971,7 @@
   outline: none;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
 }
-[data-rfs-theme="vellum"] .rfs-advance__input::placeholder {
+[data-rfs-theme="vellum"] .rfs-cpd__skill-name-input::placeholder {
   color: var(--rfs-text-mute);
   font-style: italic;
 }
@@ -1057,7 +1057,7 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
-[data-rfs-theme="vellum"] .rfs-challenge__head {
+[data-rfs-theme="vellum"] .rfs-challenge__header {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1067,13 +1067,13 @@
     var(--rfs-bg-deep);
   border-bottom: 1px solid var(--rfs-gold);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__head-mark {
+[data-rfs-theme="vellum"] .rfs-challenge__gear {
   font-family: var(--rfs-display);
   font-size: 16px;
   font-style: italic;
   color: var(--rfs-gold-hi);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__head-title {
+[data-rfs-theme="vellum"] .rfs-challenge__title {
   flex: 1;
   font-family: var(--rfs-display);
   font-size: 16px;
@@ -1082,7 +1082,7 @@
   letter-spacing: 0.02em;
   color: var(--rfs-gold-hi);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__head-dc {
+[data-rfs-theme="vellum"] .rfs-challenge__dc {
   padding: 3px 10px;
   background: var(--rfs-bg-input);
   border: 1px solid var(--rfs-border-strong);
@@ -1104,19 +1104,19 @@
 }
 
 /* Per-player row */
-[data-rfs-theme="vellum"] .rfs-challenge__row {
+[data-rfs-theme="vellum"] .rfs-challenge__player {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--rfs-rule);
   border-left: 3px solid var(--rfs-rule);
   position: relative;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__row:last-of-type { border-bottom: none; }
-[data-rfs-theme="vellum"] .rfs-challenge__row--success { border-left-color: var(--rfs-success); }
-[data-rfs-theme="vellum"] .rfs-challenge__row--failure { border-left-color: var(--rfs-failure); }
-[data-rfs-theme="vellum"] .rfs-challenge__row--pending { border-left-color: var(--rfs-rule); }
-[data-rfs-theme="vellum"] .rfs-challenge__row--rolling { border-left-color: var(--rfs-gold); }
-[data-rfs-theme="vellum"] .rfs-challenge__row--advance {
+[data-rfs-theme="vellum"] .rfs-challenge__player:last-of-type { border-bottom: none; }
+[data-rfs-theme="vellum"] .rfs-challenge__player--success { border-left-color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-challenge__player--failure { border-left-color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-challenge__player--pending { border-left-color: var(--rfs-rule); }
+[data-rfs-theme="vellum"] .rfs-challenge__player--rolling { border-left-color: var(--rfs-gold); }
+[data-rfs-theme="vellum"] .rfs-challenge__player--advance {
   border-left-color: var(--rfs-gold);
   background: linear-gradient(90deg, rgba(200,153,90,0.08), transparent);
 }
@@ -1141,12 +1141,12 @@
   width: 100%; height: 100%;
   object-fit: cover;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__info {
+[data-rfs-theme="vellum"] .rfs-challenge__player-info {
   flex: 1;
   padding: 4px 8px;
   min-width: 0;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__name {
+[data-rfs-theme="vellum"] .rfs-challenge__player-name {
   font-family: var(--rfs-display);
   font-size: 15px;
   font-style: italic;
@@ -1154,7 +1154,7 @@
   line-height: 1.2;
   color: var(--rfs-text);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__skill {
+[data-rfs-theme="vellum"] .rfs-challenge__player-skill {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1164,7 +1164,7 @@
   font-style: italic;
   color: var(--rfs-gold);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__skill--waiting { color: var(--rfs-text-mute); }
+[data-rfs-theme="vellum"] .rfs-challenge__player-skill--waiting { color: var(--rfs-text-mute); }
 [data-rfs-theme="vellum"] .rfs-challenge__rolling-dot {
   width: 5px; height: 5px;
   border-radius: 50%;
@@ -1183,35 +1183,35 @@
   color: var(--rfs-gold);
 }
 
-[data-rfs-theme="vellum"] .rfs-challenge__result {
+[data-rfs-theme="vellum"] .rfs-challenge__player-result {
   padding: 0 14px 0 8px;
   text-align: right;
   min-width: 64px;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__total {
+[data-rfs-theme="vellum"] .rfs-challenge__player-total {
   font-family: var(--rfs-display);
   font-size: 28px;
   font-weight: 700;
   font-style: italic;
   line-height: 1;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__total--success { color: var(--rfs-success); }
-[data-rfs-theme="vellum"] .rfs-challenge__total--failure { color: var(--rfs-failure); }
-[data-rfs-theme="vellum"] .rfs-challenge__total--waiting {
+[data-rfs-theme="vellum"] .rfs-challenge__player-total--success { color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-challenge__player-total--failure { color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-challenge__player-total--waiting {
   font-family: var(--rfs-serif);
   font-size: 14px;
   font-style: italic;
   font-weight: 400;
   color: var(--rfs-text-mute);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__total-old {
+[data-rfs-theme="vellum"] .rfs-challenge__player-total-old {
   margin-right: 4px;
   font-size: 16px;
   font-weight: 400;
   color: var(--rfs-text-mute);
   text-decoration: line-through;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__dice {
+[data-rfs-theme="vellum"] .rfs-challenge__player-dice {
   margin-top: 2px;
   font-family: var(--rfs-mono);
   font-size: 10px;
@@ -1243,7 +1243,7 @@
 }
 
 /* Footer — pulsing waiting state OR resolved summary */
-[data-rfs-theme="vellum"] .rfs-challenge__foot {
+[data-rfs-theme="vellum"] .rfs-challenge__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1252,25 +1252,25 @@
   background: var(--rfs-bg-deep);
   border-top: 1px solid var(--rfs-rule);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__foot-left {
+[data-rfs-theme="vellum"] .rfs-challenge__footer-left {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__dot {
+[data-rfs-theme="vellum"] .rfs-challenge__status-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--rfs-gold);
   animation: rfs-pulse 1.5s ease-in-out infinite;
 }
-[data-rfs-theme="vellum"] .rfs-challenge__foot-text {
+[data-rfs-theme="vellum"] .rfs-challenge__status-text {
   font-family: var(--rfs-mono);
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--rfs-text-mute);
 }
-[data-rfs-theme="vellum"] .rfs-challenge__foot-summary {
+[data-rfs-theme="vellum"] .rfs-challenge__footer-summary {
   font-family: var(--rfs-display);
   font-size: 13px;
   font-style: italic;
