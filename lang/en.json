@@ -1,4 +1,4 @@
-{
+﻿{
   "TYPES": {
     "Actor": {
       "character": "Character",
@@ -38,6 +38,7 @@
       "DeleteSkill": "Delete skill",
       "AddStatus": "Add status",
       "DeleteStatus": "Remove status",
+      "OpenSkillMap": "Expand skill tree",
       "PostDifficulty": "Post Difficulty to Chat",
       "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)"
     },

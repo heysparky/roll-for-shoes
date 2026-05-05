@@ -1,4 +1,4 @@
-{{!-- templates/actor/character-sheet.hbs --}}
+﻿{{!-- templates/actor/character-sheet.hbs --}}
 <div class="rfs-sheet character">
 
   {{!-- ── Header: portrait | identity | xp ─────────────────────────────── --}}
@@ -32,16 +32,17 @@
     <div class="rfs-panel rfs-panel--skills">
       <div class="rfs-panel__header">
         <h2 class="rfs-panel__title">{{localize 'RFS.Label.Skills'}}</h2>
+        <button type="button"
+                class="rfs-section__action"
+                data-action="openSkillMap"
+                title="{{localize 'RFS.Action.OpenSkillMap'}}">
+          ⤢
+        </button>
       </div>
 
-      <div class="rfs-skill-tree">
-        <div class="rfs-skill-tree__canvas">
-          {{> "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs"
-              skills=skills
-              rootSkillId=rootSkillId
-              isEditable=isEditable }}
-        </div>
-      </div>
+      {{> "systems/roll-for-shoes/templates/actor/partials/skill-index.hbs"
+          skills=skills
+          isEditable=isEditable }}
     </div>
 
     <div class="rfs-panel rfs-panel--statuses">
@@ -65,3 +66,4 @@
   </section>
 
 </div>
+
