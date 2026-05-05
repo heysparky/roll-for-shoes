@@ -4,15 +4,14 @@
 
 ```
 roll-for-shoes/                    ← repo root
-├── .gitattributes
-├── .gitignore
-├── README.md
+├── CLAUDE.md                      ← Claude Code instructions (read first)
 ├── RFS-Architecture.md            ← design decisions, challenge flow, card lifecycle
 ├── RFS-File-Structure.md          ← this file
-├── RFS-Milestones.md              ← progress tracking, current state, rules reference
-├── system.json
+├── RFS-Milestones.md              ← progress tracking, current dev state, rules reference
+├── README.md
+├── system.json                    ← Foundry manifest; styles array, socket: true
 ├── template.json
-├── roll-for-shoes.mjs             ← entry point; init, hooks, all chat button wiring
+├── roll-for-shoes.mjs             ← entry point; init, ready hooks, renderChatMessageHTML
 ├── assets/
 │   ├── icons/
 │   │   └── rfs-call-for-roll.svg
@@ -24,56 +23,56 @@ roll-for-shoes/                    ← repo root
 │   └── en.json
 ├── src/
 │   ├── data/
-│   │   └── actor-data.mjs         ← TypeDataModel schemas for character + npc
+│   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
 │   ├── dialogs/
-│   │   └── challenge-dialog.mjs   ← GM challenge dialog; posts challenge card + player widgets
+│   │   ├── challenge-dialog.mjs   ← GM challenge dialog; posts card, emits socket
+│   │   └── challenge-player-dialog.mjs  ← Player popup; pick-skill→roll→xp-spend|advancement→done
 │   ├── documents/
-│   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getRollData
+│   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getSkillById
 │   ├── helpers/
-│   │   ├── config.mjs
-│   │   ├── settings.mjs           ← settings registration; activeChallenge state;
+│   │   ├── config.mjs             ← RFS constants, DC scale, theme registry
+│   │   ├── settings.mjs           ← settings registration; activeChallenge state machine;
 │   │   │                            buildChallengeCardContent; rebuildChallengeCard
-│   │   └── templates.mjs
+│   │   └── templates.mjs          ← template preloading, Handlebars helpers
 │   ├── hud/
 │   │   └── token-hud.mjs          ← shoe button → opens challenge dialog
 │   ├── rolls/
-│   │   └── skill-roll.mjs         ← all roll logic; challenge + standalone paths;
-│   │                                whisper card lifecycle (crystallise, never delete)
+│   │   └── skill-roll.mjs         ← all roll logic; challenge + standalone paths; returns result object
 │   └── sheets/
-│       ├── character-sheet.mjs
+│       ├── character-sheet.mjs    ← ActorSheetV2; rollSkill action; submitOnChange
 │       └── npc-sheet.mjs
 ├── styles/
-│   ├── rfs-base.css
+│   ├── rfs-base.css               ← layout, structure, custom property definitions
+│   ├── rfs-chat.css               ← chat cards, challenge card, player popup dialog
 │   └── themes/
-│       ├── dark-factory.css
-│       └── clean-light.css
+│       ├── dark-factory.css       ← steampunk dark theme
+│       ├── clean-light.css        ← minimal light theme
+│       ├── vellum.css             ← dark academia / oxblood & gold (default)
+│       └── REGISTRATION.md        ← how to wire a new theme
 └── templates/
     ├── actor/
     │   ├── character-sheet.hbs
     │   ├── npc-sheet.hbs
     │   └── partials/
-    │       ├── skill-node.hbs
+    │       ├── skill-node.hbs     ← recursive skill tree node (click name to roll)
     │       ├── skill-tree.hbs
     │       ├── status-list.hbs
     │       └── xp-tracker.hbs
     └── dialog/
-        └── challenge-dialog.hbs   ← prompt field, DC mode toggle, DC visibility toggle
+        ├── challenge-dialog.hbs         ← GM challenge setup form
+        └── challenge-player-dialog.hbs  ← Player popup (all steps, boolean flags, no eq helper)
 ```
 
 ---
 
 ## Chat Card Types
 
-All RFS chat cards are identified by `message.flags["roll-for-shoes"].type`.
-
 | type | visibility | description |
 |------|------------|-------------|
-| `challenge` | public | Shared GM challenge card. Live-updating table with one row per called token. Rebuilt on every roll via `rebuildChallengeCard()` in settings.mjs. Never has interactive buttons — read-only for all players. |
-| `playerWidget` | whisper | Roll widget sent to each called player. Skill dropdown + Roll button. Crystallises to "Roll sent" after the player rolls. |
-| `advancementWidget` | whisper | Appears after a player rolls all sixes. Player types new skill name inline and clicks Claim. Crystallises to "✦ [skill name] claimed" when done. Updates the challenge card row with the new skill name. |
-| `xpSpendWidget` | whisper | Appears after a failed roll with non-six dice. Shows the dice and XP cost. One Spend button. Crystallises to "Spent N XP — advancement triggered" when done, then posts an `advancementWidget`. |
-| `challengeRoll` | whisper | Raw dice roll message posted for Dice So Nice and roll history. Not interactive. |
-| standalone | public | Non-challenge skill rolls. Self-contained card with XP spend and Claim Skill buttons inline. Flags stored under the `rollData` key. |
+| `challenge` | public | Shared challenge card. One portrait row per called token. Live-updating via `rebuildChallengeCard()`. Portrait is a button (pending players only) that opens the player popup. Done-player portraits are plain `<img>`. |
+| standalone | public | Non-challenge skill rolls. Self-contained card with inline XP spend and Claim Skill buttons. Flags under `rollData`. Crystallises in-place when actioned. |
+
+There are no whisper cards. All player-side challenge interaction happens in `RfsChallengePlayerDialog`.
 
 ---
 
@@ -81,23 +80,74 @@ All RFS chat cards are identified by `message.flags["roll-for-shoes"].type`.
 
 ```
 roll-for-shoes.mjs
+  ├── init hook       — registers sheets, settings, document classes, keybindings
+  ├── ready hook      — socket listener (openChallengeDialog, recordChallengeRoll, claimAdvancement)
   └── renderChatMessageHTML hook — wires ALL chat card buttons
+        rfsOpenChallengeDialog → RfsChallengePlayerDialog.open()
+        rfsClaimAdvancement    → RfsSkillRoll.claimAdvancement()
+        rfsSpendXp             → RfsSkillRoll.spendXpOnCard()
 
 src/dialogs/challenge-dialog.mjs
-  └── posts → challenge card (public) + playerWidget (whispered × N tokens)
+  └── _postChallenge() → posts challenge card (public)
+                       → game.socket.emit("openChallengeDialog") → players auto-open popup
+
+src/dialogs/challenge-player-dialog.mjs
+  └── _onRoll()    → RfsSkillRoll.roll() → recordChallengeRoll socket → challenge card updates
+  └── _onSpendXp() → actor.spendXp() → step advances to advancement
+  └── _onClaim()   → actor.addSkill() → claimAdvancement socket → challenge card updates
 
 src/rolls/skill-roll.mjs
-  └── rollFromWidget()       → crystallises playerWidget
-                             → calls recordChallengeRoll()
-                             → posts advancementWidget or xpSpendWidget
-  └── finaliseAdvancement()  → crystallises advancementWidget
-                             → updates challenge card row via rebuildChallengeCard()
-  └── spendXpFromWidget()    → crystallises xpSpendWidget
-                             → posts advancementWidget
+  └── roll()                  → challenge path: emits recordChallengeRoll socket only
+                              → standalone path: posts self-contained card
+  └── spendXpOnCard()         → crystallises standalone card with XP spend
+  └── claimAdvancement()      → crystallises standalone card with claimed skill
 
 src/helpers/settings.mjs
-  └── activeChallenge setting — single source of truth for challenge state
+  └── activeChallenge setting     — single source of truth
   └── buildChallengeCardContent() — renders challenge card HTML from state
   └── rebuildChallengeCard()      — updates the live challenge card message
-  └── recordChallengeRoll()       — records result, rebuilds card, clears if complete
+  └── recordChallengeRoll()       — records result, rebuilds card, clears if all rolled
+```
+
+---
+
+## Challenge Card HTML Structure
+
+```html
+<div class="rfs-challenge">
+  <div class="rfs-challenge__header">
+    <span class="rfs-challenge__gear">⚙</span>
+    <span class="rfs-challenge__title">Challenge</span>
+    <span class="rfs-challenge__dc">DC N</span>  <!-- or --hidden variant -->
+  </div>
+  <div class="rfs-challenge__prompt">…</div>
+  <div class="rfs-challenge__players">
+    <!-- pending player -->
+    <div class="rfs-challenge__player rfs-challenge__player--pending">
+      <button class="rfs-challenge__player-btn" data-action="rfsOpenChallengeDialog" …>
+        <img class="rfs-challenge__portrait" …>
+      </button>
+      <div class="rfs-challenge__player-info">
+        <span class="rfs-challenge__player-name">…</span>
+        <span class="rfs-challenge__player-skill rfs-challenge__player-skill--waiting">…</span>
+      </div>
+      <div class="rfs-challenge__player-result">
+        <span class="rfs-challenge__player-total rfs-challenge__player-total--waiting">--</span>
+      </div>
+    </div>
+    <!-- done player -->
+    <div class="rfs-challenge__player rfs-challenge__player--success|failure|tie">
+      <img class="rfs-challenge__portrait" …>  <!-- plain img, not a button -->
+      <div class="rfs-challenge__player-info">…</div>
+      <div class="rfs-challenge__player-result">
+        <span class="rfs-challenge__player-total rfs-challenge__player-total--success|failure|tie">N</span>
+        <span class="rfs-challenge__player-dice">[d, d, …]</span>
+      </div>
+    </div>
+  </div>
+  <div class="rfs-challenge__footer">
+    <span class="rfs-challenge__status-dot rfs-challenge__status-dot--pulsing|complete"></span>
+    <span class="rfs-challenge__status-text">…</span>
+  </div>
+</div>
 ```

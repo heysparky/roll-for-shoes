@@ -11,56 +11,67 @@
 7. **XP on failure + spend**
 8. **Opposed rolls & difficulty thresholds**
 9. **Statuses** — add/edit/remove with math
-10. **Challenge flow** — full redesign (see RFS-Architecture.md for full detail)
+10. **Challenge flow** — full popup-based redesign
     - GM shoe button → Challenge Dialog (prompt, DC mode, DC visibility toggle, token list)
-    - Shared Challenge Card posts to public chat; live-updating table, one row per token
+    - Shared Challenge Card posts to public chat; portrait rows, one per token
     - GM posts → socket emits to called players → `RfsChallengePlayerDialog` popup auto-opens
-    - Popup handles full player flow: skill pick → roll → XP spend | advancement → done
-    - Player name cells on challenge card are buttons — re-open popup if closed early
+    - Popup handles full player flow: skill pick → roll → XP spend | advancement → done (auto-close)
+    - Pending player portraits on challenge card are buttons — reopen popup if closed early
+    - Done player portraits are plain `<img>` — no button, no stale dialog
     - Roll results recorded via socket (player → GM) so world settings write is always GM-side
     - All-sixes in popup → advancement step (inline name input, Enter or Claim)
     - Failure with non-sixes → XP spend step (shows cost, one Spend button → advancement)
     - Advancement claimed via socket → GM updates settings + rebuilds challenge card row
     - Challenge auto-completes when all tokens have rolled; times out after 3 minutes
     - No per-player whisper cards — popup is the only player-side surface
+    - New challenge auto-closes any stale popup from a different challenge
+11. **Character sheet UX cleanup**
+    - Click skill name to roll (no separate die button)
+    - Pips only — no level number badge
+    - Portrait uses `data-edit="img"` (Foundry native edit, not a custom button)
+    - Large portrait; no add/remove skill buttons (progression via rolls)
+12. **Theme system** — `dark-factory`, `clean-light`, `vellum` (default)
+    - `vellum.css` wired: dark academia, oxblood + gold, EB Garamond / Cormorant display type
+    - Class name contract reconciled between vellum.css selectors and actual markup
 
 ---
 
 ## Up Next
 
-- **Visual polish** — CSS for chat cards, challenge card table, widget states
-- **Visual skill tree** — CSS tree lines + animations
-- **Advancement prompt copy** — natural all-sixes vs XP-purchased flavour text
-  *(TODO comment in `RfsSkillRoll._postAdvancementWidget` marks the fork point)*
+- **Visual QA** — reload with vellum active, check all surfaces against REGISTRATION.md checklist
+- **CSS polish** — skill tree connecting lines, challenge card spacing and portrait sizing, popup layout
+- **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
 
 ---
 
 ## Current State of Development
 
-The core rules loop is complete and tested at the table. All mechanical systems are working.
+Core mechanics complete and table-tested. Challenge UX redesigned (popup-based). Theme system wired. CSS polish is the current priority.
 
 ### Working
-- Character sheet: name, skills (editable, tree structure), XP, statuses
+- Character sheet: name, skills (click-to-roll, pip display), XP, statuses, large portrait with native edit
 - Skill rolls from sheet: posts result card, XP on failure, all-sixes claim
-- Challenge flow end-to-end: GM calls roll, players roll via popup dialog, results land on shared card, advancement and XP spend handled in popup
+- Challenge flow end-to-end: GM calls roll → popup auto-opens → player rolls → card updates → advancement/XP in popup
 - Opposed rolls, difficulty thresholds, status math
+- Three themes registered; vellum is default
 
-### Known Gaps
-- Visual design is plain — all chat cards and sheets are functional but unstyled. CSS pass is the next priority.
-- Advancement prompt text is the same for natural all-sixes and XP-purchased advancement. Needs distinct copy.
-- Skill tree is a flat list on the sheet. Visual tree with connecting lines is planned but not started.
+### Known Gaps / Next Work
+- **Vellum visual QA**: theme wired but not yet verified in-game across all surfaces
+- **Skill tree layout**: currently a flat indented list. Vellum CSS assumes a horizontal bracket card tree (`rfs-skill-node__card`, `rfs-skill-node__children`). Our markup uses a simpler structure — vellum's tree-specific styles are currently orphans. Tree layout pass is needed.
+- **Advancement prompt copy**: same text for natural all-sixes vs XP-purchased advancement. Needs distinct copy.
+- **GM skill override**: no UI button for adding/removing skills; GM needs a workaround (console or future override tool).
 
 ### Architecture Decisions
 - Challenge state lives in `game.settings` (world-scoped), never in card HTML — single source of truth
-- Challenge card is rebuilt from scratch on every update via `rebuildChallengeCard()` — no HTML patching
-- All player-side challenge interaction lives in `RfsChallengePlayerDialog` (ApplicationV2 popup), not chat cards
-- World-setting writes are GM-only; player clients delegate via socket events (`recordChallengeRoll`, `claimAdvancement`)
-- Popup is tracked in a static `Map<tokenId, dialog>` — duplicate opens bring the existing dialog to front
-- All Unicode symbols in JS/HBS source use HTML entities (&#x2726; etc.) — prevents Edit tool match failures
+- Challenge card rebuilt from scratch on every update via `rebuildChallengeCard()` — no HTML patching
+- All player-side challenge interaction lives in `RfsChallengePlayerDialog` (ApplicationV2 popup), not chat
+- World-setting writes are GM-only; players delegate via socket (`recordChallengeRoll`, `claimAdvancement`)
+- Popup tracked in `static Map<tokenId, dialog>` — duplicate opens bring existing dialog to front
+- CSS selectors in theme files match our actual markup class names (search-replaced inside vellum.css, not in markup)
 
 ---
 
-## Rules Reference (DC variant — confirmed correct)
+## Rules Reference (DC scale — confirmed correct)
 
 | DC | Difficulty |
 |----|------------|

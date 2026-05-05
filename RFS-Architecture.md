@@ -1,8 +1,7 @@
 # Roll for Shoes — Architecture & Design Decisions
 
 This document captures RFS-specific design decisions and working patterns.
-It is not a Foundry API reference — that lives in dnd5e-reference.mjs.
-Read both before touching the challenge flow.
+Read before touching the challenge flow, card lifecycle, or button wiring.
 
 ---
 
@@ -12,10 +11,7 @@ Read both before touching the challenge flow.
 - Source is in `src/` — not `module/`.
 - All template paths use `systems/roll-for-shoes/...`
 - Sheet registration uses `DocumentSheetConfig.registerSheet(Actor, ...)`.
-- **Never use Python `open(file, 'w')` to write JS files.** Python truncates the
-  file before writing — if the write fails (e.g. emoji encoding error), the file
-  is gone. Use `str_replace` for targeted edits, `create_file` for whole-file
-  writes. If `str_replace` fails on a unicode match string, use `create_file`.
+- **No build step.** Files load directly from disk. Reload Foundry to pick up changes.
 
 ---
 
@@ -26,36 +22,30 @@ The challenge flow is the core GM-to-player interaction loop.
 ### GM Side
 1. Select tokens on canvas, click the shoe button on the token HUD
 2. Challenge Dialog opens — set prompt, DC (roll or static), DC visibility, review tokens
-3. Confirm → two things post simultaneously:
-   - A **shared Challenge Card** to public chat
-   - A **whispered Roll Widget** to each called player
+3. Confirm → two things happen simultaneously:
+   - A **shared Challenge Card** posts to public chat
+   - A socket event (`openChallengeDialog`) fires to all clients
 
 ### Player Side
-4. Roll Widget appears in chat — shows prompt, optionally DC, skill dropdown, Roll button
-5. Button is disabled until a skill is selected
-6. Player picks skill, hits Roll
-7. Widget crystallises to "Roll sent" (see card lifecycle below)
-8. Challenge Card row updates live with their result
+4. Each called player's `RfsChallengePlayerDialog` popup auto-opens via socket
+5. Popup shows prompt, optionally DC, and a skill dropdown
+6. Player picks skill, hits Roll — popup advances through states
+7. Challenge Card row updates live with their result
+8. If a player closes the popup early, they can reopen it by clicking their portrait on the challenge card
 
-### After Rolling
-- **All sixes** → whispered **Advancement Widget** appears for that player
-- **Failed with non-sixes** → whispered **XP Spend Widget** appears for that player
-- **Neither** → nothing more, result is on the challenge card
+### Popup States
+```
+pick-skill → rolling → xp-spend | advancement → done (auto-closes 1.2s)
+```
+- **pick-skill**: skill `<select>` + Roll button (disabled until selection made)
+- **rolling**: spinner / "Rolling…"
+- **xp-spend**: shown when roll failed with non-six dice; Spend XP button
+- **advancement**: shown on all-sixes (or after XP spend); name input + Claim button
+- **done**: confirmation note, auto-closes after 1.2 seconds
 
-### Advancement Widget
-- Player types new skill name inline, clicks Claim (or hits Enter)
-- Widget crystallises to "[skill name] claimed"
-- Challenge Card row updates to show the new skill name
-
-### XP Spend Widget
-- Shows the dice rolled, shows the XP cost
-- One Spend button — clicking it spends XP and posts an Advancement Widget
-- Widget crystallises to "Spent N XP — advancement triggered"
-
-### Completion
-- When all called tokens have rolled, Challenge Card marks itself complete
-- Active challenge clears from settings after a 2-second delay (so the final
-  card update lands first)
+### After All Players Have Rolled
+- Challenge Card marks itself complete
+- Active challenge clears from settings after a 2-second delay (so final card update lands first)
 - Challenge also times out after 3 minutes if not all tokens roll
 
 ---
@@ -63,49 +53,25 @@ The challenge flow is the core GM-to-player interaction loop.
 ## Card Lifecycle — Crystallise, Never Delete
 
 **Never delete a chat message.** Deletion shifts everything below it in the
-queue, which is disruptive during active play when multiple whisper cards
-are in flight.
+queue, which is disruptive during active play.
 
 Instead, when a card's action completes, **update its content in place** to
 a quiet static confirmation. The card stays, the queue stays stable.
 
-```js
-// Widget crystallises after the player rolls
-await message.update({
-  content: `<div class="rfs-widget rfs-widget--done">
-    <span class="rfs-widget__done-note">Roll sent</span>
-  </div>`,
-  flags: { "roll-for-shoes": { ...flags, rolled: true } },
-});
-```
+The challenge card is the only player-facing card for a challenge. There are no
+per-player whisper cards. All player interaction happens in the popup dialog.
 
-In `renderChatMessageHTML`, check the done flag to disable inputs on re-render:
-```js
-const flags = message.flags?.["roll-for-shoes"];
-if (flags?.rolled) {
-  select.disabled = true;
-  btn.disabled = true;
-  return;
-}
-```
+Standalone (non-challenge) skill rolls post their own self-contained card with
+inline XP spend and Claim Skill buttons. These crystallise in-place when acted on.
 
 ---
 
 ## Chat Card Types
 
-All RFS cards are identified by `message.flags["roll-for-shoes"].type`.
-
-| type | visibility | interactive | crystallises to |
-|------|------------|-------------|-----------------|
-| `challenge` | public | no — read-only table | stays live until complete |
-| `playerWidget` | whisper | skill dropdown + Roll button | "Roll sent" |
-| `advancementWidget` | whisper | text input + Claim button | "[skill name] claimed" |
-| `xpSpendWidget` | whisper | Spend button | "Spent N XP — advancement triggered" |
-| `challengeRoll` | whisper | no — raw dice record for Dice So Nice | n/a |
-
-Standalone (non-challenge) rolls post their own self-contained card with flags
-stored under the `rollData` key. These use the dialog-based claim flow, not
-the widget flow.
+| type | visibility | description |
+|------|------------|-------------|
+| `challenge` | public | Shared GM challenge card. Live-updating, one portrait row per called token. Rebuilt on every roll via `rebuildChallengeCard()`. Read-only — no interactive buttons (portrait buttons open the player popup, wired via `renderChatMessageHTML`). |
+| standalone | public | Non-challenge skill rolls. Self-contained card with XP spend and Claim Skill buttons inline. Flags stored under `rollData`. Crystallises in-place when actioned. |
 
 ---
 
@@ -140,37 +106,60 @@ Active challenge shape:
 
 ---
 
+## Socket Pattern
+
+World-scoped settings can only be written by GMs. Players delegate via socket:
+
+| type | direction | handler |
+|------|-----------|---------|
+| `openChallengeDialog` | GM → all clients | Each player checks ownership, opens popup |
+| `recordChallengeRoll` | player → GM | GM writes result to settings, rebuilds card |
+| `claimAdvancement` | player → GM | GM updates result in settings, rebuilds card |
+
+`"socket": true` must be in `system.json`. Requires a full world reload (not just
+browser refresh) to take effect after changing.
+
+---
+
 ## Button Wiring
 
 All chat button listeners live in the `renderChatMessageHTML` hook in
 `roll-for-shoes.mjs`. This hook fires on every render including after
-`message.update()` calls, so re-rendered cards get fresh listeners.
+`message.update()` calls, so re-rendered cards always get fresh listeners.
 
-| data-action | card type | calls |
-|-------------|-----------|-------|
-| `rfsWidgetRoll` | playerWidget | `RfsSkillRoll.rollFromWidget(messageId, skillId)` |
-| `rfsClaimFromWidget` | advancementWidget | `RfsSkillRoll.finaliseAdvancement(messageId, name)` |
-| `rfsWidgetSpendXp` | xpSpendWidget | `RfsSkillRoll.spendXpFromWidget(messageId)` |
+| data-action | surface | calls |
+|-------------|---------|-------|
+| `rfsOpenChallengeDialog` | challenge card portrait (pending only) | `RfsChallengePlayerDialog.open(tokenId, actorId, challengeId)` |
 | `rfsClaimAdvancement` | standalone card | `RfsSkillRoll.claimAdvancement(actorId, skillId, messageId)` |
 | `rfsSpendXp` | standalone card | `RfsSkillRoll.spendXpOnCard(messageId)` |
 
-Always disable inputs immediately on click (before the async call) to prevent
-double-fire during the round-trip.
+Popup actions (`rfsDialogRoll`, `rfsDialogSpendXp`, `rfsDialogClaim`, `rfsDialogDismiss`)
+are wired in `RfsChallengePlayerDialog.DEFAULT_OPTIONS.actions` — not in `renderChatMessageHTML`.
 
 ---
 
-## Token Ownership Matching
+## Challenge Player Dialog
 
-When posting a whispered widget for a token, the owning player is found by:
-```js
-game.users.find(u => u.character?.id === actor.id && !u.isGM)
-```
+`src/dialogs/challenge-player-dialog.mjs` — `HandlebarsApplicationMixin(ApplicationV2)`.
 
-Edge cases:
-- GM-owned tokens or unlinked tokens: falls back to all non-GM players
-- The `tokenId` is stored in widget flags and passed through `options.tokenId`
-  to `roll()` so `recordChallengeRoll` does not need a canvas lookup (which
-  fails if the token is not on the current scene)
+- One instance per token, tracked in `static _openDialogs: Map<tokenId, dialog>`
+- `static open(tokenId, actorId, challengeId)` — deduplicates; brings existing to front
+- Opening a new challenge auto-closes any dialog from a different `challengeId`
+- On construction, reconstructs `_step` from existing challenge state (handles re-opens)
+- `canInteract = actor.testUserPermission(game.user, "OWNER") && !game.user.isGM`
+  - GM can open any player's dialog in read-only mode (sees state, no controls)
+- Auto-closes 1.2 seconds after reaching the `done` step
+
+---
+
+## Character Sheet
+
+`HandlebarsApplicationMixin(ActorSheetV2)` with `submitOnChange: true` for auto-save.
+
+- Click a skill name → rolls that skill (`rollSkill` action)
+- Portrait uses `data-edit="img"` (Foundry native) — not a custom action
+- No add/remove skill buttons in the UI — progression happens via rolls
+- Pips (⚙ × level) only — no level number badge
 
 ---
 
@@ -183,19 +172,23 @@ Edge cases:
 3. Actor has a token in active challenge `tokenIds` — use that DC
 4. Default — 4 (Easy)
 
-Sheet-initiated rolls (no widget) still pick up the active challenge DC if
-the actor's token was called. Widget rolls pass `challengeId` directly so
-they always resolve correctly regardless of canvas state.
+Sheet-initiated rolls still pick up the active challenge DC if the actor's token
+was called. Dialog rolls pass `challengeId` directly.
 
 ---
 
-## Advancement Prompt Copy — TODO
+## CSS / Theme System
 
-`RfsSkillRoll._postAdvancementWidget` accepts `xpPurchased: boolean`.
-Both paths currently use the same prompt text (`RFS.Dialog.Advancement.Hint`).
-There is a TODO comment in that method marking where to fork the copy:
+Base styles: `styles/rfs-base.css` + `styles/rfs-chat.css`
 
-- `xpPurchased === false` (natural all-sixes): celebratory tone
-- `xpPurchased === true` (XP spend): acknowledge the cost
+Themes live in `styles/themes/<name>.css` and are scoped to `[data-rfs-theme="<id>"]`.
+The theme is applied by setting `document.body.dataset.rfsTheme` on world load and
+whenever the player changes their theme setting.
 
-Come back to this when copy is written.
+Current themes: `dark-factory`, `clean-light`, `vellum` (default).
+
+All CSS values use custom properties defined in `rfs-base.css` — no hardcoded colours.
+Theme files override those custom properties within their scoped selector, then add any
+structural rules unique to that theme.
+
+Class naming convention: `rfs-` prefix throughout, BEM structure.
