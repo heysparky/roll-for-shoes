@@ -4,7 +4,10 @@
       "Bash(Get-ChildItem -Path \"D:\\\\Projects\\\\Roll for Shoes\\\\roll-for-shoes\" -Force)",
       "Bash(Select-Object Name)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(Test-Path \"D:\\\\Projects\\\\Roll for Shoes\\\\roll-for-shoes\\\\templates\\\\actor\\\\partials\\\\skill-index.hbs\")",
+      "Bash(Test-Path \"D:\\\\Projects\\\\Roll for Shoes\\\\roll-for-shoes\\\\templates\\\\dialog\\\\skill-map-dialog.hbs\")",
+      "Bash(Test-Path \"D:\\\\Projects\\\\Roll for Shoes\\\\roll-for-shoes\\\\src\\\\dialogs\\\\skill-map-dialog.mjs\")"
     ]
   }
 }

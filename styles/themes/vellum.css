@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
    Roll for Shoes — VELLUM theme
    styles/themes/vellum.css
 
@@ -343,6 +343,33 @@
 [data-rfs-theme="vellum"] .rfs-sheet__background-body p:last-child { margin-bottom: 0; }
 
 /* =============================================================================
+   COMPACT SKILL INDEX (sheet panel)
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-skill-index__row:hover {
+  background: rgba(200,153,90,0.06);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__name {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  color: var(--rfs-text);
+  text-align: left;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__name:hover {
+  color: var(--rfs-gold-hi);
+  border-bottom-color: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__name--root {
+  font-family: var(--rfs-display);
+  font-size: 15px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__name--root:hover {
+  color: var(--rfs-gold-hi);
+  border-bottom-color: var(--rfs-gold);
+}
+/* =============================================================================
    SKILL TREE — left-to-right bracket layout
    Markup expected:
      <div class="rfs-skill-tree">
@@ -501,8 +528,8 @@
   content: "";
   position: absolute;
   left: -18px;
-  top: 14px;
-  bottom: 14px;
+  top: 20px;
+  bottom: 20px;
   width: 1px;
   background: var(--rfs-gold);
   opacity: 0.4;
@@ -525,7 +552,7 @@
   opacity: 0.5;
 }
 /* Stub OUT of a parent card's right edge — only when children exist */
-[data-rfs-theme="vellum"] .rfs-skill-node:has(> .rfs-skill-node__children:not(:empty)) > .rfs-skill-node__card::after {
+[data-rfs-theme="vellum"] .rfs-skill-node:has(> .rfs-skill-node__children > .rfs-skill-node) > .rfs-skill-node__card::after {
   content: "";
   position: absolute;
   right: -18px;
@@ -1311,3 +1338,5 @@
 }
 
 /* End of vellum.css */
+
+
