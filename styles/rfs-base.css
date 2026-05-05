@@ -316,8 +316,7 @@
 }
 
 .rfs-skill-index__row {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: center;
   gap: var(--rfs-space-sm);
   padding: 4px var(--rfs-space-sm);
@@ -334,11 +333,9 @@
   display: flex;
   gap: 2px;
   flex-shrink: 0;
-  min-width: 2rem;
 }
 
 .rfs-skill-index__name {
-  flex: 1;
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
