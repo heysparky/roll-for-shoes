@@ -55,5 +55,5 @@ export const RFS = {
   },
 
   // ── Default Theme ─────────────────────────────────────────────────────────
-  defaultTheme: "dark-factory",
+  defaultTheme: "vellum",
 };
