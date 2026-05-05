@@ -22,10 +22,8 @@ export async function preloadHandlebarsTemplates() {
     // Partials — loaded once, referenced as {{> "path"}} in other templates
     "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs",
     "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs",
-    "systems/roll-for-shoes/templates/actor/partials/skill-index.hbs",
     "systems/roll-for-shoes/templates/actor/partials/status-list.hbs",
     "systems/roll-for-shoes/templates/actor/partials/xp-tracker.hbs",
-    "systems/roll-for-shoes/templates/dialog/skill-map-dialog.hbs",
   ];
 
   // v14: loadTemplates is namespaced under foundry.applications.handlebars
