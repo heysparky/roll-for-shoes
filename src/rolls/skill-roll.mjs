@@ -258,21 +258,6 @@ export class RfsSkillRoll {
       advancementPending: allSixes,
     };
 
-    const whisperTargets = RfsSkillRoll._whisperTargetsForActor(actor);
-
-    await roll.toMessage({
-      speaker:  ChatMessage.getSpeaker({ actor }),
-      flavor:   `${actor.name}: ${skill.name} (${skill.level}d6)`,
-      whisper:  whisperTargets,
-      flags: {
-        "roll-for-shoes": {
-          type:        "challengeRoll",
-          challengeId,
-          rollResult,
-        },
-      },
-    });
-
     // Ask the GM to record the result -- world settings are GM-only writes.
     const tokenId = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
     if (tokenId) {
@@ -333,18 +318,6 @@ export class RfsSkillRoll {
   /* -------------------------------------------- */
   /*  Internal Helpers                            */
   /* -------------------------------------------- */
-
-  /**
-   * Whisper targets = GM(s) + the player who owns this actor.
-   * Used for the challengeRoll dice toast (Dice So Nice).
-   */
-  static _whisperTargetsForActor(actor) {
-    const rollingUser = game.users.find(u => u.character?.id === actor.id && !u.isGM);
-    return [
-      ...game.users.filter(u => u.isGM).map(u => u.id),
-      ...(rollingUser ? [rollingUser.id] : []),
-    ];
-  }
 
   static _resolveDifficulty(actor, options) {
     if (options.difficulty !== undefined) {
