@@ -884,38 +884,76 @@
   color: var(--rfs-color-text-label);
 }
 
-.rfs-challenge-dialog__dc-row {
+.rfs-challenge-dialog__dc-stepper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: var(--rfs-space-sm);
 }
 
-.rfs-challenge-dialog__dc-input {
-  width: 64px;
-  text-align: center;
-  font-size: 28px;
+.rfs-challenge-dialog__dc-value {
+  font-size: 52px;
   font-weight: 700;
   font-style: italic;
-  border-radius: var(--rfs-radius);
-  padding: 4px 6px;
-}
-
-.rfs-challenge-dialog__dc-sep {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--rfs-color-text-muted);
-}
-
-.rfs-challenge-dialog__dc-dice {
-  width: 40px;
+  min-width: 3rem;
   text-align: center;
-  padding: 4px 6px;
-  border-radius: var(--rfs-radius);
+  line-height: 1;
+  color: var(--rfs-color-text);
 }
 
-.rfs-challenge-dialog__dc-label {
-  font-size: 12px;
+.rfs-challenge-dialog__step-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.rfs-challenge-dialog__dc-canonicals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.rfs-challenge-dialog__dc-canonical {
+  min-width: 2.25rem;
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  font-size: var(--rfs-font-size-sm);
+  font-weight: 600;
+}
+
+.rfs-challenge-dialog__dc-canonical--active {
+  background: var(--rfs-color-accent);
+  border-color: var(--rfs-color-accent);
+  color: #fff;
+}
+
+.rfs-challenge-dialog__dice-picker {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--rfs-space-xs);
+}
+
+.rfs-challenge-dialog__dice-opt {
+  flex: 1;
+  text-align: center;
+  font-size: var(--rfs-font-size-sm);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+}
+
+.rfs-challenge-dialog__dice-opt--active {
+  background: var(--rfs-color-accent);
+  border-color: var(--rfs-color-accent);
+  color: #fff;
+}
+
+.rfs-challenge-dialog__dice-hint {
+  font-size: var(--rfs-font-size-sm);
   color: var(--rfs-color-text-muted);
+  font-style: italic;
+  margin-top: var(--rfs-space-xs);
+  text-align: center;
 }
 
 .rfs-challenge-dialog__token-list {

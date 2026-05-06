@@ -53,6 +53,21 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
+  // ── Difficulty Mode ────────────────────────────────────────────────────────
+  game.settings.register(RFS.id, "difficultyMode", {
+    name: "RFS.Settings.DifficultyMode.Name",
+    hint: "RFS.Settings.DifficultyMode.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      "standard": "RFS.Settings.DifficultyMode.Standard",
+      "moreXp":   "RFS.Settings.DifficultyMode.MoreXp",
+    },
+    default: "standard",
+    requiresReload: false,
+  });
+
   // ── Active Challenge ───────────────────────────────────────────────────────
   // Stores the currently active GM challenge so skill rolls can pick up
   // the correct DC and widget cards know what challenge they belong to.

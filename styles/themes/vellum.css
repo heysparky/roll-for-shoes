@@ -1425,39 +1425,73 @@
   color: var(--rfs-text-mute);
 }
 
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-input {
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-value {
   font-family: var(--rfs-display);
   font-style: italic;
   font-weight: 700;
   color: var(--rfs-gold-hi);
-  background: var(--rfs-bg-input);
-  border: 1px solid var(--rfs-border-strong);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-  /* override any Foundry fixed height so large font stays vertically centered */
-  height: auto;
-  min-height: 0;
-  line-height: 1;
-  padding: 6px 8px;
+  text-shadow: 0 0 20px rgba(226,179,120,0.3);
 }
 
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-dice {
-  height: auto;
-  min-height: 0;
-  line-height: 1;
-  padding: 6px 8px;
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__step-btn {
   background: var(--rfs-bg-input);
   border: 1px solid var(--rfs-border);
-  color: var(--rfs-text);
-  font-family: var(--rfs-mono);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+  color: var(--rfs-gold);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__step-btn:hover:not(:disabled) {
+  border-color: var(--rfs-gold);
+  background: rgba(200,153,90,0.12);
+  color: var(--rfs-gold-hi);
 }
 
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-sep,
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-label {
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-canonical {
   font-family: var(--rfs-mono);
   font-size: 11px;
+  letter-spacing: 0.06em;
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-canonical:hover:not(:disabled) {
+  border-color: var(--rfs-gold);
+  color: var(--rfs-gold);
+  background: rgba(200,153,90,0.08);
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-canonical--active {
+  background: rgba(200,153,90,0.18);
+  border-color: var(--rfs-gold);
+  color: var(--rfs-gold-hi);
+  font-weight: 700;
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dice-opt {
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text-mute);
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dice-opt:hover:not(:disabled) {
+  border-color: var(--rfs-gold);
+  color: var(--rfs-gold);
+  background: rgba(200,153,90,0.08);
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dice-opt--active {
+  background: rgba(200,153,90,0.18);
+  border-color: var(--rfs-gold);
+  color: var(--rfs-gold-hi);
+  font-weight: 700;
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dice-hint {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
   letter-spacing: 0.1em;
   color: var(--rfs-text-mute);
+  font-style: normal;
 }
 
 [data-rfs-theme="vellum"] .rfs-challenge-dialog__token {

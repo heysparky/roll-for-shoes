@@ -85,21 +85,12 @@
         "CalledTokens": "Called to roll",
         "NoTokens": "No tokens selected.",
         "Confirm": "Post to Chat",
-        "Cancel": "Cancel"
+        "Cancel": "Cancel",
+        "DiceHintRoll": "DC will be rolled on Post"
       }
     },
     "Placeholder": {
       "ActorName": "Character Name"
-    },
-    "Settings": {
-      "Theme": {
-        "Name": "Sheet Theme",
-        "Hint": "Visual theme applied to all Roll for Shoes sheets and dialogs."
-      },
-      "NpcMode": {
-        "Name": "Default NPC Mode",
-        "Hint": "New NPCs default to this mode. Fixed = single difficulty number. Full = complete PC skill tree."
-      }
     },
     "HUD": {
       "CallForRoll": "Call for Roll"
@@ -178,6 +169,12 @@
         "Hint": "When a player rolls all sixes in a challenge, who is prompted to name the new skill? 'GM' is the default — the GM types the name and it appears on the actor. 'Player' prompts the player's own client.",
         "Player": "Player",
         "Gm": "GM"
+      },
+      "DifficultyMode": {
+        "Name": "Difficulty Mode",
+        "Hint": "Standard: canonical DCs are 3, 6, 9…24 (default DC 3). More XP: canonical DCs are 4, 8, 12…24 (default DC 4) — players fail more often and earn more XP.",
+        "Standard": "Standard",
+        "MoreXp": "More XP"
       }
     }
   }

@@ -43,6 +43,9 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     },
     actions: {
       removeToken: RfsChallengeDialog._onRemoveToken,
+      stepDc:      RfsChallengeDialog._onStepDc,
+      setDc:       RfsChallengeDialog._onSetDc,
+      selectDice:  RfsChallengeDialog._onSelectDice,
     },
   };
 
@@ -82,9 +85,10 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   constructor(options = {}) {
     super(options);
-    this._tokens   = [...(options.tokens ?? [])];
-    this._dc       = 4;
-    this._dcDice   = 1;
+    this._tokens  = [...(options.tokens ?? [])];
+    const moreXp  = game.settings.get("roll-for-shoes", "difficultyMode") === "moreXp";
+    this._dc      = moreXp ? 4 : 3;
+    this._dcDice  = 1;
   }
 
   /* -------------------------------------------- */
@@ -93,11 +97,28 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   /** @override */
   async _prepareContext(options) {
+    const moreXp = game.settings.get("roll-for-shoes", "difficultyMode") === "moreXp";
+    const step   = moreXp ? 4 : 3;
+
+    const canonicals = [];
+    for (let v = step; v <= 24; v += step) {
+      canonicals.push({ value: v, active: v === this._dc });
+    }
+
+    const diceOptions = [1, 2, 3, 4].map(n => ({
+      n,
+      label:    `${n}d6`,
+      selected: this._dcDice === n,
+    }));
+
     return {
       ...await super._prepareContext(options),
-      tokens:  this._tokens.map(t => ({ id: t.id, name: t.name })),
-      dc:      this._dc,
-      dcDice:  this._dcDice,
+      tokens:      this._tokens.map(t => ({ id: t.id, name: t.name })),
+      dc:          this._dc,
+      dcDice:      this._dcDice,
+      canonicals,
+      diceOptions,
+      isRolled:    this._dcDice > 1,
     };
   }
 
@@ -111,19 +132,38 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     await this.render();
   }
 
+  static async _onStepDc(event, target) {
+    const dir = parseInt(target.dataset.dir ?? "0", 10);
+    this._dc  = Math.max(2, Math.min(24, this._dc + dir));
+    await this.render();
+  }
+
+  static async _onSetDc(event, target) {
+    const val = parseInt(target.dataset.value ?? "", 10);
+    if (!isNaN(val)) {
+      this._dc = val;
+      await this.render();
+    }
+  }
+
+  static async _onSelectDice(event, target) {
+    const n      = parseInt(target.dataset.dice ?? "1", 10);
+    this._dcDice = n;
+    await this.render();
+  }
+
   /* -------------------------------------------- */
   /*  Form Submission                             */
   /* -------------------------------------------- */
 
   static async _onSubmit(event, form, formData) {
-    const dcDice = Math.max(0, parseInt(formData.object.dcDice ?? 0, 10) || 0);
     let finalDc;
-    if (dcDice > 0) {
-      const roll = new Roll(`${dcDice}d6`);
+    if (this._dcDice > 1) {
+      const roll = new Roll(`${this._dcDice}d6`);
       await roll.evaluate();
       finalDc = roll.total;
     } else {
-      finalDc = Math.max(1, parseInt(formData.object.dc ?? 4, 10) || 4);
+      finalDc = this._dc;
     }
     await RfsChallengeDialog._postChallenge({ tokens: this._tokens, finalDc });
   }

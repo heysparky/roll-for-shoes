@@ -1,28 +1,56 @@
 {{!-- templates/dialog/challenge-dialog.hbs --}}
-{{!-- GM roll initiation: DC input (type or roll Nd6) + token list. --}}
+{{!-- GM roll initiation: DC stepper + canonical quick-jumps + dice picker + token list. --}}
 
 <section class="rfs-challenge-dialog">
 
-  {{!-- ── DC ────────────────────────────────────────────────────────────────── --}}
+  {{!-- ── DC Stepper ────────────────────────────────────────────────────────── --}}
   <div class="rfs-challenge-dialog__section">
     <label class="rfs-challenge-dialog__label">DC</label>
-    <div class="rfs-challenge-dialog__dc-row">
-      <input type="number"
-             name="dc"
-             value="{{dc}}"
-             min="1"
-             max="99"
-             class="rfs-challenge-dialog__dc-input"
-             autofocus>
-      <span class="rfs-challenge-dialog__dc-sep">or roll</span>
-      <input type="number"
-             name="dcDice"
-             value="{{dcDice}}"
-             min="1"
-             max="10"
-             class="rfs-challenge-dialog__dc-dice">
-      <span class="rfs-challenge-dialog__dc-label">d6</span>
+
+    <div class="rfs-challenge-dialog__dc-stepper">
+      <button type="button"
+              class="rfs-btn rfs-challenge-dialog__step-btn"
+              data-action="stepDc"
+              data-dir="-1">&#x2212;</button>
+      <span class="rfs-challenge-dialog__dc-value">{{dc}}</span>
+      <button type="button"
+              class="rfs-btn rfs-challenge-dialog__step-btn"
+              data-action="stepDc"
+              data-dir="1">&#x2b;</button>
     </div>
+
+    <div class="rfs-challenge-dialog__dc-canonicals">
+      {{#each canonicals}}
+        <button type="button"
+                class="rfs-btn rfs-challenge-dialog__dc-canonical{{#if this.active}} rfs-challenge-dialog__dc-canonical--active{{/if}}"
+                data-action="setDc"
+                data-value="{{this.value}}">
+          {{this.value}}
+        </button>
+      {{/each}}
+    </div>
+  </div>
+
+  {{!-- ── Dice Picker ─────────────────────────────────────────────────────── --}}
+  <div class="rfs-challenge-dialog__section">
+    <label class="rfs-challenge-dialog__label">
+      {{localize "RFS.Dialog.Challenge.DcDiceLabel"}}
+    </label>
+    <div class="rfs-challenge-dialog__dice-picker">
+      {{#each diceOptions}}
+        <button type="button"
+                class="rfs-btn rfs-challenge-dialog__dice-opt{{#if this.selected}} rfs-challenge-dialog__dice-opt--active{{/if}}"
+                data-action="selectDice"
+                data-dice="{{this.n}}">
+          {{this.label}}
+        </button>
+      {{/each}}
+    </div>
+    {{#if isRolled}}
+      <div class="rfs-challenge-dialog__dice-hint">
+        {{localize "RFS.Dialog.Challenge.DiceHintRoll"}}
+      </div>
+    {{/if}}
   </div>
 
   {{!-- ── Called Tokens ───────────────────────────────────────────────────── --}}
