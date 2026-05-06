@@ -90,7 +90,8 @@
       }
     },
     "Placeholder": {
-      "ActorName": "Character Name"
+      "ActorName": "Character Name",
+      "Biography": "Character background, appearance, notes…"
     },
     "HUD": {
       "CallForRoll": "Call for Roll"

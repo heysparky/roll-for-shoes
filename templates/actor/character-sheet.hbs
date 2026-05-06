@@ -1,7 +1,7 @@
 {{!-- templates/actor/character-sheet.hbs --}}
 <div class="rfs-sheet character">
 
-  {{!-- ── Header: portrait | identity | xp ─────────────────────────────── --}}
+  {{!-- ── Header: portrait | (name + xp) / background ─────────────────── --}}
   <header class="rfs-sheet__header">
 
     <button type="button"
@@ -13,24 +13,29 @@
            alt="{{actor.name}}">
     </button>
 
-    <div class="rfs-sheet__identity">
-      <input class="rfs-sheet__name"
-             type="text"
-             name="name"
-             value="{{actor.name}}"
-             placeholder="{{localize 'RFS.Placeholder.ActorName'}}"
-             {{#unless isEditable}}disabled{{/unless}}>
-    </div>
-
-    <div class="rfs-sheet__xp">
-      <label class="rfs-sheet__xp-label" for="rfs-xp-input">{{localize 'RFS.Label.XP'}}</label>
-      <input class="rfs-sheet__xp-value"
-             id="rfs-xp-input"
-             type="number"
-             name="system.xp"
-             value="{{xp}}"
-             min="0"
-             {{#unless isEditable}}disabled{{/unless}}>
+    <div class="rfs-sheet__header-right">
+      <div class="rfs-sheet__header-top">
+        <input class="rfs-sheet__name"
+               type="text"
+               name="name"
+               value="{{actor.name}}"
+               placeholder="{{localize 'RFS.Placeholder.ActorName'}}"
+               {{#unless isEditable}}disabled{{/unless}}>
+        <div class="rfs-sheet__xp">
+          <label class="rfs-sheet__xp-label" for="rfs-xp-input">{{localize 'RFS.Label.XP'}}</label>
+          <input class="rfs-sheet__xp-value"
+                 id="rfs-xp-input"
+                 type="number"
+                 name="system.xp"
+                 value="{{xp}}"
+                 min="0"
+                 {{#unless isEditable}}disabled{{/unless}}>
+        </div>
+      </div>
+      <textarea class="rfs-sheet__biography"
+                name="system.biography"
+                placeholder="{{localize 'RFS.Placeholder.Biography'}}"
+                {{#unless isEditable}}disabled{{/unless}}>{{actor.system.biography}}</textarea>
     </div>
 
   </header>
@@ -70,16 +75,6 @@
       {{> "systems/roll-for-shoes/templates/actor/partials/status-list.hbs"
           statuses=statuses
           isEditable=isEditable }}
-    </div>
-
-    <div class="rfs-panel rfs-panel--biography">
-      <div class="rfs-panel__header">
-        <h2 class="rfs-panel__title">{{localize 'RFS.Label.Biography'}}</h2>
-      </div>
-      <textarea class="rfs-sheet__biography"
-                name="system.biography"
-                placeholder="Character background, appearance, notes…"
-                {{#unless isEditable}}disabled{{/unless}}>{{actor.system.biography}}</textarea>
     </div>
 
   </section>

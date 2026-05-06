@@ -126,8 +126,8 @@
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .rfs-sheet__header {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto 1fr;
   gap: var(--rfs-space-md);
   padding: var(--rfs-space-md);
   border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
@@ -140,31 +140,7 @@
   object-fit: cover;
   border-radius: var(--rfs-radius-md);
   border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
-  flex-shrink: 0;
-}
-
-.rfs-sheet__identity {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--rfs-space-xs);
-}
-
-.rfs-sheet__name {
-  font-family: var(--rfs-font-display);
-  font-size: var(--rfs-font-size-xl);
-  font-weight: bold;
-  background: transparent;
-  border: none;
-  border-bottom: var(--rfs-border-width) dashed var(--rfs-color-border);
-  color: var(--rfs-color-text);
-  width: 100%;
-  padding: var(--rfs-space-xs) 0;
-
-  &:focus {
-    outline: none;
-    border-bottom-color: var(--rfs-color-accent);
-  }
+  display: block;
 }
 
 /* ── Portrait button (click to edit) ─────────────────────────────────────── */
@@ -174,8 +150,39 @@
   border: none;
   background: none;
   cursor: pointer;
-  flex-shrink: 0;
   display: block;
+  align-self: start;
+}
+
+/* ── Right column: name+XP row, then biography fills remaining space ──────── */
+.rfs-sheet__header-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-sm);
+  min-height: 8rem;
+}
+
+.rfs-sheet__header-top {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rfs-space-md);
+}
+
+.rfs-sheet__name {
+  flex: 1;
+  font-family: var(--rfs-font-display);
+  font-size: var(--rfs-font-size-xl);
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  border-bottom: var(--rfs-border-width) dashed var(--rfs-color-border);
+  color: var(--rfs-color-text);
+  padding: var(--rfs-space-xs) 0;
+
+  &:focus {
+    outline: none;
+    border-bottom-color: var(--rfs-color-accent);
+  }
 }
 
 /* ── Sheet header XP inline display ─────────────────────────────────────── */
@@ -183,6 +190,7 @@
   display: flex;
   align-items: baseline;
   gap: var(--rfs-space-xs);
+  flex-shrink: 0;
 }
 
 .rfs-sheet__xp-label {
@@ -1011,8 +1019,8 @@
 
 /* ── Biography textarea ──────────────────────────────────────────────────── */
 .rfs-sheet__biography {
+  flex: 1;
   width: 100%;
-  min-height: 80px;
   box-sizing: border-box;
   background: var(--rfs-color-bg-input);
   border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
@@ -1022,11 +1030,12 @@
   font-size: var(--rfs-font-size-md);
   line-height: 1.5;
   padding: var(--rfs-space-sm);
-  resize: vertical;
+  resize: none;
   display: block;
+  min-height: 0;
 
   &:focus { outline: none; border-color: var(--rfs-color-accent); }
-  &:disabled { opacity: 0.6; resize: none; }
+  &:disabled { opacity: 0.6; }
 }
 
 /* ── Skill index editable row ────────────────────────────────────────────── */
