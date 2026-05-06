@@ -64,13 +64,13 @@
 
   {{!-- ── Footer ────────────────────────────────────────────────────────────── --}}
   <div class="rfs-challenge-dialog__footer">
-    <button type="submit" class="rfs-btn rfs-btn--primary">
-      {{localize "RFS.Dialog.Challenge.Confirm"}}
-    </button>
     <button type="button"
             class="rfs-btn"
             onclick="this.closest('.application').dispatchEvent(new Event('close'))">
       {{localize "RFS.Dialog.Challenge.Cancel"}}
+    </button>
+    <button type="submit" class="rfs-btn rfs-btn--primary">
+      {{localize "RFS.Dialog.Challenge.Confirm"}}
     </button>
   </div>
 

@@ -1399,6 +1399,90 @@
 }
 
 /* =============================================================================
+   GM CHALLENGE SETUP DIALOG
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-challenge-dialog {
+  background: var(--rfs-bg);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__label {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--rfs-text-mute);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-input {
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border-strong);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-sep,
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-label {
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--rfs-text-mute);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-dice {
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text);
+  font-family: var(--rfs-mono);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-roll-btn {
+  background: transparent;
+  border: 1px solid var(--rfs-border-strong);
+  color: var(--rfs-gold);
+  font-family: var(--rfs-mono);
+  font-style: normal;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 5px 10px;
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-roll-btn:hover {
+  border-color: var(--rfs-gold);
+  background: rgba(200,153,90,0.08);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__token {
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  border-left: 3px solid var(--rfs-border-strong);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__token-name {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  color: var(--rfs-text);
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__footer {
+  border-top-color: var(--rfs-border);
+}
+
+/* Cancel in the footer — unstyled .rfs-btn baseline is already dark; give it secondary look */
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__footer .rfs-btn:not(.rfs-btn--primary) {
+  background: transparent;
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text-mute);
+  font-size: 14px;
+  padding: 8px 14px;
+}
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__footer .rfs-btn:not(.rfs-btn--primary):hover {
+  border-color: var(--rfs-border-strong);
+  color: var(--rfs-text);
+}
+
+/* =============================================================================
    ANIMATIONS
 ============================================================================= */
 @keyframes rfs-pulse {
