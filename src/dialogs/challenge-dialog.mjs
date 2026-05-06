@@ -43,7 +43,6 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     },
     actions: {
       removeToken: RfsChallengeDialog._onRemoveToken,
-      rollDc:      RfsChallengeDialog._onRollDc,
     },
   };
 
@@ -83,10 +82,9 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   constructor(options = {}) {
     super(options);
-    this._tokens       = [...(options.tokens ?? [])];
-    this._dc           = 4;
-    this._dcDice       = 1;
-    this._dcRollResult = null;
+    this._tokens   = [...(options.tokens ?? [])];
+    this._dc       = 4;
+    this._dcDice   = 1;
   }
 
   /* -------------------------------------------- */
@@ -95,19 +93,11 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
 
   /** @override */
   async _prepareContext(options) {
-    const dcRollHtml = this._dcRollResult
-      ? this._dcRollResult.dice
-          .map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`)
-          .join("") +
-        ` <span class="rfs-challenge-dialog__dc-total">= ${this._dcRollResult.total}</span>`
-      : "";
-
     return {
       ...await super._prepareContext(options),
-      tokens:     this._tokens.map(t => ({ id: t.id, name: t.name })),
-      dc:         this._dc,
-      dcDice:     this._dcDice,
-      dcRollHtml,
+      tokens:  this._tokens.map(t => ({ id: t.id, name: t.name })),
+      dc:      this._dc,
+      dcDice:  this._dcDice,
     };
   }
 
@@ -121,27 +111,20 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     await this.render();
   }
 
-  static async _onRollDc(event, target) {
-    const diceInput = this.element?.querySelector("[name='dcDice']");
-    this._dcDice    = Math.max(1, parseInt(diceInput?.value ?? 1, 10) || 1);
-
-    const roll = new Roll(`${this._dcDice}d6`);
-    await roll.evaluate();
-
-    this._dc           = roll.total;
-    this._dcRollResult = {
-      dice:  roll.terms[0].results.map(r => r.result),
-      total: roll.total,
-    };
-    await this.render();
-  }
-
   /* -------------------------------------------- */
   /*  Form Submission                             */
   /* -------------------------------------------- */
 
   static async _onSubmit(event, form, formData) {
-    const finalDc = Math.max(1, parseInt(formData.object.dc ?? 4, 10) || 4);
+    const dcDice = Math.max(0, parseInt(formData.object.dcDice ?? 0, 10) || 0);
+    let finalDc;
+    if (dcDice > 0) {
+      const roll = new Roll(`${dcDice}d6`);
+      await roll.evaluate();
+      finalDc = roll.total;
+    } else {
+      finalDc = Math.max(1, parseInt(formData.object.dc ?? 4, 10) || 4);
+    }
     await RfsChallengeDialog._postChallenge({ tokens: this._tokens, finalDc });
   }
 

@@ -467,6 +467,9 @@
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 .rfs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
   border-radius: var(--rfs-radius-sm);
@@ -913,19 +916,6 @@
 .rfs-challenge-dialog__dc-label {
   font-size: 12px;
   color: var(--rfs-color-text-muted);
-}
-
-.rfs-challenge-dialog__dc-roll-btn {
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.rfs-challenge-dialog__dc-result {
-  margin-top: var(--rfs-space-sm);
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
 }
 
 .rfs-challenge-dialog__token-list {

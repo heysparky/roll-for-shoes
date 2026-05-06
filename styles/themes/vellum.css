@@ -1030,7 +1030,9 @@
    advancement), --ghost (border-only, secondary actions like "Spend XP").
 ============================================================================= */
 [data-rfs-theme="vellum"] .rfs-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   padding: 10px 16px;
   border-radius: var(--rfs-radius);
@@ -1420,6 +1422,23 @@
   background: var(--rfs-bg-input);
   border: 1px solid var(--rfs-border-strong);
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+  /* override any Foundry fixed height so large font stays vertically centered */
+  height: auto;
+  min-height: 0;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-dice {
+  height: auto;
+  min-height: 0;
+  line-height: 1;
+  padding: 6px 8px;
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text);
+  font-family: var(--rfs-mono);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
 [data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-sep,
@@ -1428,29 +1447,6 @@
   font-size: 11px;
   letter-spacing: 0.1em;
   color: var(--rfs-text-mute);
-}
-
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-dice {
-  background: var(--rfs-bg-input);
-  border: 1px solid var(--rfs-border);
-  color: var(--rfs-text);
-  font-family: var(--rfs-mono);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-roll-btn {
-  background: transparent;
-  border: 1px solid var(--rfs-border-strong);
-  color: var(--rfs-gold);
-  font-family: var(--rfs-mono);
-  font-style: normal;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  padding: 5px 10px;
-}
-[data-rfs-theme="vellum"] .rfs-challenge-dialog__dc-roll-btn:hover {
-  border-color: var(--rfs-gold);
-  background: rgba(200,153,90,0.08);
 }
 
 [data-rfs-theme="vellum"] .rfs-challenge-dialog__token {
