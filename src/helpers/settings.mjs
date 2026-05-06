@@ -203,7 +203,7 @@ export function buildChallengeCardContent(challenge) {
                 data-token-id="${tokenId}"
                 data-actor-id="${actorId}"
                 data-challenge-id="${challenge.challengeId}">
-          <img class="rfs-challenge__portrait" src="${img}" alt="${name}">
+          <div class="rfs-challenge__portrait"><img src="${img}" alt="${name}"></div>
         </button>
         <div class="rfs-challenge__player-info">
           <span class="rfs-challenge__player-name">${name}</span>
@@ -236,7 +236,7 @@ export function buildChallengeCardContent(challenge) {
       : "";
 
     return `<div class="rfs-challenge__player ${outcomeClass}">
-      <img class="rfs-challenge__portrait" src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}">
+      <div class="rfs-challenge__portrait"><img src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}"></div>
       <div class="rfs-challenge__player-info">
         <span class="rfs-challenge__player-name">${result.actorName}</span>
         <span class="rfs-challenge__player-skill">${skillLine}</span>
@@ -259,8 +259,10 @@ export function buildChallengeCardContent(challenge) {
       ${playerRows.join("")}
     </div>
     <div class="rfs-challenge__footer">
-      <span class="rfs-challenge__status-dot ${dotClass}"></span>
-      <span class="rfs-challenge__status-text">${statusText}</span>
+      <div class="rfs-challenge__footer-left">
+        <span class="rfs-challenge__status-dot ${dotClass}"></span>
+        <span class="rfs-challenge__status-text">${statusText}</span>
+      </div>
     </div>
   </div>`;
 }

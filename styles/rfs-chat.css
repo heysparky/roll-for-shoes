@@ -38,6 +38,144 @@
   box-shadow: 0 0 4px rgba(0,0,0,0.1);
 }
 
+/* ── 1b. Skill list (popup skill picker) ─────────────────────────────────── */
+
+.rfs-skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-xs);
+  margin: var(--rfs-space-sm) 0;
+}
+
+.rfs-skill-list__label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--rfs-space-xs);
+}
+
+.rfs-skill-list__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: var(--rfs-space-sm) var(--rfs-space-md);
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  cursor: pointer;
+  transition: background var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
+
+  &:hover, &.is-selected {
+    background: var(--rfs-color-bg-panel);
+    border-color: var(--rfs-color-accent);
+  }
+}
+
+.rfs-skill-list__row-name {
+  font-size: var(--rfs-font-size-md);
+  color: var(--rfs-color-text);
+
+  .is-selected & { color: var(--rfs-color-accent); }
+}
+
+.rfs-skill-list__row-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.rfs-skill-list__row-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rfs-color-pip);
+}
+
+.rfs-skill-list__row-dice {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+}
+
+/* ── 1c. Result compare layout ────────────────────────────────────────────── */
+
+.rfs-result__compare {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--rfs-space-md);
+  margin-top: var(--rfs-space-xs);
+}
+
+.rfs-result__vs {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+}
+
+.rfs-result__dc {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-xl);
+  color: var(--rfs-color-text-muted);
+}
+
+.rfs-result__total--success { color: var(--rfs-color-success); }
+.rfs-result__total--failure { color: var(--rfs-color-failure); }
+
+.rfs-result__xp-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-left: var(--rfs-space-sm);
+  padding: 2px 6px;
+  border: 1px solid var(--rfs-color-xp);
+  border-radius: var(--rfs-radius-sm);
+}
+
+.rfs-result__xp-badge-num {
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  color: var(--rfs-color-xp);
+}
+
+.rfs-result__xp-badge-label {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-xp);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ── 1d. Popup plate (DC context) + done footer ───────────────────────────── */
+
+.rfs-popup__plate-dc {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: var(--rfs-space-xs);
+}
+
+.rfs-popup__plate-dc-num {
+  font-family: var(--rfs-font-mono);
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  color: var(--rfs-color-accent);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.rfs-popup__foot {
+  padding: var(--rfs-space-md) 0;
+  text-align: center;
+}
+
+.rfs-popup__done {
+  font-style: italic;
+  color: var(--rfs-color-text-muted);
+  font-size: var(--rfs-font-size-sm);
+  margin: 0;
+}
+
 /* ── 2. Standalone roll card ──────────────────────────────────────────────── */
 
 .rfs-roll {

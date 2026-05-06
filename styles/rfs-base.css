@@ -529,6 +529,35 @@
     font-size: var(--rfs-font-size-sm);
     padding: 2px var(--rfs-space-xs);
   }
+
+  &--block {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    margin-top: var(--rfs-space-sm);
+  }
+
+  &--ghost {
+    background: transparent;
+    border-color: var(--rfs-color-accent);
+    color: var(--rfs-color-accent);
+
+    &:hover:not(:disabled) {
+      background: var(--rfs-color-bg-panel);
+    }
+  }
+
+  &--gold {
+    background: var(--rfs-color-accent);
+    border-color: var(--rfs-color-accent);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: var(--rfs-color-accent-hover);
+      border-color: var(--rfs-color-accent-hover);
+    }
+  }
 }
 
 /* ── NPC mode badge ──────────────────────────────────────────────────────── */
@@ -596,8 +625,11 @@
   border: none;
   box-shadow: none;
   max-width: none;
-  width: 40px;
-  height: 40px;
+}
+.message-content .rfs-challenge .rfs-challenge__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .message-content .rfs-challenge button { line-height: 1; margin: 0; }
 .message-content .rfs-challenge .rfs-challenge__player {
@@ -612,8 +644,9 @@
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
-  width: 52px !important;
-  height: 52px !important;
+  width: 60px !important;
+  height: 60px !important;
+  padding: 0 !important;
 }
 .message-content .rfs-challenge .rfs-challenge__player-info {
   display: flex !important;

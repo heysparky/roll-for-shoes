@@ -126,6 +126,7 @@
     "Chat": {
       "SkillRoll": "rolls {skillName} ({level}d6)",
       "AllSixes": "✦ All sixes! Advancement opportunity!",
+      "AllSixesHeading": "All Sixes!",
       "Failure": "Fail",
       "Success": "Success",
       "Difficulty": "{actorName} difficulty: {difficulty}",

@@ -1093,6 +1093,78 @@
 }
 
 /* =============================================================================
+   STANDALONE ROLL CARD (chat message)
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-roll {
+  font-family: var(--rfs-serif);
+}
+[data-rfs-theme="vellum"] .rfs-roll__header {
+  font-family: var(--rfs-display);
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+  border-bottom-color: var(--rfs-rule);
+}
+[data-rfs-theme="vellum"] .rfs-roll__result--success {
+  background: rgba(154, 186, 106, 0.10);
+  border-left-color: var(--rfs-success);
+  color: var(--rfs-success);
+}
+[data-rfs-theme="vellum"] .rfs-roll__result--failure {
+  background: rgba(200, 72, 56, 0.10);
+  border-left-color: var(--rfs-failure);
+  color: var(--rfs-failure);
+}
+[data-rfs-theme="vellum"] .rfs-roll__claimed {
+  color: var(--rfs-gold);
+}
+
+/* Standalone card action buttons (advancement + xp-spend) */
+[data-rfs-theme="vellum"] .rfs-btn--advancement {
+  background: linear-gradient(180deg, var(--rfs-gold-hi), var(--rfs-gold));
+  border: 1px solid var(--rfs-gold-hi);
+  color: var(--rfs-bg);
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 17px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 14px rgba(226,179,120,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+  &:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 6px 18px rgba(226,179,120,0.4); }
+}
+[data-rfs-theme="vellum"] .rfs-btn--spend-xp {
+  background: linear-gradient(180deg, var(--rfs-gold-hi), var(--rfs-gold));
+  border: 1px solid var(--rfs-gold-hi);
+  color: var(--rfs-bg);
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 17px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 14px rgba(226,179,120,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+  &:hover:not(:disabled) { filter: brightness(1.05); }
+}
+
+/* Secondary / dismiss button */
+[data-rfs-theme="vellum"] .rfs-btn--secondary {
+  background: transparent;
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text-mute);
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-size: 14px;
+  &:hover:not(:disabled) {
+    border-color: var(--rfs-gold);
+    color: var(--rfs-gold);
+    background: rgba(200,153,90,0.06);
+  }
+}
+
+/* Advancement panel: margin between input and claim button */
+[data-rfs-theme="vellum"] .rfs-cpd__advancement .rfs-btn {
+  margin-top: 10px;
+}
+
+/* =============================================================================
    CHALLENGE CARD (chat message)
 ============================================================================= */
 [data-rfs-theme="vellum"] .rfs-challenge {

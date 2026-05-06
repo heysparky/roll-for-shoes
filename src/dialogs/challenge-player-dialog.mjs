@@ -138,7 +138,8 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
 
     const skills = (actor?.system?.skills ?? [])
       .slice()
-      .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name));
+      .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
+      .map(s => ({ ...s, pips: Array.from({ length: s.level }, () => ({})) }));
 
     const result      = this._rollResult;
     const xpCost      = result?.nonSixCount ?? 0;
@@ -175,6 +176,8 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
       canAffordXp,
       newSkillPrompt,
       doneNote,
+      skillName:      this._skillName ?? "",
+      nextSkillLevel: (this._skillLevel ?? 1) + 1,
       // Step flags — computed here so the template needs no helpers
       isPickSkill:   this._step === "pick-skill",
       isRolling:     this._step === "rolling",
@@ -191,12 +194,18 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
 
   /** Wire live listeners that can't be handled via data-action. */
   _onRender(context, options) {
-    // Skill select → enable roll button
-    const select  = this.element?.querySelector(".rfs-cpd__skill-select");
+    // Skill list rows → click to select, enable roll button
+    const rows    = this.element?.querySelectorAll(".rfs-skill-list__row");
+    const input   = this.element?.querySelector("input[name='skillId']");
     const rollBtn = this.element?.querySelector("[data-action='rfsDialogRoll']");
-    if (select && rollBtn) {
-      select.addEventListener("change", () => {
-        rollBtn.disabled = !select.value;
+    if (rows?.length && input && rollBtn) {
+      rows.forEach(row => {
+        row.addEventListener("click", () => {
+          rows.forEach(r => r.classList.remove("is-selected"));
+          row.classList.add("is-selected");
+          input.value = row.dataset.skillId ?? "";
+          rollBtn.disabled = !input.value;
+        });
       });
     }
 
@@ -221,12 +230,11 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
   /* -------------------------------------------- */
 
   static async _onRoll(event, target) {
-    const select  = this.element?.querySelector(".rfs-cpd__skill-select");
-    const skillId = select?.value;
+    const input   = this.element?.querySelector("input[name='skillId']");
+    const skillId = input?.value;
     if (!skillId) return;
 
     target.disabled = true;
-    if (select) select.disabled = true;
     this._step = "rolling";
     await this.render();
 
