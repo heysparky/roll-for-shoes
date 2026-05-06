@@ -17,31 +17,25 @@ Read before touching the challenge flow, card lifecycle, or button wiring.
 
 ## Challenge Flow
 
-The challenge flow is the core GM-to-player interaction loop.
+The challenge flow is the core GM-to-player interaction loop. **Players roll from their character sheet** — there is no player-facing popup dialog.
 
 ### GM Side
-1. Select tokens on canvas, click the shoe button on the token HUD
-2. Challenge Dialog opens — set prompt, DC (roll or static), DC visibility, review tokens
-3. Confirm → two things happen simultaneously:
-   - A **shared Challenge Card** posts to public chat
-   - A socket event (`openChallengeDialog`) fires to all clients
+1. Select tokens on canvas, click the shoe button on the token HUD (or press Q)
+2. Challenge Dialog opens — set DC via stepper/canonicals/dice picker, review token list
+3. Post → the **shared Challenge Card** appears in public chat; all non-GM clients auto-switch to the chat sidebar
 
 ### Player Side
-4. Each called player's `RfsChallengePlayerDialog` popup auto-opens via socket
-5. Popup shows prompt, optionally DC, and a skill dropdown
-6. Player picks skill, hits Roll — popup advances through states
-7. Challenge Card row updates live with their result
-8. If a player closes the popup early, they can reopen it by clicking their portrait on the challenge card
+4. Player sees the challenge card in chat; rolls any skill from their character sheet as normal
+5. `_resolveDifficulty` detects the player's token is in `challenge.tokenIds` → routes through `_postChallengeResult`
+6. Roll result is emitted via socket to the GM; GM writes it to settings and rebuilds the challenge card
+7. The portrait button on the challenge card opens the character sheet (`rfsOpenSheet`)
 
-### Popup States
-```
-pick-skill → rolling → xp-spend | advancement → done (auto-closes 1.2s)
-```
-- **pick-skill**: skill `<select>` + Roll button (disabled until selection made)
-- **rolling**: spinner / "Rolling…"
-- **xp-spend**: shown when roll failed with non-six dice; Spend XP button
-- **advancement**: shown on all-sixes (or after XP spend); name input + Claim button
-- **done**: confirmation note, auto-closes after 1.2 seconds
+### Advancement After a Roll
+- **All sixes (natural)**: advancement dialog opens on the player's client; naming is controlled by `advancementNamer` setting:
+  - `player` — player names the skill via `DialogV2.input`, then emits `claimAdvancement` socket
+  - `gm` — player emits `advancementNeeded` socket; GM gets a `DialogV2.input` and names it
+- **XP spend**: `DialogV2.confirm` + `DialogV2.input` shown to the player; on confirm, `actor.spendXp()` + `actor.addSkill()` then `recordChallengeRoll` emitted
+- Either path posts a blingy `.rfs-advancement` announcement card to public chat
 
 ### After All Players Have Rolled
 - Challenge Card marks itself complete
@@ -52,17 +46,13 @@ pick-skill → rolling → xp-spend | advancement → done (auto-closes 1.2s)
 
 ## Card Lifecycle — Crystallise, Never Delete
 
-**Never delete a chat message.** Deletion shifts everything below it in the
-queue, which is disruptive during active play.
+**Never delete a chat message.** Deletion shifts everything below it in the queue, which is disruptive during active play.
 
-Instead, when a card's action completes, **update its content in place** to
-a quiet static confirmation. The card stays, the queue stays stable.
+Instead, when a card's action completes, **update its content in place** to a quiet static confirmation. The card stays, the queue stays stable.
 
-The challenge card is the only player-facing card for a challenge. There are no
-per-player whisper cards. All player interaction happens in the popup dialog.
+The challenge card is the only challenge-related card in chat (besides the advancement announcement). There are no per-player whisper cards.
 
-Standalone (non-challenge) skill rolls post their own self-contained card with
-inline XP spend and Claim Skill buttons. These crystallise in-place when acted on.
+Standalone (non-challenge) skill rolls post their own self-contained card with inline XP spend and Claim Skill buttons. These crystallise in-place when acted on.
 
 ---
 
@@ -70,8 +60,9 @@ inline XP spend and Claim Skill buttons. These crystallise in-place when acted o
 
 | type | visibility | description |
 |------|------------|-------------|
-| `challenge` | public | Shared GM challenge card. Live-updating, one portrait row per called token. Rebuilt on every roll via `rebuildChallengeCard()`. Read-only — no interactive buttons (portrait buttons open the player popup, wired via `renderChatMessageHTML`). |
-| standalone | public | Non-challenge skill rolls. Self-contained card with XP spend and Claim Skill buttons inline. Flags stored under `rollData`. Crystallises in-place when actioned. |
+| `challenge` | public | Shared GM challenge card. Live-updating; one portrait row per called token. Rebuilt on every roll via `rebuildChallengeCard()`. Portrait buttons open the character sheet. |
+| `advancement` | public | Blingy announcement posted when any skill is gained (natural all-sixes or XP spend). Built by `buildAdvancementCardContent()`. Static — no interactive elements. |
+| standalone | public | Non-challenge skill rolls. Self-contained card with XP spend and Claim Skill buttons. Flags under `rollData`. Crystallises in-place when actioned. |
 
 ---
 
@@ -84,19 +75,19 @@ The source of truth is `game.settings.get("roll-for-shoes", "activeChallenge")`.
 
 Key functions in `src/helpers/settings.mjs`:
 - `buildChallengeCardContent(challenge)` — returns full card HTML from state
+- `buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, xpSpent, xpCost)` — returns advancement announcement HTML
 - `rebuildChallengeCard(challenge)` — fetches the card message and updates it
-- `recordChallengeRoll(tokenId, rollResult)` — records a result, rebuilds card,
-  clears challenge if all tokens have rolled
+- `recordChallengeRoll(tokenId, rollResult)` — records a result, rebuilds card, clears challenge if all tokens have rolled
 
 Active challenge shape:
 ```js
 {
-  challengeId:     string,    // stable ID linking all related cards
+  challengeId:     string,    // stable ID linking the card and all related rolls
   dc:              number,    // the difficulty
-  dcVisible:       boolean,   // whether players see DC before rolling
+  dcVisible:       boolean,   // whether players can see DC (always true currently)
   prompt:          string,    // GM's situation description
   tokenIds:        string[],  // tokens called to roll
-  rolledIds:       string[],  // tokens that have rolled
+  rolledIds:       string[],  // tokens that have already rolled
   results:         object,    // { [tokenId]: rollResult }
   challengeCardId: string,    // messageId of the shared challenge card
   timestamp:       number,    // Date.now() — used for 3-minute timeout
@@ -112,66 +103,23 @@ World-scoped settings can only be written by GMs. Players delegate via socket:
 
 | type | direction | handler |
 |------|-----------|---------|
-| `openChallengeDialog` | GM → all clients | Each player checks ownership, opens popup |
-| `recordChallengeRoll` | player → GM | GM writes result to settings, rebuilds card |
-| `claimAdvancement` | player → GM | GM updates result in settings, rebuilds card |
+| `recordChallengeRoll` | player → GM | GM writes result to settings, rebuilds card; posts advancement card if `skillClaimed` |
+| `claimAdvancement` | player → GM | Player named the skill themselves; GM updates result in settings, rebuilds card, posts announcement |
+| `advancementNeeded` | player → GM | GM gets a `DialogV2` to name the new skill; GM adds it to actor, updates settings, posts announcement |
 
-`"socket": true` must be in `system.json`. Requires a full world reload (not just
-browser refresh) to take effect after changing.
+`"socket": true` must be in `system.json`. Requires a full world reload (not just browser refresh) to take effect after changing.
 
 ---
 
 ## Button Wiring
 
-All chat button listeners live in the `renderChatMessageHTML` hook in
-`roll-for-shoes.mjs`. This hook fires on every render including after
-`message.update()` calls, so re-rendered cards always get fresh listeners.
+All chat button listeners live in the `renderChatMessageHTML` hook in `roll-for-shoes.mjs`. This hook fires on every render including after `message.update()` calls, so re-rendered cards always get fresh listeners.
 
 | data-action | surface | calls |
 |-------------|---------|-------|
-| `rfsOpenChallengeDialog` | challenge card portrait (pending only) | `RfsChallengePlayerDialog.open(tokenId, actorId, challengeId)` |
+| `rfsOpenSheet` | challenge card portrait (all rows) | `actor.sheet.render(true)` |
 | `rfsClaimAdvancement` | standalone card | `RfsSkillRoll.claimAdvancement(actorId, skillId, messageId)` |
 | `rfsSpendXp` | standalone card | `RfsSkillRoll.spendXpOnCard(messageId)` |
-
-Popup actions (`rfsDialogRoll`, `rfsDialogSpendXp`, `rfsDialogClaim`, `rfsDialogDismiss`)
-are wired in `RfsChallengePlayerDialog.DEFAULT_OPTIONS.actions` — not in `renderChatMessageHTML`.
-
----
-
-## Challenge Player Dialog
-
-`src/dialogs/challenge-player-dialog.mjs` — `HandlebarsApplicationMixin(ApplicationV2)`.
-
-- One instance per token, tracked in `static _openDialogs: Map<tokenId, dialog>`
-- `static open(tokenId, actorId, challengeId)` — deduplicates; brings existing to front
-- Opening a new challenge auto-closes any dialog from a different `challengeId`
-- On construction, reconstructs `_step` from existing challenge state (handles re-opens)
-- `canInteract = actor.testUserPermission(game.user, "OWNER") && !game.user.isGM`
-  - GM can open any player's dialog in read-only mode (sees state, no controls)
-- Auto-closes 1.2 seconds after reaching the `done` step
-
----
-
-## Character Sheet
-
-`HandlebarsApplicationMixin(ActorSheetV2)` with `submitOnChange: true` for auto-save.
-
-- Click a skill name → rolls that skill (`rollSkill` action)
-- Portrait uses `data-edit="img"` (Foundry native) — not a custom action
-- No add/remove skill buttons in the UI — progression happens via rolls
-- Pips (× level) only — no level number badge
-- **Skill display**: compact flat list (`skill-index.hbs`) — pips + name, depth-indented by `--rfs-skill-depth` CSS var
-- **`⤢` button**: opens `RfsSkillMapDialog` — full horizontal bracket tree in a resizable popup
-- Skills panel is `flex: 1` in the sheet body, so it fills the height as skills grow
-
-## Skill Map Dialog
-
-`RfsSkillMapDialog` — `HandlebarsApplicationMixin(ApplicationV2)`.
-
-- Singleton per actor: tracked in `static #open: Map<actorId, dialog>`
-- `static open(actor)` — deduplicates; brings existing to front
-- Renders `skill-map-dialog.hbs` which wraps the existing `skill-tree.hbs` partial
-- Bracket tree connector lines are vellum-themed; see vellum.css SKILL TREE section
 
 ---
 
@@ -181,11 +129,56 @@ are wired in `RfsChallengePlayerDialog.DEFAULT_OPTIONS.actions` — not in `rend
 
 1. `options.difficulty` set explicitly — use it
 2. `options.challengeId` matches active challenge — use that challenge's DC
-3. Actor has a token in active challenge `tokenIds` — use that DC
+3. Actor has a token in active challenge `tokenIds` — use that DC (sheet-based roll auto-routing)
 4. Default — 4 (Easy)
 
-Sheet-initiated rolls still pick up the active challenge DC if the actor's token
-was called. Dialog rolls pass `challengeId` directly.
+Sheet-initiated rolls pick up the active challenge DC automatically if the actor's token was called. No extra config needed from the player.
+
+---
+
+## GM Challenge Dialog
+
+`src/dialogs/challenge-dialog.mjs` — `HandlebarsApplicationMixin(ApplicationV2)`.
+
+Instance state (not form data — survives template re-renders):
+- `this._dc` — current DC value (2–24)
+- `this._dcDice` — selected dice (1 = static, 2–4 = roll Nd6 on Post)
+
+Actions:
+- `stepDc` — ±1 via `data-dir`
+- `setDc` — jump to canonical value via `data-value`
+- `selectDice` — pick dice count via `data-dice`
+- `removeToken` — remove a called token
+
+`_onSubmit` reads `this._dc` and `this._dcDice` directly (not formData). If `_dcDice > 1`, rolls that many d6 for the final DC; otherwise uses `this._dc` as-is.
+
+`difficultyMode` world setting:
+- `standard` — default DC 3, canonical buttons: 3, 6, 9, 12, 15, 18, 21, 24
+- `moreXp` — default DC 4, canonical buttons: 4, 8, 12, 16, 20, 24
+
+---
+
+## Character Sheet
+
+`HandlebarsApplicationMixin(ActorSheetV2)` with `submitOnChange: true` for auto-save.
+
+- **Portrait** — `<button data-action="editPortrait">` opens a `FilePicker`; vellum shows pencil overlay on hover
+- **Name** — text input; auto-saves
+- **XP** — number input (`system.xp`); auto-saves
+- **Biography** — textarea (`system.biography`); auto-saves
+- **Skills (view mode)** — clicking the skill name button rolls that skill
+- **Skills (edit mode)** — skill name is an inline `<input>` with `name="system.skills.{originalIndex}.name"`; a small ▶ button rolls; root skill is read-only
+- **`originalIndex`** — added by `_sortSkillsForDisplay()` so sorted display order cannot cause form submissions to update the wrong skill in the stored array
+- **`_processFormData`** — merges incoming skill name inputs with the rest of each skill's data (level, id, parentId) so partial form updates don't reset unsubmitted fields
+- **`⤢` button** — opens `RfsSkillMapDialog` — full horizontal bracket tree in a resizable popup
+
+## Skill Map Dialog
+
+`RfsSkillMapDialog` — `HandlebarsApplicationMixin(ApplicationV2)`.
+
+- Singleton per actor: tracked in `static #open: Map<actorId, dialog>`
+- `static open(actor)` — deduplicates; brings existing to front
+- Renders `skill-map-dialog.hbs` which wraps the existing `skill-tree.hbs` partial
 
 ---
 
@@ -195,7 +188,7 @@ Base styles: `styles/rfs-base.css` + `styles/rfs-chat.css`
 
 Themes live in `styles/themes/<name>.css` and are scoped to `[data-rfs-theme="<id>"]`.
 The theme is applied by setting `document.body.dataset.rfsTheme` on world load and
-whenever the player changes their theme setting.
+whenever the setting changes (no reload required).
 
 Current themes: `dark-factory`, `clean-light`, `vellum` (default).
 
@@ -204,3 +197,10 @@ Theme files override those custom properties within their scoped selector, then 
 structural rules unique to that theme.
 
 Class naming convention: `rfs-` prefix throughout, BEM structure.
+
+### Key custom property groups
+- `--rfs-color-*` — semantic colours (overridden by themes)
+- `--rfs-font-*` — typefaces and sizes
+- `--rfs-space-*` — spacing scale
+- `--rfs-challenge-*` — challenge card palette (dark-on-dark by default)
+- `--rfs-radius-*`, `--rfs-shadow-*`, `--rfs-anim-*`
