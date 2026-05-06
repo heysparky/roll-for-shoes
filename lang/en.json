@@ -157,7 +157,28 @@
         "Waiting": "choosing skill…",
         "Rolled": "rolled"
       },
-      "XpSpendTitle": "Spend XP for Advancement?"
+      "XpSpendTitle": "Spend XP for Advancement?",
+      "AdvancementCard": {
+        "Title": "New Skill!",
+        "Meta": "Level {level} · child of {parent}",
+        "MetaXp": "Level {level} · child of {parent} · {cost} XP spent"
+      }
+    },
+    "Settings": {
+      "Theme": {
+        "Name": "Theme",
+        "Hint": "Visual theme for the Roll for Shoes system."
+      },
+      "NpcMode": {
+        "Name": "NPC Default Mode",
+        "Hint": "Whether NPCs use fixed difficulty or a full skill tree."
+      },
+      "AdvancementNamer": {
+        "Name": "Skill Advancement: Who Names the New Skill?",
+        "Hint": "When a player rolls all sixes in a challenge, who is prompted to name the new skill? 'GM' is the default — the GM types the name and it appears on the actor. 'Player' prompts the player's own client.",
+        "Player": "Player",
+        "Gm": "GM"
+      }
     }
   }
 }

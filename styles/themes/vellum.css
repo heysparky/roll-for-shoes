@@ -1490,6 +1490,62 @@
 }
 
 /* =============================================================================
+   ADVANCEMENT ANNOUNCEMENT CARD
+============================================================================= */
+[data-rfs-theme="vellum"] .rfs-advancement {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(226,179,120,0.18), transparent 65%),
+    var(--rfs-bg);
+  border: 1px solid var(--rfs-gold);
+  box-shadow: 0 0 24px rgba(200,153,90,0.2), inset 0 1px 0 rgba(226,179,120,0.15);
+}
+
+[data-rfs-theme="vellum"] .rfs-advancement__header {
+  border-bottom: 1px solid rgba(200,153,90,0.3);
+}
+
+[data-rfs-theme="vellum"] .rfs-advancement__mark {
+  color: var(--rfs-gold-hi);
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-size: 20px;
+}
+
+[data-rfs-theme="vellum"] .rfs-advancement__title {
+  font-family: var(--rfs-display);
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--rfs-gold-hi);
+  text-transform: uppercase;
+}
+
+[data-rfs-theme="vellum"] .rfs-advancement__actor {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--rfs-text-mute);
+  text-transform: uppercase;
+}
+
+[data-rfs-theme="vellum"] .rfs-advancement__skill {
+  font-family: var(--rfs-display);
+  font-size: 28px;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 0 20px rgba(226,179,120,0.4);
+}
+
+[data-rfs-theme="vellum"] .rfs-advancement__meta {
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--rfs-text-mute);
+}
+
+/* =============================================================================
    ANIMATIONS
 ============================================================================= */
 @keyframes rfs-pulse {

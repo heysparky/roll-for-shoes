@@ -38,6 +38,21 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
+  // ── Advancement Namer ──────────────────────────────────────────────────────
+  game.settings.register(RFS.id, "advancementNamer", {
+    name: "RFS.Settings.AdvancementNamer.Name",
+    hint: "RFS.Settings.AdvancementNamer.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      "player": "RFS.Settings.AdvancementNamer.Player",
+      "gm":     "RFS.Settings.AdvancementNamer.Gm",
+    },
+    default: "gm",
+    requiresReload: false,
+  });
+
   // ── Active Challenge ───────────────────────────────────────────────────────
   // Stores the currently active GM challenge so skill rolls can pick up
   // the correct DC and widget cards know what challenge they belong to.
@@ -141,6 +156,17 @@ export async function recordChallengeRoll(tokenId, rollResult) {
   // Rebuild the challenge card so the new result row appears
   await rebuildChallengeCard(updated);
 
+  // If skill was already claimed in this roll packet (XP-spend path), post announcement
+  if (rollResult.skillClaimed && rollResult.claimedSkillName) {
+    await ChatMessage.create({
+      content: buildAdvancementCardContent(
+        rollResult.actorName, rollResult.claimedSkillName,
+        rollResult.skillName, (rollResult.skillLevel ?? 1) + 1,
+        rollResult.xpSpent ?? false, rollResult.xpCost ?? 0
+      ),
+    });
+  }
+
   if (allRolled) {
     // Small delay so the final card update lands before we clear
     setTimeout(() => clearActiveChallenge(), 2000);
@@ -199,10 +225,8 @@ export function buildChallengeCardContent(challenge) {
 
       return `<div class="rfs-challenge__player rfs-challenge__player--pending">
         <button type="button" class="rfs-challenge__player-btn"
-                data-action="rfsOpenChallengeDialog"
-                data-token-id="${tokenId}"
-                data-actor-id="${actorId}"
-                data-challenge-id="${challenge.challengeId}">
+                data-action="rfsOpenSheet"
+                data-actor-id="${actorId}">
           <div class="rfs-challenge__portrait"><img src="${img}" alt="${name}"></div>
         </button>
         <div class="rfs-challenge__player-info">
@@ -236,7 +260,10 @@ export function buildChallengeCardContent(challenge) {
       : "";
 
     return `<div class="rfs-challenge__player ${outcomeClass}">
-      <div class="rfs-challenge__portrait"><img src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}"></div>
+      <button type="button" class="rfs-challenge__player-btn"
+              data-action="rfsOpenSheet" data-actor-id="${result.actorId ?? ""}">
+        <div class="rfs-challenge__portrait"><img src="${result.actorImg ?? "icons/svg/mystery-man.svg"}" alt="${result.actorName}"></div>
+      </button>
       <div class="rfs-challenge__player-info">
         <span class="rfs-challenge__player-name">${result.actorName}</span>
         <span class="rfs-challenge__player-skill">${skillLine}</span>
@@ -272,4 +299,40 @@ export function buildChallengeCardContent(challenge) {
  */
 export async function clearActiveChallenge() {
   await game.settings.set(RFS.id, "activeChallenge", null);
+}
+
+/* -------------------------------------------- */
+/*  Advancement Announcement Card               */
+/* -------------------------------------------- */
+
+/**
+ * Build the HTML for the blingy skill-claimed announcement card.
+ * Posted publicly to chat whenever a skill is gained (natural or XP-bought).
+ *
+ * @param {string}  actorName
+ * @param {string}  newSkillName
+ * @param {string}  parentSkillName
+ * @param {number}  newLevel
+ * @param {boolean} xpSpent
+ * @param {number}  xpCost
+ * @returns {string}
+ */
+export function buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, xpSpent = false, xpCost = 0) {
+  const metaKey = xpSpent ? "RFS.Chat.AdvancementCard.MetaXp" : "RFS.Chat.AdvancementCard.Meta";
+  const meta    = xpSpent
+    ? game.i18n.format(metaKey, { level: newLevel, parent: parentSkillName, cost: xpCost })
+    : game.i18n.format(metaKey, { level: newLevel, parent: parentSkillName });
+
+  return `<div class="rfs-advancement">
+    <div class="rfs-advancement__header">
+      <span class="rfs-advancement__mark">✦</span>
+      <span class="rfs-advancement__title">${game.i18n.localize("RFS.Chat.AdvancementCard.Title")}</span>
+      <span class="rfs-advancement__mark">✦</span>
+    </div>
+    <div class="rfs-advancement__body">
+      <div class="rfs-advancement__actor">${actorName}</div>
+      <div class="rfs-advancement__skill">${newSkillName}</div>
+      <div class="rfs-advancement__meta">${meta}</div>
+    </div>
+  </div>`;
 }

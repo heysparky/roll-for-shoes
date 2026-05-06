@@ -799,3 +799,58 @@
   padding-top: var(--rfs-space-sm);
   border-top: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
 }
+
+/* ── 7. Advancement announcement card ─────────────────────────────────────── */
+
+.rfs-advancement {
+  border-radius: var(--rfs-radius);
+  overflow: hidden;
+  text-align: center;
+}
+
+.rfs-advancement__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px 8px;
+}
+
+.rfs-advancement__mark {
+  font-size: 18px;
+  color: var(--rfs-color-accent);
+}
+
+.rfs-advancement__title {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--rfs-color-accent);
+}
+
+.rfs-advancement__body {
+  padding: 8px 16px 14px;
+}
+
+.rfs-advancement__actor {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rfs-color-text-muted);
+  margin-bottom: 4px;
+}
+
+.rfs-advancement__skill {
+  font-size: 24px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--rfs-color-text);
+  line-height: 1.1;
+}
+
+.rfs-advancement__meta {
+  font-size: 12px;
+  color: var(--rfs-color-text-muted);
+  margin-top: 6px;
+}

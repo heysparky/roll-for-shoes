@@ -15,6 +15,8 @@
 
 import { getActiveChallenge } from "../helpers/settings.mjs";
 
+const { DialogV2 } = foundry.applications.api;
+
 export class RfsSkillRoll {
 
   /* -------------------------------------------- */
@@ -35,6 +37,9 @@ export class RfsSkillRoll {
     const allSixes = dice.every(d => d === 6);
     const failed   = total < difficulty;
 
+    // Award XP before posting so the card reflects the current XP balance
+    if (failed) await actor.addXp(1);
+
     if (challengeId) {
       await RfsSkillRoll._postChallengeResult({
         actor, skill, roll, dice, rawTotal, modifier, total,
@@ -46,8 +51,6 @@ export class RfsSkillRoll {
         allSixes, failed, options,
       });
     }
-
-    if (failed) await actor.addXp(1);
 
     return { dice, allSixes, failed, nonSixCount: dice.filter(d => d !== 6).length, total, rawTotal, modifier };
   }
@@ -239,18 +242,14 @@ export class RfsSkillRoll {
   static async _postChallengeResult({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
     const { challengeId } = options;
     const nonSixCount = dice.filter(d => d !== 6).length;
+    const tokenId     = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
 
     const rollResult = {
       actorName:          actor.name,
       actorImg:           actor.img,
       skillName:          skill.name,
       skillLevel:         skill.level,
-      dice,
-      rawTotal,
-      modifier,
-      total,
-      allSixes,
-      failed,
+      dice, rawTotal, modifier, total, allSixes, failed,
       actorId:            actor.id,
       skillId:            skill.id,
       nonSixCount,
@@ -258,14 +257,94 @@ export class RfsSkillRoll {
       advancementPending: allSixes,
     };
 
-    // Ask the GM to record the result -- world settings are GM-only writes.
-    const tokenId = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
+    // ── XP Spend (failure with saveable non-six dice) ─────────────────────
+    // XP was already added before this call, so actor.system.xp is current.
+    if (failed && !allSixes && nonSixCount > 0 && actor.system.xp >= nonSixCount) {
+      const spend = await DialogV2.confirm({
+        window:  { title: game.i18n.localize("RFS.Chat.XpSpendTitle") },
+        content: `<p>${game.i18n.format("RFS.Dialog.Advancement.SpendHint", {
+          skill: skill.name, level: skill.level + 1,
+        })}</p><p>${game.i18n.format("RFS.Dialog.Advancement.SpendCost", { cost: nonSixCount })}</p>`,
+        yes: { label: game.i18n.format("RFS.Chat.SpendXp", { cost: nonSixCount }) },
+        no:  { label: game.i18n.localize("RFS.Dialog.ChallengePlayer.Close") },
+      });
+
+      if (spend) {
+        const nameResult = await DialogV2.input({
+          window:  { title: game.i18n.localize("RFS.Dialog.Advancement.Title") },
+          content: `<p>${game.i18n.format("RFS.Dialog.Advancement.Hint", {
+            skill: skill.name, level: skill.level + 1,
+          })}</p><input type="text" name="skillName"
+            placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+            autofocus style="width:100%;margin-top:0.5em">`,
+          ok: { label: game.i18n.format("RFS.Dialog.Advancement.SpendConfirm", { cost: nonSixCount }) },
+        });
+
+        const newSkillName = nameResult?.skillName?.trim();
+        if (newSkillName) {
+          await actor.spendXp(nonSixCount);
+          await actor.addSkill(newSkillName, skill.id);
+          rollResult.skillClaimed       = true;
+          rollResult.claimedSkillName   = newSkillName;
+          rollResult.advancementPending = false;
+          rollResult.xpSpent            = true;
+          rollResult.xpCost             = nonSixCount;
+        }
+      }
+    }
+
+    // ── Emit roll to GM for recording ─────────────────────────────────────
     if (tokenId) {
       game.socket.emit("system.roll-for-shoes", {
-        type:       "recordChallengeRoll",
+        type: "recordChallengeRoll",
         tokenId,
         rollResult,
       });
+    }
+
+    // ── Natural advancement (all sixes, not already claimed via XP) ───────
+    if (allSixes && !rollResult.skillClaimed) {
+      const namer = game.settings.get("roll-for-shoes", "advancementNamer") ?? "gm";
+
+      if (namer === "player") {
+        const result = await DialogV2.input({
+          window:  { title: game.i18n.localize("RFS.Dialog.Advancement.Title") },
+          content: `<p>${game.i18n.format("RFS.Dialog.Advancement.Hint", {
+            skill: skill.name, level: skill.level + 1,
+          })}</p><input type="text" name="skillName"
+            placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+            autofocus style="width:100%;margin-top:0.5em">`,
+          ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
+        });
+
+        const newSkillName = result?.skillName?.trim();
+        if (newSkillName && tokenId) {
+          await actor.addSkill(newSkillName, skill.id);
+          game.socket.emit("system.roll-for-shoes", {
+            type:            "claimAdvancement",
+            tokenId,
+            challengeId,
+            newSkillName,
+            actorName:       actor.name,
+            parentSkillName: skill.name,
+            newLevel:        skill.level + 1,
+          });
+        }
+      } else {
+        // GM mode — send to GM for naming
+        if (tokenId) {
+          game.socket.emit("system.roll-for-shoes", {
+            type:      "advancementNeeded",
+            tokenId,
+            actorId:   actor.id,
+            actorName: actor.name,
+            skillId:   skill.id,
+            skillName: skill.name,
+            skillLevel: skill.level,
+            challengeId,
+          });
+        }
+      }
     }
   }
 
