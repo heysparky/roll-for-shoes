@@ -134,6 +134,7 @@
       "Winner": "{name} wins!",
       "Tie": "Tie",
       "SpendXp": "Spend {cost} XP & Advance",
+      "SkillClaimed": "✦ {name} claimed!",
       "Claimed": "✦ {name} claimed!",
       "ClaimedXp": "✦ {name} claimed ({cost} XP spent)",
       "Challenge": {

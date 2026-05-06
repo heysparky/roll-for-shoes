@@ -903,8 +903,16 @@
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-[data-rfs-theme="vellum"] .rfs-cpd__outcome--success { color: var(--rfs-success); }
-[data-rfs-theme="vellum"] .rfs-cpd__outcome--fail { color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-cpd__outcome--success {
+  color: var(--rfs-success);
+  background: transparent;
+  border-left-color: transparent;
+}
+[data-rfs-theme="vellum"] .rfs-cpd__outcome--fail {
+  color: var(--rfs-failure);
+  background: transparent;
+  border-left-color: transparent;
+}
 
 /* +1 XP badge */
 [data-rfs-theme="vellum"] .rfs-result__xp-badge {
@@ -1007,6 +1015,9 @@
 [data-rfs-theme="vellum"] .rfs-cpd__skill-name-input {
   width: 100%;
   box-sizing: border-box;
+  height: auto;
+  min-height: 0;
+  line-height: 1;
   padding: 12px 14px;
   background: var(--rfs-bg-input);
   border: 1px solid var(--rfs-gold);

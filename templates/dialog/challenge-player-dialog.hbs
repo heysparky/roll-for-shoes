@@ -2,7 +2,7 @@
 
   {{!-- Context plate: prompt + DC --}}
   <div class="rfs-cpd__context">
-    <div class="rfs-cpd__prompt">{{prompt}}</div>
+    {{#if prompt}}<div class="rfs-cpd__prompt">{{prompt}}</div>{{/if}}
     {{#if dcVisible}}
       <div class="rfs-popup__plate-dc">
         DC <span class="rfs-popup__plate-dc-num">{{dc}}</span>

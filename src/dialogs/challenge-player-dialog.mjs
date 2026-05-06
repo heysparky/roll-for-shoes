@@ -100,8 +100,10 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
     this._skillName        = null;
     this._skillLevel       = null;
     this._claimedSkillName = null;
+    this._dc               = null;
 
     const challenge = getActiveChallenge();
+    this._dc = challenge?.dc ?? null;
     const existing  = challenge?.results?.[options.tokenId];
     if (existing) {
       this._rollResult = existing;
@@ -132,6 +134,8 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
 
     const actor     = game.actors.get(this._actorId);
     const challenge = getActiveChallenge();
+    if (challenge?.dc) this._dc = challenge.dc;
+    const dc = this._dc;
 
     const isOwner     = actor?.testUserPermission(game.user, "OWNER") ?? false;
     const canInteract = isOwner && !game.user.isGM;
@@ -166,7 +170,7 @@ export class RfsChallengePlayerDialog extends HandlebarsApplicationMixin(Applica
       actorName:     actor?.name ?? "",
       skills,
       prompt:        challenge?.prompt ?? "",
-      dc:            challenge?.dc,
+      dc,
       dcVisible:     challenge?.dcVisible ?? true,
       canInteract,
       rollResult:    result,
