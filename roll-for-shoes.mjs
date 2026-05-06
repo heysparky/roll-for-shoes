@@ -164,6 +164,18 @@ Hooks.once("ready", function () {
 });
 
 /* -------------------------------------------- */
+/*  Chat Sidebar Hook                           */
+/* -------------------------------------------- */
+
+// When a challenge card is posted, switch non-GM clients to the chat tab
+// so players see it immediately and can roll from their sheet.
+Hooks.on("createChatMessage", (message) => {
+  if (!game.user.isGM && message.getFlag("roll-for-shoes", "type") === "challenge") {
+    ui.sidebar.activateTab("chat");
+  }
+});
+
+/* -------------------------------------------- */
 /*  Actor Creation Hook                         */
 /* -------------------------------------------- */
 

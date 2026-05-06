@@ -30,6 +30,10 @@ export class RfsSkillRoll {
     const roll = new Roll(`${skill.level}d6`);
     await roll.evaluate();
 
+    // Challenge rolls never post a roll chat message, so DSN won't fire automatically.
+    // Show the 3D dice now; for standalone rolls DSN fires from roll.toMessage() instead.
+    if (challengeId && game.dice3d) await game.dice3d.showForRoll(roll, game.user, true);
+
     const dice     = roll.terms[0].results.map(r => r.result);
     const rawTotal = roll.total;
     const modifier = actor.system.totalStatusModifier ?? 0;

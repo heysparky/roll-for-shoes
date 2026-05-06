@@ -43,10 +43,13 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       closeOnSubmit: false,
     },
     actions: {
+      // Sheet
+      editPortrait: RfsCharacterSheet._onEditPortrait,
+
       // Skill actions
       rollSkill:    RfsCharacterSheet._onRollSkill,
-      addSkill:     RfsCharacterSheet._onAddSkill,    // GM override, no UI button
-      deleteSkill:  RfsCharacterSheet._onDeleteSkill, // GM override, no UI button
+      addSkill:     RfsCharacterSheet._onAddSkill,
+      deleteSkill:  RfsCharacterSheet._onDeleteSkill,
 
       // Status actions
       addStatus:    RfsCharacterSheet._onAddStatus,
@@ -98,22 +101,27 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    * Sort skills root-first, children following parents.
    */
   _sortSkillsForDisplay(skills) {
+    // Build a stable map of skill id → original array index so form inputs
+    // use name="system.skills.N.name" with N matching the stored array position,
+    // not the display-sorted position.
+    const indexMap = new Map(skills.map((s, i) => [s.id, i]));
+
     const root = skills.find((s) => s.parentId === "");
-    if (!root) return skills.map((s) => ({ ...s, depth: 0 }));
+    if (!root) return skills.map((s, i) => ({ ...s, depth: 0, originalIndex: i }));
 
     const result = [];
     const addWithChildren = (parentId, depth) => {
       for (const s of skills.filter((s) => s.parentId === parentId)) {
-        result.push({ ...s, depth });
+        result.push({ ...s, depth, originalIndex: indexMap.get(s.id) ?? 0 });
         addWithChildren(s.id, depth + 1);
       }
     };
 
-    result.push({ ...root, depth: 0 });
+    result.push({ ...root, depth: 0, originalIndex: indexMap.get(root.id) ?? 0 });
     addWithChildren(root.id, 1);
 
     const orphans = skills.filter((s) => !result.find((r) => r.id === s.id));
-    return [...result, ...orphans.map((s) => ({ ...s, depth: 0 }))];
+    return [...result, ...orphans.map((s) => ({ ...s, depth: 0, originalIndex: indexMap.get(s.id) ?? 0 }))];
   }
 
   /* -------------------------------------------- */
@@ -147,6 +155,15 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
   /*  Action Handlers                             */
   /* -------------------------------------------- */
+
+  static async _onEditPortrait() {
+    const fp = new FilePicker({
+      type: "image",
+      current: this.actor.img,
+      callback: (path) => this.actor.update({ img: path }),
+    });
+    fp.browse();
+  }
 
   static async _onRollSkill(event, target) {
     const skillId = target.dataset.skillId;

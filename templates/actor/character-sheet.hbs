@@ -1,14 +1,17 @@
-﻿{{!-- templates/actor/character-sheet.hbs --}}
+{{!-- templates/actor/character-sheet.hbs --}}
 <div class="rfs-sheet character">
 
   {{!-- ── Header: portrait | identity | xp ─────────────────────────────── --}}
   <header class="rfs-sheet__header">
 
-    <img class="rfs-sheet__portrait"
-         src="{{actor.img}}"
-         alt="{{actor.name}}"
-         data-edit="img"
-         title="{{actor.name}}">
+    <button type="button"
+            class="rfs-sheet__portrait-btn"
+            data-action="editPortrait"
+            title="Click to change portrait">
+      <img class="rfs-sheet__portrait"
+           src="{{actor.img}}"
+           alt="{{actor.name}}">
+    </button>
 
     <div class="rfs-sheet__identity">
       <input class="rfs-sheet__name"
@@ -20,8 +23,14 @@
     </div>
 
     <div class="rfs-sheet__xp">
-      <span class="rfs-sheet__xp-label">{{localize 'RFS.Label.XP'}}</span>
-      <span class="rfs-sheet__xp-value">{{xp}}</span>
+      <label class="rfs-sheet__xp-label" for="rfs-xp-input">{{localize 'RFS.Label.XP'}}</label>
+      <input class="rfs-sheet__xp-value"
+             id="rfs-xp-input"
+             type="number"
+             name="system.xp"
+             value="{{xp}}"
+             min="0"
+             {{#unless isEditable}}disabled{{/unless}}>
     </div>
 
   </header>
@@ -63,7 +72,16 @@
           isEditable=isEditable }}
     </div>
 
+    <div class="rfs-panel rfs-panel--biography">
+      <div class="rfs-panel__header">
+        <h2 class="rfs-panel__title">{{localize 'RFS.Label.Biography'}}</h2>
+      </div>
+      <textarea class="rfs-sheet__biography"
+                name="system.biography"
+                placeholder="Character background, appearance, notes…"
+                {{#unless isEditable}}disabled{{/unless}}>{{actor.system.biography}}</textarea>
+    </div>
+
   </section>
 
 </div>
-

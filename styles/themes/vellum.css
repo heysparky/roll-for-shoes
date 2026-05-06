@@ -1580,6 +1580,105 @@
 }
 
 /* =============================================================================
+   CHARACTER SHEET — EDITABLE STATE
+============================================================================= */
+
+/* Portrait button: no button chrome, hover hint */
+[data-rfs-theme="vellum"] .rfs-sheet__portrait-btn {
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait-btn::after {
+  content: "✎";
+  position: absolute;
+  bottom: 6px; right: 6px;
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid var(--rfs-gold);
+  border-radius: var(--rfs-radius-sm);
+  font-size: 13px;
+  color: var(--rfs-gold);
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait-btn:hover::after { opacity: 1; }
+
+/* XP — input reset keeping the display-number look */
+[data-rfs-theme="vellum"] .rfs-sheet__xp-value {
+  font-family: var(--rfs-display);
+  font-size: 36px;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  width: 4rem;
+  text-align: center;
+  height: auto;
+  min-height: 0;
+  line-height: 1;
+  border-bottom-color: transparent;
+  padding: 0;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__xp-value:focus {
+  border-bottom-color: var(--rfs-gold);
+}
+
+/* Biography textarea */
+[data-rfs-theme="vellum"] .rfs-sheet__biography {
+  background: var(--rfs-bg-input);
+  border: 1px solid var(--rfs-border);
+  color: var(--rfs-text);
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.5;
+  min-height: 90px;
+  padding: 10px 12px;
+  border-radius: var(--rfs-radius-sm);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+[data-rfs-theme="vellum"] .rfs-sheet__biography:focus {
+  border-color: var(--rfs-gold);
+  outline: none;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__biography::placeholder {
+  color: var(--rfs-text-mute);
+  font-style: italic;
+}
+
+/* Skill editable name input */
+[data-rfs-theme="vellum"] .rfs-skill-index__name[type="text"] {
+  font-family: var(--rfs-display);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--rfs-text);
+  background: transparent;
+  border-bottom-color: transparent;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__name[type="text"]:focus {
+  border-bottom-color: var(--rfs-gold);
+  color: var(--rfs-gold-hi);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__name[type="text"][readonly] {
+  color: var(--rfs-gold-hi);
+  font-weight: 600;
+}
+
+/* Roll triangle button (edit mode) */
+[data-rfs-theme="vellum"] .rfs-skill-index__roll-btn {
+  color: var(--rfs-gold);
+  border-color: transparent;
+  background: transparent;
+  font-size: 9px;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__roll-btn:hover {
+  border-color: var(--rfs-gold);
+  background: rgba(200,153,90,0.12);
+}
+
+/* =============================================================================
    ANIMATIONS
 ============================================================================= */
 @keyframes rfs-pulse {

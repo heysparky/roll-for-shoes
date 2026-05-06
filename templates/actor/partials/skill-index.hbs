@@ -1,25 +1,37 @@
-﻿{{!-- templates/actor/partials/skill-index.hbs --}}
-{{!--
-  Compact flat skill list for the character sheet panel.
-  Each skill is a single clickable row: pips | name.
-  Depth-based left-padding communicates the tree hierarchy without
-  bracket lines — keeps the sheet readable at a glance.
-  Click the ⤢ button in the panel header for the full bracket view.
---}}
-
+{{!-- templates/actor/partials/skill-index.hbs --}}
 <div class="rfs-skill-index">
   {{#each skills}}
     <div class="rfs-skill-index__row" style="--rfs-skill-depth: {{depth}};">
       <div class="rfs-skill-index__pips">
         {{#rfsRepeat level}}<span class="rfs-pip"></span>{{/rfsRepeat}}
       </div>
-      <button type="button"
-              class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
-              data-action="rollSkill"
-              data-skill-id="{{id}}"
-              title="Roll {{name}} ({{level}}d6)">
-        {{name}}
-      </button>
+
+      {{#if ../isEditable}}
+        {{!-- Editable name input; root skill is read-only --}}
+        <input class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
+               type="text"
+               name="system.skills.{{originalIndex}}.name"
+               value="{{name}}"
+               {{#if (rfsIsRoot this)}}readonly{{/if}}
+               title="{{name}} ({{level}}d6)">
+        {{!-- Separate roll button when editing --}}
+        <button type="button"
+                class="rfs-btn rfs-btn--icon rfs-skill-index__roll-btn"
+                data-action="rollSkill"
+                data-skill-id="{{id}}"
+                title="Roll {{name}} ({{level}}d6)">
+          &#x25b6;
+        </button>
+      {{else}}
+        {{!-- Read-only: clicking the name rolls --}}
+        <button type="button"
+                class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
+                data-action="rollSkill"
+                data-skill-id="{{id}}"
+                title="Roll {{name}} ({{level}}d6)">
+          {{name}}
+        </button>
+      {{/if}}
     </div>
   {{/each}}
 </div>
