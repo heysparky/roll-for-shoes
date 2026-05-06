@@ -157,12 +157,11 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   static async _onEditPortrait() {
-    const fp = new FilePicker({
+    new FilePicker({
       type: "image",
       current: this.actor.img,
       callback: (path) => this.actor.update({ img: path }),
-    });
-    fp.browse();
+    }).render(true);
   }
 
   static async _onRollSkill(event, target) {
