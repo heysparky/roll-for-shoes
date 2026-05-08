@@ -114,9 +114,9 @@ export class RfsNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const parentId = target.dataset.skillId ?? this.actor.getRootSkill()?.id ?? "root";
 
     const result = await foundry.applications.api.DialogV2.input({
-      window: { title: "New Skill" },
-      content: `<input type="text" name="skillName" placeholder="Skill name" autofocus style="width:100%">`,
-      ok: { label: "Add" },
+      window: { title: game.i18n.localize("RFS.Dialog.NewSkill.Title") },
+      content: `<input type="text" name="skillName" placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}" autofocus style="width:100%">`,
+      ok: { label: game.i18n.localize("RFS.Dialog.NewSkill.Confirm") },
     });
 
     const name = result?.skillName?.trim();

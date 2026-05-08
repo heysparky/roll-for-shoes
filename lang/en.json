@@ -64,13 +64,6 @@
         "ValueLabel": "Modifier (negative = penalty)",
         "Confirm": "Add"
       },
-      "ChallengePlayer": {
-        "Title": "Challenge",
-        "WaitingRoll": "Waiting for {name} to roll…",
-        "WaitingAdvancement": "Waiting for {name} to name their new skill…",
-        "RollComplete": "Roll complete.",
-        "Close": "Close"
-      },
       "Challenge": {
         "Title": "Call for Roll",
         "DcModeRoll": "Roll for DC",
@@ -107,13 +100,6 @@
       "NotEnoughXp": "Need {cost} XP to advance but you only have {xp}.",
       "NoActor": "Could not find your character. Ask your GM.",
       "NoSkill": "Could not find the selected skill."
-    },
-    "Widget": {
-      "ChooseSkill": "Choose your skill",
-      "SelectSkill": "select a skill",
-      "RollButton": "Roll!",
-      "AlreadyRolled": "Already rolled",
-      "RollSent": "Roll sent"
     },
     "Chat": {
       "SkillRoll": "rolls {skillName} ({level}d6)",

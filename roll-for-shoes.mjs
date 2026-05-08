@@ -192,12 +192,9 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
 /**
  * Wire up all interactive RFS chat card buttons.
  *
- * Card types and their actions:
- *   playerWidget       → rfsWidgetRoll       (skill picker + roll button)
- *   advancementWidget  → rfsClaimFromWidget  (text input + claim button)
- *   xpSpendWidget      → rfsWidgetSpendXp    (spend XP to force advancement)
- *   standalone card    → rfsClaimAdvancement (old dialog-based flow)
- *   standalone card    → rfsSpendXp          (standalone XP spend)
+ * challenge card  → rfsOpenSheet       (portrait → open character sheet)
+ * standalone card → rfsClaimAdvancement (all-sixes: claim new skill)
+ * standalone card → rfsSpendXp          (failure: spend XP to advance)
  */
 Hooks.on("renderChatMessageHTML", (message, html) => {
 
