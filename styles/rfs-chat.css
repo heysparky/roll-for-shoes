@@ -188,11 +188,25 @@
 }
 
 .rfs-roll__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rfs-space-sm);
   font-size: var(--rfs-font-size-md);
   color: var(--rfs-color-text-label);
   border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
   padding-bottom: var(--rfs-space-xs);
   margin-bottom: var(--rfs-space-xs);
+}
+
+.rfs-roll__actor-name {
+  font-weight: bold;
+  color: var(--rfs-color-text);
+}
+
+.rfs-roll__skill-label {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  margin-left: auto;
 }
 
 .rfs-roll__dice-row {
@@ -225,6 +239,10 @@
   color: var(--rfs-color-allsixes);
   font-style: italic;
   padding: var(--rfs-space-xs) 0;
+}
+
+.rfs-roll__claimed--pending {
+  color: var(--rfs-color-text-muted);
 }
 
 /* Opposed roll layout */
@@ -853,4 +871,48 @@
   font-size: 12px;
   color: var(--rfs-color-text-muted);
   margin-top: 6px;
+}
+
+/* ── 8. Advancement dialog content (.rfs-adv-dlg) ──────────────────────── */
+
+.rfs-adv-dlg {
+  padding: var(--rfs-space-sm) var(--rfs-space-md);
+  border-radius: var(--rfs-radius-sm);
+  border-left: 3px solid var(--rfs-color-accent);
+  background: var(--rfs-color-bg-panel);
+  margin: var(--rfs-space-xs) 0;
+}
+
+.rfs-adv-dlg--earn {
+  border-left-color: var(--rfs-color-allsixes);
+  background: var(--rfs-color-allsixes-bg);
+}
+
+.rfs-adv-dlg--spend {
+  border-left-color: var(--rfs-color-xp);
+}
+
+.rfs-adv-dlg--gm {
+  border-left-color: var(--rfs-color-accent);
+}
+
+.rfs-adv-dlg__headline {
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  color: var(--rfs-color-text);
+  margin: 0 0 var(--rfs-space-xs);
+}
+
+.rfs-adv-dlg--earn .rfs-adv-dlg__headline {
+  color: var(--rfs-color-allsixes);
+}
+
+.rfs-adv-dlg--spend .rfs-adv-dlg__headline {
+  color: var(--rfs-color-xp);
+}
+
+.rfs-adv-dlg__detail {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+  margin: 0;
 }

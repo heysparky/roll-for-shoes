@@ -116,18 +116,8 @@ Hooks.once("ready", function () {
       // ── GM receives: name a new skill for a player (GM-namer path) ──────
       case "advancementNeeded": {
         if (!game.user.isGM) break;
-        const { DialogV2 } = foundry.applications.api;
-        const gmResult = await DialogV2.input({
-          window: { title: `${data.actorName} — ${game.i18n.localize("RFS.Dialog.Advancement.Title")}` },
-          content: `<p>${game.i18n.format("RFS.Dialog.Advancement.Hint", {
-            skill: data.skillName, level: data.skillLevel + 1,
-          })}</p><input type="text" name="skillName"
-            placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
-            autofocus style="width:100%;margin-top:0.5em">`,
-          ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
-        });
-
-        const newSkillName = gmResult?.skillName?.trim();
+        const advSkill     = { name: data.skillName, level: data.skillLevel };
+        const newSkillName = await RfsSkillRoll._promptGmSkillName(data.actorName, advSkill, data.xpSpent ?? false);
         if (!newSkillName) break;
 
         const advActor = game.actors.get(data.actorId);
@@ -136,27 +126,39 @@ Hooks.once("ready", function () {
 
         const advChallenge = getActiveChallenge();
         if (advChallenge?.results?.[data.tokenId]) {
-          const advResults = {
-            ...advChallenge.results,
-            [data.tokenId]: {
-              ...advChallenge.results[data.tokenId],
-              skillClaimed:       true,
-              claimedSkillName:   newSkillName,
-              advancementPending: false,
-            },
-          };
-          const advUpdated = { ...advChallenge, results: advResults };
-          await game.settings.set("roll-for-shoes", "activeChallenge", advUpdated);
-          await rebuildChallengeCard(advUpdated);
-        }
-
-        await ChatMessage.create({
-          content: buildAdvancementCardContent(
-            data.actorName, newSkillName,
+          // Challenge roll — update the state machine + post announcement
+          await RfsSkillRoll._gmMarkAdvancementClaimed(
+            data.tokenId, newSkillName, data.actorName,
             data.skillName, data.skillLevel + 1,
-            false, 0
-          ),
-        });
+            data.xpSpent ?? false, data.xpCost ?? 0,
+          );
+        } else {
+          // Standalone roll — update the original card + post announcement
+          if (data.messageId) {
+            const msg = game.messages.get(data.messageId);
+            if (msg) {
+              const flags    = msg.getFlag("roll-for-shoes", "rollData");
+              const newFlags = { ...flags, skillClaimed: true, claimedSkillName: newSkillName, xpPending: false };
+              const skillObj = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
+              await msg.update({
+                content: RfsSkillRoll._buildStandaloneContent(
+                  flags.actorName, skillObj, flags.xpSpent ? flags.dice.map(() => 6) : flags.dice,
+                  flags.rawTotal, flags.modifier, flags.total,
+                  flags.allSixes || !!flags.xpSpent, flags.failed, flags.difficulty,
+                  newFlags, data.messageId, 0,
+                ),
+                flags: { "roll-for-shoes": { rollData: newFlags } },
+              });
+            }
+          }
+          await ChatMessage.create({
+            content: buildAdvancementCardContent(
+              data.actorName, newSkillName,
+              data.skillName, data.skillLevel + 1,
+              data.xpSpent ?? false, data.xpCost ?? 0,
+            ),
+          });
+        }
         break;
       }
     }

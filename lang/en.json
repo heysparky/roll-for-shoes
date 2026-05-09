@@ -53,12 +53,17 @@
       },
       "Advancement": {
         "Title": "Advancement — All Sixes!",
-        "Hint": "All dice showed 6! Name your new skill (child of {skill}, level {level}):",
+        "Hint": "New skill under {skill}, level {level}",
         "Confirm": "Claim Skill",
+        "EarnHeadline": "You earned a skill!",
         "SpendTitle": "Spend XP & Advance",
+        "SpendHeadline": "Spend {cost} XP on a new skill?",
+        "SpendNamingHeadline": "Name your new skill",
         "SpendHint": "Name your new skill (child of {skill}, level {level}):",
         "SpendCost": "Costs {cost} XP — you can cancel if you change your mind.",
-        "SpendConfirm": "Spend {cost} XP & Advance"
+        "SpendConfirm": "Spend {cost} XP & Advance",
+        "GmEarnHeadline": "{actor} earned a skill!",
+        "GmSpendHeadline": "{actor} is buying a new skill"
       },
       "NewStatus": {
         "Title": "Add Status",
@@ -139,6 +144,7 @@
         "Rolled": "rolled"
       },
       "XpSpendTitle": "Spend XP for Advancement?",
+      "AdvancementWaiting": "XP spent — waiting for GM to name the new skill…",
       "AdvancementCard": {
         "Title": "New Skill!",
         "Meta": "Level {level} · child of {parent}",
