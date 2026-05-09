@@ -161,8 +161,13 @@ export class RfsChallengeDialog extends HandlebarsApplicationMixin(ApplicationV2
     if (this._dcDice > 1) {
       const roll = new Roll(`${this._dcDice}d6`);
       await roll.evaluate();
+      // Animate the DC roll; await so the animation resolves before the card appears
+      if (game.dice3d) await game.dice3d.showForRoll(roll, game.user, true);
+      else foundry.audio.AudioHelper.play({ src: CONFIG.sounds.dice, volume: 0.8, loop: false }, true);
       finalDc = roll.total;
     } else {
+      // Static DC — play dice sound as the "card is posting" cue
+      foundry.audio.AudioHelper.play({ src: CONFIG.sounds.dice, volume: 0.8, loop: false }, true);
       finalDc = this._dc;
     }
     await RfsChallengeDialog._postChallenge({ tokens: this._tokens, finalDc });
