@@ -420,10 +420,12 @@ export class RfsSkillRoll {
       skillClaimed: false,
     };
 
-    // Use ChatMessage.create (not roll.toMessage) so Foundry's roll template
-    // doesn't render its own dice header on top of our custom card content.
+    // Put the skill name in the speaker alias so it appears in Foundry's native
+    // message header — no custom header div needed inside the card content.
+    const speaker = { ...ChatMessage.getSpeaker({ actor }), alias: `${actor.name} · ${skill.name} (${skill.level}d6)` };
+
     const message = await ChatMessage.create({
-      speaker: ChatMessage.getSpeaker({ actor }),
+      speaker,
       content: RfsSkillRoll._buildStandaloneContent(
         actor.name, skill, dice, rawTotal, modifier, total,
         allSixes, failed, options.difficulty, rollData, "PENDING", nonSixCount,
@@ -503,10 +505,6 @@ export class RfsSkillRoll {
 
     return `
       <div class="rfs-roll">
-        <div class="rfs-roll__header">
-          <span class="rfs-roll__actor-name">${actorName}</span>
-          <span class="rfs-roll__skill-label">${skill.name} (${skill.level}d6)</span>
-        </div>
         <div class="rfs-roll__dice-row">
           ${dice.map(d => `<span class="rfs-die${d === 6 ? " rfs-die--six" : ""}">${d}</span>`).join("")}
         </div>
