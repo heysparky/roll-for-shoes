@@ -76,7 +76,8 @@ Standalone (non-challenge) skill rolls post their own self-contained card with i
 |------|------------|-------------|
 | `challenge` | public | Shared GM challenge card. Live-updating; one portrait row per called token. Rebuilt on every roll via `rebuildChallengeCard()`. Portrait buttons open the character sheet. |
 | `advancement` | public | Blingy announcement posted when any skill is gained (natural all-sixes or XP spend). Built by `buildAdvancementCardContent()`. Static — no interactive elements. |
-| standalone | public | Non-challenge skill rolls. Speaker alias carries `"ActorName · SkillName (Nd6)"`. Self-contained card with XP spend and Claim Skill buttons. Flags under `rollData`. Crystallises in-place when actioned. |
+
+Standalone (non-challenge) skill rolls no longer post to chat. They show a `RfsRollResultDialog` fire-and-forget popup and record to the actor's roll history (flags). The advancement announcement card is still posted to public chat when a skill is gained.
 
 ---
 
@@ -126,14 +127,15 @@ GMs bypass the socket and call handlers directly (`game.user.isGM` guard before 
 
 ---
 
-## Standalone Roll Cards
+## Standalone Roll Popup
 
-Standalone rolls use `ChatMessage.create()` (never `roll.toMessage()`) to avoid Foundry rendering its own dice formula header over our card content.
+Standalone (non-challenge) skill rolls show a `RfsRollResultDialog` fire-and-forget popup instead of posting to chat.
 
-- **Speaker alias** is set to `"ActorName · SkillName (Nd6)"` so the roll context appears in Foundry's native bold message header
-- **DSN** is called explicitly with `game.dice3d.showForRoll(roll, game.user, true)` before creating the message; fallback: `foundry.audio.AudioHelper.play(...)` when DSN is absent
-- Card content: dice faces, result strip (success/failure + DC), action area (Claim Skill button or Spend XP button or claimed note)
-- Advancement from standalone cards also respects `advancementNamer`: if namer=gm and non-GM, clicking "Claim Skill" or "Spend XP" emits `advancementNeeded` to the GM; card shows a pending note until the GM names the skill
+- **DSN** is called explicitly before opening the popup; fallback `AudioHelper.play(...)` when DSN is absent
+- Popup content: dice faces, outcome strip (success/failure + DC), optional Claim Skill or Spend XP buttons
+- Popup actions (`claimSkill`, `spendXp`) are in `RfsRollResultDialog.DEFAULT_OPTIONS.actions` — not in `renderChatMessageHTML`
+- After each roll, `actor.addRollHistory(entry)` records the result to the actor's `"roll-for-shoes.rollHistory"` flag (max 50 entries, newest first); this populates the Roll History tab on the character sheet
+- Advancement from the popup respects `advancementNamer` identically to the challenge path
 
 ---
 
@@ -144,8 +146,8 @@ All chat button listeners live in the `renderChatMessageHTML` hook in `roll-for-
 | data-action | surface | calls |
 |-------------|---------|-------|
 | `rfsOpenSheet` | challenge card portrait (all rows) | `actor.sheet.render(true)` |
-| `rfsClaimAdvancement` | standalone card | `RfsSkillRoll.claimAdvancement(actorId, skillId, messageId)` |
-| `rfsSpendXp` | standalone card | `RfsSkillRoll.spendXpOnCard(messageId)` |
+
+Standalone roll card actions (`rfsClaimAdvancement`, `rfsSpendXp`) are no longer wired here — standalone rolls use the `RfsRollResultDialog` popup, whose `claimSkill` and `spendXp` actions live in its own `DEFAULT_OPTIONS.actions`.
 
 ---
 
@@ -188,6 +190,11 @@ Actions:
 
 `HandlebarsApplicationMixin(ActorSheetV2)` with `submitOnChange: true` for auto-save.
 
+Two tabs (`switchTab` action, no framework):
+- **Skills** (default) — compact flat skill list + statuses panel
+- **Roll History** — plain list of the last 50 rolls from the actor's `"roll-for-shoes.rollHistory"` flag
+
+Per-field:
 - **Portrait** — `<button data-action="editPortrait">` opens a `FilePicker` with `render(true)`; vellum shows pencil overlay on hover
 - **Name** — text input; auto-saves
 - **XP** — number input (`system.xp`); auto-saves

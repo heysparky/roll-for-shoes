@@ -6,7 +6,7 @@
 2. **Data model** — Actor has skills[], xp, statuses[], biography — visible in actor.system in console
 3. **Sheet renders** — Character sheet opens, shows name + "Do Anything 1" + XP
 4. **Sheet writes** — XP field edits persist, skill names editable inline
-5. **Skill rolls to chat**
+5. **Skill rolls** — standalone rolls show a themed `RfsRollResultDialog` popup (not chat); results recorded to actor roll-history flag (max 50)
 6. **All-sixes advancement flow**
 7. **XP on failure + spend**
 8. **Opposed rolls & difficulty thresholds**
@@ -24,19 +24,21 @@
     - Advancement naming respects `advancementNamer` on all paths (challenge + standalone)
     - Challenge auto-completes when all tokens have rolled; times out after 3 minutes
     - Portrait buttons on the challenge card open the character sheet (`rfsOpenSheet`)
-11. **Advancement announcement card** — `.rfs-advancement` card posts to public chat on any skill gain (natural or XP-purchased), with actor name, new skill name, level, parent, and XP cost if applicable
+11. **Advancement announcement card** — `.rfs-advancement` card posts to public chat on any skill gain; shows actor name, new skill name, and "From {parent}" (level/XP-cost detail removed)
 12. **GM Challenge Dialog — DC stepper**
     - Spinner (2–24) with − / + buttons; canonical quick-jump buttons highlight the active value
     - `difficultyMode` world setting: Standard (default 3, canonicals 3/6/9…24) or More XP (default 4, canonicals 4/8/12…24)
     - Dice picker: 1d6 = static DC (default), 2–4d6 = roll on Post; DSN shows the dice roll + sound plays
     - Static DC: dice sound plays when the card posts
 13. **Character sheet UX**
+    - Two tabs: Skills (default) and Roll History; tab strip visually styled as raised tabs
     - Click skill name to roll (pips-only display, no level number)
     - Portrait: click-to-edit via FilePicker (`editPortrait` action); vellum shows pencil overlay on hover
     - XP: editable number input (auto-saves on blur)
     - Biography textarea (auto-saves on blur)
     - Rename skill: pencil button opens a DialogV2 rename prompt (root skill excluded)
     - `originalIndex` tracking so display sort order cannot corrupt the stored skill array
+    - Roll History tab: last 50 rolls from actor flag, plain list with time / skill / dice / total / outcome
 14. **Theme system** — `dark-factory`, `clean-light`, `vellum` (default)
     - `vellum.css`: dark academia, oxblood + gold, EB Garamond / Cormorant display type
 15. **Skill list** — compact flat skill list (`skill-index.hbs`): pips + clickable name, depth-indented by CSS `--rfs-skill-depth` custom property
@@ -52,24 +54,24 @@
       - Standalone XP spend (namer=gm, non-GM): card shows "waiting for GM…", GM names, card crystallises
       - Standalone all-sixes (namer=gm, non-GM): routes to GM via socket; GM names; original card updates
     - `advancementNeeded` socket handler covers both challenge and standalone roll paths
-18. **Standalone roll cards** — `ChatMessage.create()` (not `roll.toMessage()`) with speaker alias `"ActorName · SkillName (Nd6)"` in the Foundry message header; card content shows dice, result strip, and action button — no custom header div inside the card
+18. **Standalone roll popup** — `RfsRollResultDialog` fire-and-forget popup replaces chat cards; DSN called explicitly before popup opens; popup shows dice, outcome strip, optional Claim Skill / Spend XP buttons; result recorded to actor roll-history flag
 
 ---
 
 ## Up Next
 
-- **CSS polish** — standalone card result strip, advancement announcement card, any remaining visual gaps
+- **CSS polish** — roll result popup, advancement announcement card, any remaining visual gaps
 - **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement on the announcement card
 
 ---
 
 ## Current State of Development
 
-Core mechanics complete and table-tested. Challenge flow uses sheet-based rolls — no player popup. Advancement UX is fully routed through `advancementNamer`. Theme system wired. Character sheet fully editable. CSS polish is the remaining priority.
+Core mechanics complete and table-tested. Challenge flow uses sheet-based rolls — no player popup. Standalone rolls use a themed popup dialog and record to roll history. Advancement UX is fully routed through `advancementNamer`. Theme system wired. Character sheet has Skills + Roll History tabs. CSS polish is the remaining priority.
 
 ### Working
-- Character sheet: name (editable), portrait (click to edit), skills (list), XP (editable), statuses, biography, rename skill dialog
-- Skill rolls from sheet: speaker alias shows actor + skill, XP on failure, all-sixes claim, DSN + dice sound
+- Character sheet: name, portrait (click to edit), skills (list), XP, statuses, biography, rename skill dialog, roll history tab
+- Skill rolls: popup dialog with dice + outcome; DSN + dice sound; result recorded to actor flag
 - Challenge flow end-to-end: GM calls roll → challenge card posts → non-GMs auto-switch to chat → players roll from sheet → card updates → advancement announced in chat
 - Advancement UX: themed dialogs, two-step XP spend (confirm → name), advancementNamer respected on all paths
 - Opposed rolls, difficulty thresholds, status math
@@ -77,7 +79,7 @@ Core mechanics complete and table-tested. Challenge flow uses sheet-based rolls 
 
 ### Known Gaps / Next Work
 - **Advancement prompt copy**: same announcement card text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
-- **CSS polish**: some chat card and announcement card styling could be tightened.
+- **CSS polish**: roll result popup and announcement card styling could be tightened.
 
 ### Architecture Decisions
 - Challenge state lives in `game.settings` (world-scoped), never in card HTML — single source of truth

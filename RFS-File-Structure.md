@@ -9,8 +9,8 @@ roll-for-shoes/                    ← repo root
 ├── RFS-File-Structure.md          ← this file
 ├── RFS-Milestones.md              ← progress tracking, current dev state, rules reference
 ├── README.md
-├── system.json                    ← Foundry manifest; styles array, socket: true
-├── template.json
+├── system.json                    ← Foundry manifest; styles array, socket: true,
+│                                    documentTypes (Actor: character + npc)
 ├── roll-for-shoes.mjs             ← entry point; init, ready, createChatMessage,
 │                                    renderChatMessageHTML hooks; socket listener
 ├── assets/
@@ -27,10 +27,14 @@ roll-for-shoes/                    ← repo root
 │   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
 │   │                                 CharacterData: skills[], xp, statuses[], biography
 │   ├── dialogs/
-│   │   └── challenge-dialog.mjs   ← GM challenge dialog; DC stepper + dice picker;
-│   │                                 posts challenge card; DSN/sound on post
+│   │   ├── challenge-dialog.mjs   ← GM challenge dialog; DC stepper + dice picker;
+│   │   │                            posts challenge card; DSN/sound on post
+│   │   └── roll-result-dialog.mjs ← fire-and-forget popup for standalone roll results;
+│   │                                 shows dice, outcome strip, Claim Skill / Spend XP;
+│   │                                 actions in DEFAULT_OPTIONS (not renderChatMessageHTML)
 │   ├── documents/
-│   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getSkillById
+│   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getSkillById,
+│   │                                 addRollHistory (flag-based, max 50 entries)
 │   ├── helpers/
 │   │   ├── config.mjs             ← RFS constants, DC scale, theme registry
 │   │   ├── settings.mjs           ← settings registration; activeChallenge state machine;
@@ -44,17 +48,18 @@ roll-for-shoes/                    ← repo root
 │   │                                 themed advancement dialogs (_confirmXpSpend,
 │   │                                 _promptSkillName, _promptGmSkillName);
 │   │                                 DSN showForRoll called explicitly for all paths;
-│   │                                 standalone uses ChatMessage.create + speaker alias
+│   │                                 standalone: RfsRollResultDialog popup + addRollHistory
 │   └── sheets/
-│       ├── character-sheet.mjs    ← ActorSheetV2; editPortrait, rollSkill, renameSkill,
-│       │                            addStatus actions; _sortSkillsForDisplay with
+│       ├── character-sheet.mjs    ← ActorSheetV2; Skills tab + Roll History tab;
+│       │                            editPortrait, rollSkill, renameSkill, addStatus,
+│       │                            switchTab actions; _sortSkillsForDisplay with
 │       │                            originalIndex; submitOnChange
 │       └── npc-sheet.mjs
 ├── styles/
 │   ├── rfs-base.css               ← layout, structure, custom property definitions on :root
 │   │                                includes: sheet, skill index, challenge card, buttons,
 │   │                                biography textarea, DC stepper
-│   ├── rfs-chat.css               ← standalone roll card (.rfs-roll), advancement
+│   ├── rfs-chat.css               ← roll result popup (.rfs-rrd), advancement
 │   │                                announcement card (.rfs-advancement), advancement
 │   │                                dialog content (.rfs-adv-dlg), button variants,
 │   │                                challenge card (.rfs-challenge), player dialog (.rfs-cpd)
@@ -66,8 +71,8 @@ roll-for-shoes/                    ← repo root
 │       └── REGISTRATION.md        ← how to wire a new theme
 └── templates/
     ├── actor/
-    │   ├── character-sheet.hbs    ← portrait button, name, XP input, biography textarea,
-    │   │                            skills panel, statuses panel
+    │   ├── character-sheet.hbs    ← portrait, name, XP, biography; Skills tab
+    │   │                            (skill-index + statuses) and Roll History tab
     │   ├── npc-sheet.hbs
     │   └── partials/
     │       ├── skill-index.hbs    ← compact flat skill list; click name to roll;
@@ -75,8 +80,9 @@ roll-for-shoes/                    ← repo root
     │       ├── status-list.hbs
     │       └── xp-tracker.hbs
     └── dialog/
-        └── challenge-dialog.hbs   ← DC stepper, canonical buttons, dice picker,
-                                     token list, Post/Cancel footer
+        ├── challenge-dialog.hbs      ← DC stepper, canonical buttons, dice picker,
+        │                               token list, Post/Cancel footer
+        └── roll-result-dialog.hbs    ← dice row, outcome strip, Claim Skill / Spend XP
 ```
 
 *(The skill map popup was removed — `skill-map-dialog.mjs`, `skill-node.hbs`, `skill-tree.hbs`, and `skill-map-dialog.hbs` no longer exist. Revert commit `41f27d8` to restore them.)*
@@ -89,9 +95,8 @@ roll-for-shoes/                    ← repo root
 |------|------------|-------------|
 | `challenge` | public | Shared challenge card. One portrait row per called token. Live-updating via `rebuildChallengeCard()`. All portrait rows are `<button data-action="rfsOpenSheet">` — clicking opens the character sheet. |
 | `advancement` | public | Blingy announcement card posted when any skill is gained. Built by `buildAdvancementCardContent()`. Static, no buttons. |
-| standalone | public | Non-challenge skill rolls. Speaker alias = `"ActorName · SkillName (Nd6)"`. Self-contained card with inline XP spend and Claim Skill buttons. Flags under `rollData`. Crystallises in-place when actioned. |
 
-There are no whisper cards. All player-side challenge interaction happens via rolls from the character sheet.
+There are no standalone roll cards and no whisper cards. Standalone rolls show a `RfsRollResultDialog` popup and record to the actor's roll history flag. All player-side challenge interaction happens via rolls from the character sheet.
 
 ---
 
@@ -137,14 +142,10 @@ src/rolls/skill-roll.mjs
             → _confirmXpSpend + _promptSkillName/_promptGmSkillName (advancementNamer-aware)
             → emits recordChallengeRoll socket (or writes directly if GM)
             → emits advancementNeeded socket if GM naming required
-        → standalone path: ChatMessage.create() with speaker alias "ActorName · SkillName (Nd6)"
-  └── spendXpOnCard()
-        → _confirmXpSpend → actor.spendXp()
-        → advancementNamer=gm + non-GM: marks card pending, emits advancementNeeded
-        → else: _promptSkillName → actor.addSkill → crystallises card
-  └── claimAdvancement()
+        → standalone path: actor.addRollHistory() → RfsRollResultDialog.open()
+  └── claimAdvancement()  [called from popup or socket]
         → advancementNamer=gm + non-GM: emits advancementNeeded
-        → else: _promptSkillName → actor.addSkill → crystallises card
+        → else: _promptSkillName → actor.addSkill → posts advancement announcement
   └── _promptGmSkillName() — themed GM-facing naming dialog (also called from socket handler)
   └── _gmMarkAdvancementClaimed() — updates challenge state, rebuilds card, posts announcement
 
@@ -225,26 +226,25 @@ src/helpers/settings.mjs
   <div class="rfs-advancement__body">
     <div class="rfs-advancement__actor">Actor Name</div>
     <div class="rfs-advancement__skill">New Skill Name</div>
-    <div class="rfs-advancement__meta">Level 2 · child of Parent Skill [· N XP spent]</div>
+    <div class="rfs-advancement__meta">From Parent Skill</div>
   </div>
 </div>
 ```
 
-## Standalone Roll Card HTML Structure
+## Roll Result Popup (.rfs-rrd)
+
+Standalone rolls show a fire-and-forget `RfsRollResultDialog` popup (not a chat card).
 
 ```html
-<!-- Speaker alias: "ActorName · SkillName (Nd6)" shown in Foundry's message header -->
-<div class="rfs-roll">
-  <div class="rfs-roll__dice-row">
-    <span class="rfs-die [rfs-die--six]">N</span>
-    …
+<div class="rfs-rrd">
+  <div class="rfs-rrd__dice-row">
+    <span class="rfs-die [rfs-die--six]">N</span> …
   </div>
-  <div class="rfs-roll__result rfs-roll__result--success|failure">
-    ✔ Success (total vs DC)  |  ✘ Fail (total vs DC) — +1 XP
+  <div class="rfs-rrd__outcome rfs-rrd__outcome--success|failure|allsixes">
+    ✔ Success — total vs DC  |  ✘ Fail — total vs DC — +1 XP  |  ✦ All Sixes! — total vs DC
   </div>
-  <!-- action area (one of): -->
-  <div class="rfs-roll__claimed [rfs-roll__claimed--pending]">✦ SkillName claimed [XP note] | waiting…</div>
-  <button class="rfs-btn rfs-btn--advancement" data-action="rfsClaimAdvancement" …>✦ Claim Skill</button>
-  <button class="rfs-btn rfs-btn--spend-xp"    data-action="rfsSpendXp"          …>Spend N XP & Advance</button>
+  <!-- optional action buttons -->
+  <button data-action="claimSkill">✦ Claim Skill</button>
+  <button data-action="spendXp">Spend N XP & Advance</button>
 </div>
 ```
