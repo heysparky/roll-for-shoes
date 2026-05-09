@@ -6,31 +6,27 @@
         {{#rfsRepeat level}}<span class="rfs-pip"></span>{{/rfsRepeat}}
       </div>
 
+      <button type="button"
+              class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
+              data-action="rollSkill"
+              data-skill-id="{{id}}"
+              title="Roll {{name}} ({{level}}d6)">
+        {{name}}
+      </button>
+
       {{#if ../isEditable}}
-        {{!-- Editable name input; root skill is read-only --}}
-        <input class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
-               type="text"
-               name="system.skills.{{originalIndex}}.name"
-               value="{{name}}"
-               {{#if (rfsIsRoot this)}}readonly{{/if}}
-               title="{{name}} ({{level}}d6)">
-        {{!-- Separate roll button when editing --}}
-        <button type="button"
-                class="rfs-btn rfs-btn--icon rfs-skill-index__roll-btn"
-                data-action="rollSkill"
-                data-skill-id="{{id}}"
-                title="Roll {{name}} ({{level}}d6)">
-          &#x25b6;
-        </button>
-      {{else}}
-        {{!-- Read-only: clicking the name rolls --}}
-        <button type="button"
-                class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
-                data-action="rollSkill"
-                data-skill-id="{{id}}"
-                title="Roll {{name}} ({{level}}d6)">
-          {{name}}
-        </button>
+        {{#unless (rfsIsRoot this)}}
+          <button type="button"
+                  class="rfs-btn rfs-btn--icon rfs-skill-index__rename-btn"
+                  data-action="renameSkill"
+                  data-skill-id="{{id}}"
+                  title="Rename">&#x270e;</button>
+          <button type="button"
+                  class="rfs-btn rfs-btn--icon rfs-skill-index__delete-btn"
+                  data-action="deleteSkill"
+                  data-skill-id="{{id}}"
+                  title="Delete {{name}}">&#x2715;</button>
+        {{/unless}}
       {{/if}}
     </div>
   {{/each}}

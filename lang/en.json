@@ -48,6 +48,10 @@
         "Placeholder": "e.g. Boots of Kicking",
         "Confirm": "Add Skill"
       },
+      "RenameSkill": {
+        "Title": "Rename Skill",
+        "Confirm": "Rename"
+      },
       "Advancement": {
         "Title": "Advancement — All Sixes!",
         "Hint": "All dice showed 6! Name your new skill (child of {skill}, level {level}):",

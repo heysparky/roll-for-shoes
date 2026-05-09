@@ -24,8 +24,8 @@ export class RfsSkillRoll {
   /* -------------------------------------------- */
 
   static async roll(actor, skill, options = {}) {
-    const { difficulty, challengeId } = RfsSkillRoll._resolveDifficulty(actor, options);
-    options = { ...options, difficulty, challengeId };
+    const { difficulty, challengeId, tokenId } = RfsSkillRoll._resolveDifficulty(actor, options);
+    options = { ...options, difficulty, challengeId, tokenId };
 
     const roll = new Roll(`${skill.level}d6`);
     await roll.evaluate();
@@ -261,16 +261,16 @@ export class RfsSkillRoll {
       advancementPending: allSixes,
     };
 
-    // ── XP Spend (failure with saveable non-six dice) ─────────────────────
-    // XP was already added before this call, so actor.system.xp is current.
-    if (failed && !allSixes && nonSixCount > 0 && actor.system.xp >= nonSixCount) {
+    // ── XP Spend (any roll that isn't all-sixes) ──────────────────────────
+    // XP was already added before this call (on failure), so actor.system.xp is current.
+    if (!allSixes && nonSixCount > 0 && actor.system.xp >= nonSixCount) {
       const spend = await DialogV2.confirm({
         window:  { title: game.i18n.localize("RFS.Chat.XpSpendTitle") },
         content: `<p>${game.i18n.format("RFS.Dialog.Advancement.SpendHint", {
           skill: skill.name, level: skill.level + 1,
         })}</p><p>${game.i18n.format("RFS.Dialog.Advancement.SpendCost", { cost: nonSixCount })}</p>`,
         yes: { label: game.i18n.format("RFS.Chat.SpendXp", { cost: nonSixCount }) },
-        no:  { label: game.i18n.localize("RFS.Dialog.ChallengePlayer.Close") },
+        no:  { label: game.i18n.localize("RFS.Dialog.Challenge.Cancel") },
       });
 
       if (spend) {
@@ -357,6 +357,9 @@ export class RfsSkillRoll {
   /* -------------------------------------------- */
 
   static async _postStandaloneMessage({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
+    // Show 3D dice before posting (same pattern as challenge rolls)
+    if (game.dice3d) await game.dice3d.showForRoll(roll, game.user, true);
+
     const nonSixCount = dice.filter(d => d !== 6).length;
 
     const rollData = {
@@ -378,11 +381,11 @@ export class RfsSkillRoll {
       skillClaimed: false,
     };
 
-    const flavor = options.flavor ?? `${actor.name}: ${skill.name} (${skill.level}d6)`;
-
-    const message = await roll.toMessage({
+    // Use ChatMessage.create (not roll.toMessage) so Foundry's roll template
+    // doesn't render its own dice header on top of our custom card content.
+    const message = await ChatMessage.create({
       speaker: ChatMessage.getSpeaker({ actor }),
-      flavor,
+      flavor:  `${actor.name}: ${skill.name} (${skill.level}d6)`,
       content: RfsSkillRoll._buildStandaloneContent(
         actor.name, skill, dice, rawTotal, modifier, total,
         allSixes, failed, options.difficulty, rollData, "PENDING", nonSixCount
@@ -404,26 +407,26 @@ export class RfsSkillRoll {
 
   static _resolveDifficulty(actor, options) {
     if (options.difficulty !== undefined) {
-      return { difficulty: options.difficulty, challengeId: null };
+      return { difficulty: options.difficulty, challengeId: null, tokenId: null };
     }
 
     if (options.challengeId) {
       const challenge = getActiveChallenge();
       if (challenge && challenge.challengeId === options.challengeId) {
-        return { difficulty: challenge.dc, challengeId: challenge.challengeId };
+        return { difficulty: challenge.dc, challengeId: challenge.challengeId, tokenId: options.tokenId ?? null };
       }
     }
 
     const challenge = getActiveChallenge();
     if (challenge) {
       const actorTokens = actor.getActiveTokens?.() ?? [];
-      const isCalledToken = actorTokens.some(t => challenge.tokenIds.includes(t.id));
-      if (isCalledToken) {
-        return { difficulty: challenge.dc, challengeId: challenge.challengeId };
+      const matchingToken = actorTokens.find(t => challenge.tokenIds.includes(t.id));
+      if (matchingToken) {
+        return { difficulty: challenge.dc, challengeId: challenge.challengeId, tokenId: matchingToken.id };
       }
     }
 
-    return { difficulty: 4, challengeId: null };
+    return { difficulty: 4, challengeId: null, tokenId: null };
   }
 
   static _buildStandaloneContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
@@ -444,7 +447,7 @@ export class RfsSkillRoll {
         { id: rollData.skillId },
         messageId
       );
-    } else if (failed && !rollData.xpSpent && nonSixCount > 0) {
+    } else if (!rollData.xpSpent && nonSixCount > 0) {
       const actor  = game.actors.get(rollData.actorId);
       const liveXp = actor?.system.xp ?? 0;
       if (liveXp >= nonSixCount) {

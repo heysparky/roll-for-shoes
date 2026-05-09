@@ -48,6 +48,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
       // Skill actions
       rollSkill:    RfsCharacterSheet._onRollSkill,
+      renameSkill:  RfsCharacterSheet._onRenameSkill,
       addSkill:     RfsCharacterSheet._onAddSkill,
       deleteSkill:  RfsCharacterSheet._onDeleteSkill,
 
@@ -187,6 +188,26 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const name = result?.skillName?.trim();
     if (!name) return;
     return this.actor.addSkill(name, parentId);
+  }
+
+  static async _onRenameSkill(event, target) {
+    const skillId = target.dataset.skillId;
+    const skill   = this.actor.getSkillById(skillId);
+    if (!skill) return;
+
+    const result = await foundry.applications.api.DialogV2.input({
+      window: { title: game.i18n.localize("RFS.Dialog.RenameSkill.Title") },
+      content: `<input type="text" name="skillName" value="${skill.name}" autofocus style="width:100%">`,
+      ok: { label: game.i18n.localize("RFS.Dialog.RenameSkill.Confirm") },
+    });
+
+    const name = result?.skillName?.trim();
+    if (!name || name === skill.name) return;
+
+    const skills = this.actor.system.skills.map(s =>
+      s.id === skillId ? { ...s, name } : s
+    );
+    return this.actor.update({ "system.skills": skills });
   }
 
   static async _onDeleteSkill(event, target) {

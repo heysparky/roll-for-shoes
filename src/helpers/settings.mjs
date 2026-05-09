@@ -143,6 +143,10 @@ export function getActiveChallenge() {
   return challenge;
 }
 
+// Serialises concurrent recordChallengeRoll calls so rapid socket messages
+// from multiple players don't clobber each other's state writes.
+let _rollQueue = Promise.resolve();
+
 /**
  * Record that a token has rolled for the active challenge.
  * Updates the challenge card row and clears the challenge if all have rolled.
@@ -150,7 +154,12 @@ export function getActiveChallenge() {
  * @param {string} tokenId
  * @param {object} rollResult  - { actorName, skillName, skillLevel, dice, total, allSixes, failed }
  */
-export async function recordChallengeRoll(tokenId, rollResult) {
+export function recordChallengeRoll(tokenId, rollResult) {
+  _rollQueue = _rollQueue.then(() => _doRecordChallengeRoll(tokenId, rollResult));
+  return _rollQueue;
+}
+
+async function _doRecordChallengeRoll(tokenId, rollResult) {
   const challenge = getActiveChallenge();
   if (!challenge) return;
 
