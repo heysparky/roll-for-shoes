@@ -22,7 +22,8 @@
  */
 
 import { RfsSkillRoll } from "../rolls/skill-roll.mjs";
-import { RfsSkillMapDialog } from "../dialogs/skill-map-dialog.mjs";
+// RfsSkillMapDialog (⤢ horizontal bracket tree popup) was removed.
+// To restore: git revert the commit "chore: remove skill map dialog".
 
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -56,8 +57,6 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       addStatus:    RfsCharacterSheet._onAddStatus,
       deleteStatus: RfsCharacterSheet._onDeleteStatus,
 
-      // Skill map
-      openSkillMap: RfsCharacterSheet._onOpenSkillMap,
     },
   };
 
@@ -258,8 +257,5 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     return this.actor.removeStatus(statusId);
   }
 
-  static async _onOpenSkillMap(event, target) {
-    return RfsSkillMapDialog.open(this.actor);
-  }
 }
 

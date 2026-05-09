@@ -19,12 +19,9 @@ export async function preloadHandlebarsTemplates() {
     "systems/roll-for-shoes/templates/dialog/challenge-dialog.hbs",
 
     // Partials — loaded once, referenced as {{> "path"}} in other templates
-    "systems/roll-for-shoes/templates/actor/partials/skill-tree.hbs",
-    "systems/roll-for-shoes/templates/actor/partials/skill-node.hbs",
     "systems/roll-for-shoes/templates/actor/partials/skill-index.hbs",
     "systems/roll-for-shoes/templates/actor/partials/status-list.hbs",
     "systems/roll-for-shoes/templates/actor/partials/xp-tracker.hbs",
-    "systems/roll-for-shoes/templates/dialog/skill-map-dialog.hbs",
   ];
 
   // v14: loadTemplates is namespaced under foundry.applications.handlebars
@@ -53,14 +50,6 @@ export function registerHandlebarsHelpers() {
    */
   Handlebars.registerHelper("rfsIsRoot", function (skill) {
     return skill.parentId === null || skill.parentId === "";
-  });
-
-  /**
-   * {{rfsChildrenOf skills parentId}} — filters skills to direct children.
-   * Used by the recursive skill-node partial to build the tree.
-   */
-  Handlebars.registerHelper("rfsChildrenOf", function (skills, parentId) {
-    return skills.filter((s) => s.parentId === parentId);
   });
 
   /**

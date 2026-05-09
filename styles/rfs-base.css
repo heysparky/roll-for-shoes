@@ -403,26 +403,6 @@
   }
 }
 
-/* ── Skill map dialog ─────────────────────────────────────────────────────── */
-.rfs-skill-map-dialog .window-content {
-  padding: 0;
-  overflow: hidden;
-}
-
-.rfs-skill-map-dialog .rfs-skill-tree {
-  height: 100%;
-  overflow: auto;
-  display: flex;
-  align-items: center;
-  padding: var(--rfs-space-lg);
-  box-sizing: border-box;
-}
-
-.rfs-skill-map-dialog .rfs-skill-tree__canvas {
-  display: flex;
-  align-items: center;
-  min-width: max-content;
-}
 /* ── XP tracker ──────────────────────────────────────────────────────────── */
 .rfs-xp {
   display: flex;
