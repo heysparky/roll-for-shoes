@@ -30,9 +30,10 @@ export class RfsSkillRoll {
     const roll = new Roll(`${skill.level}d6`);
     await roll.evaluate();
 
-    // Challenge rolls never post a roll chat message, so DSN won't fire automatically.
-    // Show the 3D dice now; for standalone rolls DSN fires from roll.toMessage() instead.
-    if (challengeId && game.dice3d) await game.dice3d.showForRoll(roll, game.user, true);
+    // Show 3D dice (DSN) or play the built-in Foundry dice sound.
+    // Neither path uses roll.toMessage() any more, so we always handle this explicitly.
+    if (game.dice3d) await game.dice3d.showForRoll(roll, game.user, true);
+    else foundry.audio.AudioHelper.play({ src: CONFIG.sounds.dice, volume: 0.8, loop: false }, true);
 
     const dice     = roll.terms[0].results.map(r => r.result);
     const rawTotal = roll.total;
@@ -357,9 +358,6 @@ export class RfsSkillRoll {
   /* -------------------------------------------- */
 
   static async _postStandaloneMessage({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
-    // Show 3D dice before posting (same pattern as challenge rolls)
-    if (game.dice3d) await game.dice3d.showForRoll(roll, game.user, true);
-
     const nonSixCount = dice.filter(d => d !== 6).length;
 
     const rollData = {
