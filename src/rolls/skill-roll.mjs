@@ -13,7 +13,7 @@
  *   Success/failure against DC is never affected by XP spend.
  */
 
-import { getActiveChallenge } from "../helpers/settings.mjs";
+import { getActiveChallenge, recordChallengeRoll, rebuildChallengeCard, buildAdvancementCardContent } from "../helpers/settings.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 
@@ -298,13 +298,17 @@ export class RfsSkillRoll {
       }
     }
 
-    // ── Emit roll to GM for recording ─────────────────────────────────────
+    // ── Record roll: GM writes directly; players send via socket ──────────
     if (tokenId) {
-      game.socket.emit("system.roll-for-shoes", {
-        type: "recordChallengeRoll",
-        tokenId,
-        rollResult,
-      });
+      if (game.user.isGM) {
+        await recordChallengeRoll(tokenId, rollResult);
+      } else {
+        game.socket.emit("system.roll-for-shoes", {
+          type: "recordChallengeRoll",
+          tokenId,
+          rollResult,
+        });
+      }
     }
 
     // ── Natural advancement (all sixes, not already claimed via XP) ───────
@@ -325,32 +329,77 @@ export class RfsSkillRoll {
         const newSkillName = result?.skillName?.trim();
         if (newSkillName && tokenId) {
           await actor.addSkill(newSkillName, skill.id);
-          game.socket.emit("system.roll-for-shoes", {
-            type:            "claimAdvancement",
-            tokenId,
-            challengeId,
-            newSkillName,
-            actorName:       actor.name,
-            parentSkillName: skill.name,
-            newLevel:        skill.level + 1,
-          });
+          if (game.user.isGM) {
+            await RfsSkillRoll._gmMarkAdvancementClaimed(tokenId, newSkillName, actor.name, skill.name, skill.level + 1);
+          } else {
+            game.socket.emit("system.roll-for-shoes", {
+              type:            "claimAdvancement",
+              tokenId,
+              challengeId,
+              newSkillName,
+              actorName:       actor.name,
+              parentSkillName: skill.name,
+              newLevel:        skill.level + 1,
+            });
+          }
         }
       } else {
-        // GM mode — send to GM for naming
-        if (tokenId) {
+        // GM namer
+        if (game.user.isGM) {
+          // Already on the GM client — show dialog directly
+          const gmResult = await DialogV2.input({
+            window: { title: `${actor.name} — ${game.i18n.localize("RFS.Dialog.Advancement.Title")}` },
+            content: `<p>${game.i18n.format("RFS.Dialog.Advancement.Hint", {
+              skill: skill.name, level: skill.level + 1,
+            })}</p><input type="text" name="skillName"
+              placeholder="${game.i18n.localize("RFS.Dialog.NewSkill.Placeholder")}"
+              autofocus style="width:100%;margin-top:0.5em">`,
+            ok: { label: game.i18n.localize("RFS.Dialog.Advancement.Confirm") },
+          });
+          const newSkillName = gmResult?.skillName?.trim();
+          if (newSkillName) {
+            await actor.addSkill(newSkillName, skill.id);
+            await RfsSkillRoll._gmMarkAdvancementClaimed(tokenId, newSkillName, actor.name, skill.name, skill.level + 1);
+          }
+        } else if (tokenId) {
           game.socket.emit("system.roll-for-shoes", {
-            type:      "advancementNeeded",
+            type:       "advancementNeeded",
             tokenId,
-            actorId:   actor.id,
-            actorName: actor.name,
-            skillId:   skill.id,
-            skillName: skill.name,
+            actorId:    actor.id,
+            actorName:  actor.name,
+            skillId:    skill.id,
+            skillName:  skill.name,
             skillLevel: skill.level,
             challengeId,
           });
         }
       }
     }
+  }
+
+  // Updates challenge state after the GM has named a new skill inline,
+  // then posts the advancement announcement card.
+  static async _gmMarkAdvancementClaimed(tokenId, newSkillName, actorName, parentSkillName, newLevel) {
+    const challenge = getActiveChallenge();
+    if (challenge?.results?.[tokenId]) {
+      const updated = {
+        ...challenge,
+        results: {
+          ...challenge.results,
+          [tokenId]: {
+            ...challenge.results[tokenId],
+            skillClaimed:       true,
+            claimedSkillName:   newSkillName,
+            advancementPending: false,
+          },
+        },
+      };
+      await game.settings.set("roll-for-shoes", "activeChallenge", updated);
+      await rebuildChallengeCard(updated);
+    }
+    await ChatMessage.create({
+      content: buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, false, 0),
+    });
   }
 
   /* -------------------------------------------- */
