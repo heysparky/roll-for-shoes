@@ -40,37 +40,90 @@
 
   </header>
 
-  {{!-- ── Main body ───────────────────────────────────────────────────── --}}
-  <section class="rfs-sheet__body">
+  {{!-- ── Tab nav ───────────────────────────────────────────────────────── --}}
+  <nav class="rfs-tabs">
+    <button type="button"
+            class="rfs-tabs__btn rfs-tabs__btn--active"
+            data-action="switchTab"
+            data-tab="skills">
+      {{localize 'RFS.Label.Skills'}}
+    </button>
+    <button type="button"
+            class="rfs-tabs__btn"
+            data-action="switchTab"
+            data-tab="history">
+      {{localize 'RFS.Label.RollHistory'}}
+    </button>
+  </nav>
 
-    <div class="rfs-panel rfs-panel--skills">
-      <div class="rfs-panel__header">
-        <h2 class="rfs-panel__title">{{localize 'RFS.Label.Skills'}}</h2>
+  {{!-- ── Tab panels ─────────────────────────────────────────────────────── --}}
+  <div class="rfs-tab-panels">
+
+    {{!-- Skills tab --}}
+    <div class="rfs-tab-panel rfs-tab-panel--active" data-tab="skills">
+
+      <div class="rfs-panel rfs-panel--skills">
+        <div class="rfs-panel__header">
+          <h2 class="rfs-panel__title">{{localize 'RFS.Label.Skills'}}</h2>
+          {{#if isEditable}}
+            <button type="button"
+                    class="rfs-section__action"
+                    data-action="addSkill"
+                    title="{{localize 'RFS.Action.AddSkill'}}">
+              + {{localize 'RFS.Action.AddSkill'}}
+            </button>
+          {{/if}}
+        </div>
+
+        {{> "systems/roll-for-shoes/templates/actor/partials/skill-index.hbs"
+            skills=skills
+            isEditable=isEditable }}
       </div>
 
-      {{> "systems/roll-for-shoes/templates/actor/partials/skill-index.hbs"
-          skills=skills
-          isEditable=isEditable }}
-    </div>
+      <div class="rfs-panel rfs-panel--statuses">
+        <div class="rfs-panel__header">
+          <h2 class="rfs-panel__title">{{localize 'RFS.Label.Statuses'}}</h2>
+          {{#if isEditable}}
+            <button type="button"
+                    class="rfs-section__action"
+                    data-action="addStatus"
+                    title="{{localize 'RFS.Action.AddStatus'}}">
+              + {{localize 'RFS.Action.AddStatus'}}
+            </button>
+          {{/if}}
+        </div>
 
-    <div class="rfs-panel rfs-panel--statuses">
-      <div class="rfs-panel__header">
-        <h2 class="rfs-panel__title">{{localize 'RFS.Label.Statuses'}}</h2>
-        {{#if isEditable}}
-          <button type="button"
-                  class="rfs-section__action"
-                  data-action="addStatus"
-                  title="{{localize 'RFS.Action.AddStatus'}}">
-            + {{localize 'RFS.Action.AddStatus'}}
-          </button>
-        {{/if}}
+        {{> "systems/roll-for-shoes/templates/actor/partials/status-list.hbs"
+            statuses=statuses
+            isEditable=isEditable }}
       </div>
 
-      {{> "systems/roll-for-shoes/templates/actor/partials/status-list.hbs"
-          statuses=statuses
-          isEditable=isEditable }}
     </div>
 
-  </section>
+    {{!-- Roll history tab --}}
+    <div class="rfs-tab-panel" data-tab="history">
+
+      <div class="rfs-history">
+        {{#each rollHistory}}
+          <div class="rfs-history-entry
+                       {{#if allSixes}}rfs-history-entry--allsixes
+                       {{else if failed}}rfs-history-entry--failure
+                       {{else}}rfs-history-entry--success{{/if}}">
+            <span class="rfs-history-entry__time">{{timeDisplay}}</span>
+            <span class="rfs-history-entry__skill">{{skillName}} {{skillLevel}}d6</span>
+            <span class="rfs-history-entry__dice">[{{diceDisplay}}]</span>
+            <span class="rfs-history-entry__total">{{total}} vs {{difficulty}}</span>
+            <span class="rfs-history-entry__outcome">
+              {{#if allSixes}}&#x2726;{{else if failed}}&#x2718;{{else}}&#x2714;{{/if}}
+            </span>
+          </div>
+        {{else}}
+          <div class="rfs-empty">{{localize 'RFS.Label.NoHistory'}}</div>
+        {{/each}}
+      </div>
+
+    </div>
+
+  </div>
 
 </div>

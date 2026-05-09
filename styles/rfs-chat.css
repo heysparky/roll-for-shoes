@@ -873,7 +873,66 @@
   margin-top: 6px;
 }
 
-/* ── 8. Advancement dialog content (.rfs-adv-dlg) ──────────────────────── */
+/* ── 8. Roll result popup (.rfs-rrd) ─────────────────────────────────────── */
+
+.rfs-rrd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rfs-space-md);
+  padding: var(--rfs-space-lg) var(--rfs-space-xl);
+  text-align: center;
+  font-family: var(--rfs-font-body);
+}
+
+.rfs-rrd__dice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rfs-space-sm);
+  justify-content: center;
+}
+
+.rfs-rrd .rfs-die {
+  width: 2.2rem;
+  height: 2.2rem;
+  font-size: var(--rfs-font-size-lg);
+}
+
+.rfs-rrd__outcome {
+  font-size: var(--rfs-font-size-lg);
+  font-weight: bold;
+  padding: var(--rfs-space-xs) var(--rfs-space-md);
+  border-radius: var(--rfs-radius-sm);
+  border-left: 3px solid transparent;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+
+  &--success {
+    color: var(--rfs-color-success);
+    background: var(--rfs-color-success-bg);
+    border-left-color: var(--rfs-color-success);
+  }
+
+  &--failure {
+    color: var(--rfs-color-failure);
+    background: var(--rfs-color-failure-bg);
+    border-left-color: var(--rfs-color-failure);
+  }
+
+  &--allsixes {
+    color: var(--rfs-color-allsixes);
+    background: var(--rfs-color-allsixes-bg);
+    border-left-color: var(--rfs-color-allsixes);
+  }
+}
+
+.rfs-rrd__modifier {
+  font-size: var(--rfs-font-size-sm);
+  color: var(--rfs-color-text-muted);
+}
+
+/* ── 9. Advancement dialog content (.rfs-adv-dlg) ──────────────────────── */
 
 .rfs-adv-dlg {
   padding: var(--rfs-space-sm) var(--rfs-space-md);

@@ -36,6 +36,12 @@
   "changelog": "CHANGELOG.md",
   "license": "LICENSE",
   "socket": true,
+  "documentTypes": {
+    "Actor": {
+      "character": {},
+      "npc": {}
+    }
+  },
   "packs": [],
   "packFolders": []
 }

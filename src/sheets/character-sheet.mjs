@@ -46,6 +46,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     actions: {
       // Sheet
       editPortrait: RfsCharacterSheet._onEditPortrait,
+      switchTab:    RfsCharacterSheet._onSwitchTab,
 
       // Skill actions
       rollSkill:    RfsCharacterSheet._onRollSkill,
@@ -56,7 +57,6 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       // Status actions
       addStatus:    RfsCharacterSheet._onAddStatus,
       deleteStatus: RfsCharacterSheet._onDeleteStatus,
-
     },
   };
 
@@ -78,6 +78,13 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const actor  = this.actor;
     const system = actor.system;
 
+    const rawHistory = actor.getFlag("roll-for-shoes", "rollHistory") ?? [];
+    const rollHistory = rawHistory.map(entry => ({
+      ...entry,
+      diceDisplay: entry.dice.join(", "),
+      timeDisplay: new Date(entry.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    }));
+
     return {
       ...context,
       actor,
@@ -88,11 +95,13 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       statuses:   system.statuses,
       totalStatusModifier: system.totalStatusModifier,
       xp:         system.xp,
+      rollHistory,
       labels: {
         xp:        game.i18n.localize("RFS.Label.XP"),
         skills:    game.i18n.localize("RFS.Label.Skills"),
         statuses:  game.i18n.localize("RFS.Label.Statuses"),
         biography: game.i18n.localize("RFS.Label.Biography"),
+        history:   game.i18n.localize("RFS.Label.RollHistory"),
       },
     };
   }
@@ -255,6 +264,16 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   static async _onDeleteStatus(event, target) {
     const statusId = target.dataset.statusId;
     return this.actor.removeStatus(statusId);
+  }
+
+  static _onSwitchTab(event, target) {
+    const tab = target.dataset.tab;
+    this.element.querySelectorAll(".rfs-tabs__btn").forEach(btn => {
+      btn.classList.toggle("rfs-tabs__btn--active", btn.dataset.tab === tab);
+    });
+    this.element.querySelectorAll(".rfs-tab-panel").forEach(panel => {
+      panel.classList.toggle("rfs-tab-panel--active", panel.dataset.tab === tab);
+    });
   }
 
 }

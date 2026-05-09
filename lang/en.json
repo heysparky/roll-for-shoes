@@ -30,7 +30,9 @@
       "Biography": "Biography",
       "Difficulty": "Difficulty",
       "Description": "Description",
-      "NoStatuses": "No active statuses."
+      "NoStatuses": "No active statuses.",
+      "RollHistory": "Roll History",
+      "NoHistory": "No rolls recorded yet."
     },
     "Action": {
       "AddSkill": "Add skill to root",

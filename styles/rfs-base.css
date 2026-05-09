@@ -132,6 +132,7 @@
   padding: var(--rfs-space-md);
   border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
   background: var(--rfs-color-bg-panel);
+  flex-shrink: 0;
 }
 
 .rfs-sheet__portrait {
@@ -222,9 +223,15 @@
 /* ── Body ────────────────────────────────────────────────────────────────── */
 .rfs-sheet__body {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* NPC sheet body (no tabs): restore scroll + padding via direct child panels */
+.npc .rfs-sheet__body {
+  overflow-y: auto;
   gap: var(--rfs-space-md);
   padding: var(--rfs-space-md);
 }
@@ -995,6 +1002,119 @@
   font-size: 13px;
   color: var(--rfs-color-text-muted);
   font-style: italic;
+}
+
+/* ── Sheet tab nav ───────────────────────────────────────────────────────── */
+.rfs-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  background: var(--rfs-color-bg-panel);
+  flex-shrink: 0;
+}
+
+.rfs-tabs__btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--rfs-color-text-muted);
+  cursor: pointer;
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-sm);
+  padding: var(--rfs-space-sm) var(--rfs-space-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
+
+  &:hover:not(.rfs-tabs__btn--active) {
+    color: var(--rfs-color-text);
+  }
+
+  &--active {
+    color: var(--rfs-color-accent);
+    border-bottom-color: var(--rfs-color-accent);
+    font-weight: bold;
+  }
+}
+
+/* ── Tab panels ──────────────────────────────────────────────────────────── */
+.rfs-tab-panels {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.rfs-tab-panel {
+  display: none;
+  height: 100%;
+
+  &--active {
+    display: flex;
+    flex-direction: column;
+    gap: var(--rfs-space-md);
+    padding: var(--rfs-space-md);
+    overflow-y: auto;
+  }
+}
+
+/* ── Roll history list ───────────────────────────────────────────────────── */
+.rfs-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.rfs-history-entry {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto auto 1.2rem;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: 4px var(--rfs-space-sm);
+  border-radius: var(--rfs-radius-sm);
+  border-left: 2px solid transparent;
+  font-size: var(--rfs-font-size-sm);
+
+  &--success  { border-left-color: var(--rfs-color-success); }
+  &--failure  { border-left-color: var(--rfs-color-failure); }
+  &--allsixes { border-left-color: var(--rfs-color-allsixes); }
+
+  &:hover { background: rgba(0,0,0,0.04); }
+}
+
+.rfs-history-entry__time {
+  color: var(--rfs-color-text-muted);
+  font-family: var(--rfs-font-mono);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.rfs-history-entry__skill {
+  color: var(--rfs-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rfs-history-entry__dice {
+  font-family: var(--rfs-font-mono);
+  color: var(--rfs-color-text-muted);
+  white-space: nowrap;
+}
+
+.rfs-history-entry__total {
+  font-family: var(--rfs-font-mono);
+  color: var(--rfs-color-text);
+  white-space: nowrap;
+}
+
+.rfs-history-entry__outcome {
+  text-align: right;
+  font-size: var(--rfs-font-size-md);
+
+  .rfs-history-entry--success  & { color: var(--rfs-color-success); }
+  .rfs-history-entry--failure  & { color: var(--rfs-color-failure); }
+  .rfs-history-entry--allsixes & { color: var(--rfs-color-allsixes); }
 }
 
 /* ── Biography textarea ──────────────────────────────────────────────────── */

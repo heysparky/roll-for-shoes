@@ -174,6 +174,22 @@ export class RfsActor extends Actor {
   }
 
   /* -------------------------------------------- */
+  /*  Roll History                                */
+  /* -------------------------------------------- */
+
+  /**
+   * Prepend a roll result to this actor's history (capped at 50 entries).
+   * Stored as a flag so it doesn't pollute the TypeDataModel schema.
+   *
+   * @param {object} entry - { skillName, skillLevel, dice, rawTotal, modifier, total, difficulty, failed, allSixes }
+   */
+  async addRollHistory(entry) {
+    const existing = this.getFlag("roll-for-shoes", "rollHistory") ?? [];
+    const updated  = [{ ...entry, timestamp: Date.now() }, ...existing].slice(0, 50);
+    return this.setFlag("roll-for-shoes", "rollHistory", updated);
+  }
+
+  /* -------------------------------------------- */
   /*  getRollData                                 */
   /* -------------------------------------------- */
 

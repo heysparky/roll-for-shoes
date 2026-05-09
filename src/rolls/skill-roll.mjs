@@ -42,8 +42,11 @@ export class RfsSkillRoll {
     const allSixes = dice.every(d => d === 6);
     const failed   = total < difficulty;
 
-    // Award XP before posting so the card reflects the current XP balance
+    // Award XP before posting so the popup reflects the current XP balance
     if (failed) await actor.addXp(1);
+
+    // Record to roll history (actor flag — keyed per-actor, not global)
+    await actor.addRollHistory({ skillName: skill.name, skillLevel: skill.level, dice, rawTotal, modifier, total, difficulty, failed, allSixes });
 
     if (challengeId) {
       await RfsSkillRoll._postChallengeResult({
@@ -51,8 +54,8 @@ export class RfsSkillRoll {
         allSixes, failed, options,
       });
     } else {
-      await RfsSkillRoll._postStandaloneMessage({
-        actor, skill, roll, dice, rawTotal, modifier, total,
+      await RfsSkillRoll._showRollResultPopup({
+        actor, skill, dice, rawTotal, modifier, total,
         allSixes, failed, options,
       });
     }
@@ -178,6 +181,7 @@ export class RfsSkillRoll {
     await actor.addSkill(name, skill.id);
 
     if (messageId) {
+      // Legacy path: update the existing standalone card in chat
       const message = game.messages.get(messageId);
       if (message) {
         const flags = message.getFlag("roll-for-shoes", "rollData");
@@ -196,6 +200,11 @@ export class RfsSkillRoll {
           });
         }
       }
+    } else {
+      // Popup path: no card to update — post the announcement to chat
+      await ChatMessage.create({
+        content: buildAdvancementCardContent(actor.name, name, skill.name, skill.level + 1, false, 0),
+      });
     }
   }
 
@@ -395,50 +404,67 @@ export class RfsSkillRoll {
   }
 
   /* -------------------------------------------- */
-  /*  Standalone Result Card                      */
+  /*  Standalone Roll Result Popup                */
   /* -------------------------------------------- */
 
-  static async _postStandaloneMessage({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
+  static async _showRollResultPopup({ actor, skill, dice, rawTotal, modifier, total, allSixes, failed, options }) {
     const nonSixCount = dice.filter(d => d !== 6).length;
-
-    const rollData = {
-      actorId:      actor.id,
-      actorName:    actor.name,
-      skillId:      skill.id,
-      skillName:    skill.name,
-      skillLevel:   skill.level,
+    const { RfsRollResultDialog } = await import("../dialogs/roll-result-dialog.mjs");
+    RfsRollResultDialog.open({
+      actorId:    actor.id,
+      actorName:  actor.name,
+      skillId:    skill.id,
+      skillName:  skill.name,
+      skillLevel: skill.level,
       dice,
       rawTotal,
       modifier,
       total,
-      difficulty:   options.difficulty,
-      allSixes,
+      difficulty: options.difficulty,
       failed,
-      xpSpent:      false,
-      xpCost:       0,
+      allSixes,
       nonSixCount,
-      skillClaimed: false,
-    };
-
-    // Put the skill name in the speaker alias so it appears in Foundry's native
-    // message header — no custom header div needed inside the card content.
-    const speaker = { ...ChatMessage.getSpeaker({ actor }), alias: `${actor.name} · ${skill.name} (${skill.level}d6)` };
-
-    const message = await ChatMessage.create({
-      speaker,
-      content: RfsSkillRoll._buildStandaloneContent(
-        actor.name, skill, dice, rawTotal, modifier, total,
-        allSixes, failed, options.difficulty, rollData, "PENDING", nonSixCount,
-      ),
-      flags: { "roll-for-shoes": { rollData } },
+      currentXp:  actor.system.xp,
     });
+    // deliberately not awaited — popup is fire-and-forget
+  }
 
-    await message.update({
-      content: RfsSkillRoll._buildStandaloneContent(
-        actor.name, skill, dice, rawTotal, modifier, total,
-        allSixes, failed, options.difficulty, rollData, message.id, nonSixCount
-      ),
+  /**
+   * Standalone XP spend (called from popup, not from a chat card).
+   * Confirms cost, deducts XP, routes naming to advancementNamer.
+   * Returns true when advancement is complete or pending; false if cancelled.
+   */
+  static async _doStandaloneXpSpend(actor, skill, nonSixCount) {
+    if (actor.system.xp < nonSixCount) {
+      ui.notifications.warn(game.i18n.format("RFS.Warn.NotEnoughXp", { cost: nonSixCount, xp: actor.system.xp }));
+      return false;
+    }
+
+    const confirmed = await RfsSkillRoll._confirmXpSpend(skill, nonSixCount);
+    if (!confirmed) return false;
+
+    await actor.spendXp(nonSixCount);
+
+    const namer = game.settings.get("roll-for-shoes", "advancementNamer") ?? "gm";
+    if (namer === "gm" && !game.user.isGM) {
+      game.socket.emit("system.roll-for-shoes", {
+        type:       "advancementNeeded",
+        tokenId: null, challengeId: null, messageId: null,
+        actorId:    actor.id,   actorName:  actor.name,
+        skillId:    skill.id,   skillName:  skill.name,   skillLevel: skill.level,
+        xpSpent:    true,       xpCost:     nonSixCount,
+      });
+      return true;
+    }
+
+    const name = await RfsSkillRoll._promptSkillName(skill, true);
+    if (!name) return false;
+
+    await actor.addSkill(name, skill.id);
+    await ChatMessage.create({
+      content: buildAdvancementCardContent(actor.name, name, skill.name, skill.level + 1, true, nonSixCount),
     });
+    return true;
   }
 
   /* -------------------------------------------- */
