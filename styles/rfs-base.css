@@ -1007,35 +1007,39 @@
 /* ── Sheet tab nav ───────────────────────────────────────────────────────── */
 .rfs-tabs {
   display: flex;
-  gap: 0;
-  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  gap: var(--rfs-space-xs);
+  padding: var(--rfs-space-sm) var(--rfs-space-sm) 0;
   background: var(--rfs-color-bg-panel);
+  border-bottom: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
   flex-shrink: 0;
 }
 
 .rfs-tabs__btn {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
+  background: color-mix(in srgb, var(--rfs-color-bg-panel) 70%, var(--rfs-color-bg));
+  border: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  border-bottom: none;
+  border-radius: var(--rfs-radius-sm) var(--rfs-radius-sm) 0 0;
   margin-bottom: -1px;
   color: var(--rfs-color-text-muted);
   cursor: pointer;
   font-family: var(--rfs-font-body);
   font-size: var(--rfs-font-size-sm);
-  padding: var(--rfs-space-sm) var(--rfs-space-lg);
+  padding: var(--rfs-space-xs) var(--rfs-space-lg);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: color var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
+  transition: color var(--rfs-anim-fast), background var(--rfs-anim-fast);
 
   &:hover:not(.rfs-tabs__btn--active) {
     color: var(--rfs-color-text);
+    background: var(--rfs-color-bg-panel);
   }
+}
 
-  &--active {
-    color: var(--rfs-color-accent);
-    border-bottom-color: var(--rfs-color-accent);
-    font-weight: bold;
-  }
+.rfs-tabs__btn--active {
+  background: var(--rfs-color-bg);
+  color: var(--rfs-color-accent);
+  font-weight: bold;
+  border-bottom-color: var(--rfs-color-bg);
 }
 
 /* ── Tab panels ──────────────────────────────────────────────────────────── */
@@ -1049,14 +1053,14 @@
 .rfs-tab-panel {
   display: none;
   height: 100%;
+}
 
-  &--active {
-    display: flex;
-    flex-direction: column;
-    gap: var(--rfs-space-md);
-    padding: var(--rfs-space-md);
-    overflow-y: auto;
-  }
+.rfs-tab-panel--active {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-space-md);
+  padding: var(--rfs-space-md);
+  overflow-y: auto;
 }
 
 /* ── Roll history list ───────────────────────────────────────────────────── */
