@@ -149,8 +149,8 @@
       "AdvancementWaiting": "XP spent — waiting for GM to name the new skill…",
       "AdvancementCard": {
         "Title": "New Skill!",
-        "Meta": "Level {level} · child of {parent}",
-        "MetaXp": "Level {level} · child of {parent} · {cost} XP spent"
+        "Meta": "From {parent}",
+        "MetaXp": "From {parent}"
       }
     },
     "Settings": {

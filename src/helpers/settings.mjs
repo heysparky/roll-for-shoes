@@ -342,10 +342,7 @@ export async function clearActiveChallenge() {
  * @returns {string}
  */
 export function buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, xpSpent = false, xpCost = 0) {
-  const metaKey = xpSpent ? "RFS.Chat.AdvancementCard.MetaXp" : "RFS.Chat.AdvancementCard.Meta";
-  const meta    = xpSpent
-    ? game.i18n.format(metaKey, { level: newLevel, parent: parentSkillName, cost: xpCost })
-    : game.i18n.format(metaKey, { level: newLevel, parent: parentSkillName });
+  const meta = game.i18n.format("RFS.Chat.AdvancementCard.Meta", { parent: parentSkillName });
 
   return `<div class="rfs-advancement">
     <div class="rfs-advancement__header">
