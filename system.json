@@ -2,6 +2,7 @@
   "id": "roll-for-shoes",
   "title": "Roll for Shoes",
   "description": "A Foundry VTT implementation of Roll for Shoes (Ben Wray), featuring dynamic skill trees, opposed rolls, difficulty thresholds, and status effects.",
+  "background": "/home/foundry/foundryuserdata/Data/systems/roll-for-shoes/assets/ui/rfs-system-logo.webp",
   "version": "0.1.0",
   "compatibility": {
     "minimum": "14",
