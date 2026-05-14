@@ -51,6 +51,12 @@
     <button type="button"
             class="rfs-tabs__btn"
             data-action="switchTab"
+            data-tab="inventory">
+      {{localize 'RFS.Label.Inventory'}}
+    </button>
+    <button type="button"
+            class="rfs-tabs__btn"
+            data-action="switchTab"
             data-tab="history">
       {{localize 'RFS.Label.RollHistory'}}
     </button>
@@ -83,6 +89,29 @@
 
         {{> "systems/roll-for-shoes/templates/actor/partials/status-list.hbs"
             statuses=statuses
+            isEditable=isEditable }}
+      </div>
+
+    </div>
+
+    {{!-- Inventory tab --}}
+    <div class="rfs-tab-panel" data-tab="inventory">
+
+      <div class="rfs-panel rfs-panel--inventory">
+        <div class="rfs-panel__header">
+          <h2 class="rfs-panel__title">{{localize 'RFS.Label.Inventory'}}</h2>
+          {{#if isEditable}}
+            <button type="button"
+                    class="rfs-section__action"
+                    data-action="addItem"
+                    title="{{localize 'RFS.Action.AddItem'}}">
+              + {{localize 'RFS.Action.AddItem'}}
+            </button>
+          {{/if}}
+        </div>
+
+        {{> "systems/roll-for-shoes/templates/actor/partials/inventory-list.hbs"
+            inventory=inventory
             isEditable=isEditable }}
       </div>
 

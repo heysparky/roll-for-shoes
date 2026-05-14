@@ -51,6 +51,18 @@ function skillSchema() {
 }
 
 /* -------------------------------------------- */
+/*  Inventory schema                            */
+/* -------------------------------------------- */
+
+function inventoryItemSchema() {
+  return new SchemaField({
+    id:       new StringField({ required: true, blank: false, initial: () => foundry.utils.randomID() }),
+    name:     new StringField({ required: true, blank: false, initial: "New Item" }),
+    quantity: new NumberField({ required: true, integer: true, min: 0, initial: 1 }),
+  });
+}
+
+/* -------------------------------------------- */
 /*  Status schema                               */
 /* -------------------------------------------- */
 
@@ -104,6 +116,13 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       // Active modifiers. Each status adds its value to relevant rolls.
       // GM and players can add/remove these freely during play.
       statuses: new ArrayField(statusSchema(), {
+        required: true,
+        initial: [],
+      }),
+
+      // ── Inventory ────────────────────────────────────────────────────────
+      // Items the character is carrying. Each entry has a name and quantity.
+      inventory: new ArrayField(inventoryItemSchema(), {
         required: true,
         initial: [],
       }),

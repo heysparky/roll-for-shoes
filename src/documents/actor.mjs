@@ -174,6 +174,36 @@ export class RfsActor extends Actor {
   }
 
   /* -------------------------------------------- */
+  /*  Inventory                                   */
+  /* -------------------------------------------- */
+
+  /**
+   * Add an item to this actor's inventory.
+   * @param {string} name
+   * @param {number} quantity
+   * @returns {Promise<RfsActor>}
+   */
+  async addItem(name, quantity = 1) {
+    const newItem = {
+      id:       foundry.utils.randomID(),
+      name:     name,
+      quantity: quantity,
+    };
+    const updated = [...this.system.inventory, newItem];
+    return this.update({ "system.inventory": updated });
+  }
+
+  /**
+   * Remove an inventory item by ID.
+   * @param {string} itemId
+   * @returns {Promise<RfsActor>}
+   */
+  async removeItem(itemId) {
+    const updated = this.system.inventory.filter((i) => i.id !== itemId);
+    return this.update({ "system.inventory": updated });
+  }
+
+  /* -------------------------------------------- */
   /*  Roll History                                */
   /* -------------------------------------------- */
 

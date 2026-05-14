@@ -57,6 +57,10 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       // Status actions
       addStatus:    RfsCharacterSheet._onAddStatus,
       deleteStatus: RfsCharacterSheet._onDeleteStatus,
+
+      // Inventory actions
+      addItem:    RfsCharacterSheet._onAddItem,
+      deleteItem: RfsCharacterSheet._onDeleteItem,
     },
   };
 
@@ -93,6 +97,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       skills:     this._sortSkillsForDisplay(system.skills),
       rootSkillId: system.rootSkill?.id ?? "root",
       statuses:   system.statuses,
+      inventory:  system.inventory,
       totalStatusModifier: system.totalStatusModifier,
       xp:         system.xp,
       rollHistory,
@@ -156,6 +161,15 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
         return { ...skill, name: submitted.name ?? skill.name };
       });
       data.system.skills = merged;
+    }
+
+    if (data.system?.inventory) {
+      const existing = this.actor.system.inventory;
+      data.system.inventory = existing.map((item, i) => {
+        const submitted = data.system.inventory[i];
+        if (!submitted) return { ...item };
+        return { ...item, name: submitted.name ?? item.name, quantity: submitted.quantity ?? item.quantity };
+      });
     }
 
     return data;
@@ -264,6 +278,25 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   static async _onDeleteStatus(event, target) {
     const statusId = target.dataset.statusId;
     return this.actor.removeStatus(statusId);
+  }
+
+  static async _onAddItem(event, target) {
+    const result = await foundry.applications.api.DialogV2.input({
+      window: { title: game.i18n.localize("RFS.Dialog.NewItem.Title") },
+      content: `<input type="text" name="itemName"
+                  placeholder="${game.i18n.localize("RFS.Dialog.NewItem.Placeholder")}"
+                  autofocus style="width:100%">`,
+      ok: { label: game.i18n.localize("RFS.Dialog.NewItem.Confirm") },
+    });
+
+    const name = result?.itemName?.trim();
+    if (!name) return;
+    return this.actor.addItem(name);
+  }
+
+  static async _onDeleteItem(event, target) {
+    const itemId = target.dataset.itemId;
+    return this.actor.removeItem(itemId);
   }
 
   static _onSwitchTab(event, target) {

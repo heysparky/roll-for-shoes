@@ -1,0 +1,35 @@
+{{!-- templates/actor/partials/inventory-list.hbs --}}
+<div class="rfs-statuses">
+  {{#if inventory.length}}
+    {{#each inventory}}
+      <div class="rfs-status" data-item-id="{{id}}">
+
+        {{#if ../isEditable}}
+          <input class="rfs-status__name"
+                 type="text"
+                 name="system.inventory.{{@index}}.name"
+                 value="{{name}}">
+          <input class="rfs-status__value"
+                 type="number"
+                 name="system.inventory.{{@index}}.quantity"
+                 value="{{quantity}}"
+                 min="0"
+                 style="width: 3.5rem">
+          <button type="button"
+                  class="rfs-btn rfs-btn--icon"
+                  data-action="deleteItem"
+                  data-item-id="{{id}}"
+                  title="{{localize 'RFS.Action.DeleteItem'}}">
+            ✕
+          </button>
+        {{else}}
+          <span class="rfs-status__name">{{name}}</span>
+          <span class="rfs-status__mod">×{{quantity}}</span>
+        {{/if}}
+
+      </div>
+    {{/each}}
+  {{else}}
+    <p class="rfs-empty">{{localize 'RFS.Label.NoInventory'}}</p>
+  {{/if}}
+</div>
