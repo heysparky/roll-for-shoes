@@ -18,7 +18,7 @@
 ============================================================================= */
 
 /* ─── Fonts ─────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* =============================================================================
    TOKENS
@@ -72,7 +72,7 @@
   --rfs-color-status-neg:  #c84838;
 
   /* Type */
-  --rfs-serif:   "EB Garamond", Georgia, serif;
+  --rfs-serif:   Georgia, "Times New Roman", serif;
   --rfs-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
   --rfs-mono:    "IBM Plex Mono", monospace;
 

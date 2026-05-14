@@ -58,6 +58,9 @@
   --rfs-font-size-lg: 1rem;
   --rfs-font-size-xl: 1.25rem;
 
+  /* Sheet body text size — overridden at runtime by the sheetTextSize setting */
+  --rfs-sheet-font-size: 14px;
+
   /* Spacing */
   --rfs-space-xs: 0.25rem;
   --rfs-space-sm: 0.5rem;
@@ -121,7 +124,7 @@
   background: var(--rfs-color-bg);
   color: var(--rfs-color-text);
   font-family: var(--rfs-font-body);
-  font-size: var(--rfs-font-size-md);
+  font-size: var(--rfs-sheet-font-size, 14px);
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */

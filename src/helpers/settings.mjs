@@ -68,6 +68,26 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
+  // ── Sheet Text Size ────────────────────────────────────────────────────────
+  game.settings.register(RFS.id, "sheetTextSize", {
+    name: "RFS.Settings.SheetTextSize.Name",
+    hint: "RFS.Settings.SheetTextSize.Hint",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      "12px": "RFS.Settings.SheetTextSize.12",
+      "13px": "RFS.Settings.SheetTextSize.13",
+      "14px": "RFS.Settings.SheetTextSize.14",
+      "15px": "RFS.Settings.SheetTextSize.15",
+      "16px": "RFS.Settings.SheetTextSize.16",
+      "18px": "RFS.Settings.SheetTextSize.18",
+    },
+    default: "14px",
+    requiresReload: false,
+    onChange: (value) => applySheetTextSize(value),
+  });
+
   // ── Active Challenge ───────────────────────────────────────────────────────
   // Stores the currently active GM challenge so skill rolls can pick up
   // the correct DC and widget cards know what challenge they belong to.
@@ -90,10 +110,10 @@ export function registerSystemSettings() {
     default: null,
   });
 
-  // ── Apply theme on load ────────────────────────────────────────────────────
+  // ── Apply theme and text size on load ─────────────────────────────────────
   Hooks.once("ready", () => {
-    const storedTheme = game.settings.get(RFS.id, "theme");
-    applyTheme(storedTheme);
+    applyTheme(game.settings.get(RFS.id, "theme"));
+    applySheetTextSize(game.settings.get(RFS.id, "sheetTextSize"));
   });
 }
 
@@ -103,6 +123,14 @@ export function registerSystemSettings() {
  */
 export function applyTheme(themeId) {
   document.body.dataset.rfsTheme = themeId ?? RFS.defaultTheme;
+}
+
+/**
+ * Apply the sheet body text size by setting a CSS custom property on :root.
+ * @param {string} size - e.g. "14px"
+ */
+export function applySheetTextSize(size) {
+  document.documentElement.style.setProperty("--rfs-sheet-font-size", size ?? "14px");
 }
 
 /* -------------------------------------------- */

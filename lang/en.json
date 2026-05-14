@@ -173,6 +173,16 @@
         "Hint": "Standard: canonical DCs are 3, 6, 9…24 (default DC 3). More XP: canonical DCs are 4, 8, 12…24 (default DC 4) — players fail more often and earn more XP.",
         "Standard": "Standard",
         "MoreXp": "More XP"
+      },
+      "SheetTextSize": {
+        "Name": "Character Sheet Text Size",
+        "Hint": "Sets the base font size for character sheet body text. Each player can set their own preference.",
+        "12": "12 px — Compact",
+        "13": "13 px — Small",
+        "14": "14 px — Default",
+        "15": "15 px",
+        "16": "16 px — Large",
+        "18": "18 px — Largest"
       }
     }
   }
