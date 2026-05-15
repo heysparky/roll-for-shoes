@@ -83,7 +83,7 @@
         "NamePlaceholder": "e.g. Slippery, Raining, Clean Shoe",
         "ValueLabel": "Modifier (negative = penalty)",
         "Confirm": "Add"
-      },
+      }
     },
     "Difficulty": {
       "Easy":      "Easy",
