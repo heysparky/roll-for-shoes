@@ -56,4 +56,24 @@ export const RFS = {
 
   // ── Default Theme ─────────────────────────────────────────────────────────
   defaultTheme: "vellum",
+
+  // ── DC Tiers ──────────────────────────────────────────────────────────────
+  // Named difficulty steps shown on the DC tracker bar.
+  // Keyed by difficultyMode setting value.
+  dcTiers: {
+    standard: [
+      { label: "RFS.Difficulty.Easy",      dc: 3  },
+      { label: "RFS.Difficulty.Medium",    dc: 6  },
+      { label: "RFS.Difficulty.Hard",      dc: 9  },
+      { label: "RFS.Difficulty.Legendary", dc: 18 },
+      { label: "RFS.Difficulty.Mythic",    dc: 24 },
+    ],
+    moreXp: [
+      { label: "RFS.Difficulty.Easy",      dc: 4  },
+      { label: "RFS.Difficulty.Medium",    dc: 8  },
+      { label: "RFS.Difficulty.Hard",      dc: 12 },
+      { label: "RFS.Difficulty.Legendary", dc: 18 },
+      { label: "RFS.Difficulty.Mythic",    dc: 24 },
+    ],
+  },
 };

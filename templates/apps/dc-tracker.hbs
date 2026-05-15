@@ -1,0 +1,57 @@
+{{!-- templates/apps/dc-tracker.hbs --}}
+{{!-- Persistent DC tracker bar — portraits on each side, DC controls in the centre. --}}
+{{!-- GM sees tier chips and +/− buttons; players see the DC value read-only.         --}}
+
+<div class="rfs-dct">
+
+  {{!-- Left portraits (first half of connected players) --}}
+  <div class="rfs-dct__portraits rfs-dct__portraits--left">
+    {{#each left}}
+      <img class="rfs-dct__portrait" src="{{this.img}}" title="{{this.name}}" alt="{{this.name}}">
+    {{/each}}
+  </div>
+
+  {{!-- DC area --}}
+  <div class="rfs-dct__controls">
+    {{#if isGM}}
+      <button type="button"
+              class="rfs-dct__step"
+              data-action="stepDc"
+              data-dir="-1"
+              aria-label="Decrease DC">&#x2212;</button>
+    {{/if}}
+
+    <div class="rfs-dct__dc-inner">
+      {{#if isGM}}
+        <div class="rfs-dct__tiers">
+          {{#each tiers}}
+            <button type="button"
+                    class="rfs-dct__tier{{#if this.active}} rfs-dct__tier--active{{/if}}"
+                    data-action="setDc"
+                    data-value="{{this.dc}}"
+                    title="{{localize this.label}}">
+              {{localize this.label}}
+            </button>
+          {{/each}}
+        </div>
+      {{/if}}
+      <div class="rfs-dct__dc-value">{{dc}}</div>
+    </div>
+
+    {{#if isGM}}
+      <button type="button"
+              class="rfs-dct__step"
+              data-action="stepDc"
+              data-dir="1"
+              aria-label="Increase DC">+</button>
+    {{/if}}
+  </div>
+
+  {{!-- Right portraits (remaining players) --}}
+  <div class="rfs-dct__portraits rfs-dct__portraits--right">
+    {{#each right}}
+      <img class="rfs-dct__portrait" src="{{this.img}}" title="{{this.name}}" alt="{{this.name}}">
+    {{/each}}
+  </div>
+
+</div>

@@ -101,6 +101,13 @@
         "DiceHintRoll": "DC will be rolled on Post"
       }
     },
+    "Difficulty": {
+      "Easy":      "Easy",
+      "Medium":    "Medium",
+      "Hard":      "Hard",
+      "Legendary": "Legendary",
+      "Mythic":    "Mythic"
+    },
     "Placeholder": {
       "ActorName": "Character Name",
       "Biography": "Character background, appearance, notes…"

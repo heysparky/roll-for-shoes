@@ -1187,4 +1187,133 @@
   border-top: 1px solid var(--rfs-color-border);
 }
 
+/* ── DC Tracker bar ──────────────────────────────────────────────────────── */
+
+/* The ApplicationV2 wrapper — pinned to top-centre, no window chrome */
+#rfs-dc-tracker {
+  position: fixed;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;         /* above canvas, below Foundry menus */
+  pointer-events: none;
+}
+
+/* Inner layout — row of [portraits | controls | portraits] */
+.rfs-dct {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-md);
+  background: var(--rfs-challenge-bg);
+  border: 1px solid var(--rfs-challenge-border);
+  border-radius: var(--rfs-radius-lg);
+  padding: var(--rfs-space-xs) var(--rfs-space-md);
+  box-shadow: var(--rfs-shadow-md);
+}
+
+/* Portrait strip — one side */
+.rfs-dct__portraits {
+  display: flex;
+  gap: var(--rfs-space-xs);
+  align-items: center;
+  min-width: 0;
+}
+
+.rfs-dct__portrait {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--rfs-challenge-border);
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Middle — step buttons + tier chips + DC value */
+.rfs-dct__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+}
+
+/* +/− step buttons */
+.rfs-dct__step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--rfs-challenge-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-challenge-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--rfs-challenge-bg-portrait);
+    border-color: var(--rfs-challenge-accent);
+  }
+}
+
+/* Tier chips row + DC value column */
+.rfs-dct__dc-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rfs-dct__tiers {
+  display: flex;
+  gap: 3px;
+}
+
+.rfs-dct__tier {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px var(--rfs-space-sm);
+  font-size: var(--rfs-font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: 1px solid var(--rfs-challenge-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-challenge-text-muted);
+  cursor: pointer;
+  transition: background var(--rfs-anim-fast), color var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--rfs-challenge-bg-portrait);
+    color: var(--rfs-challenge-text);
+    border-color: var(--rfs-challenge-accent);
+  }
+
+  &--active {
+    background: var(--rfs-challenge-accent);
+    border-color: var(--rfs-challenge-accent);
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: var(--rfs-challenge-accent);
+      color: #fff;
+    }
+  }
+}
+
+/* Large DC number */
+.rfs-dct__dc-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  color: var(--rfs-challenge-accent);
+  min-width: 2.5rem;
+  text-align: center;
+}
 

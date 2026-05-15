@@ -3,17 +3,16 @@
  * ============================
  * Core roll logic for Roll for Shoes.
  *
- * CARD ARCHITECTURE:
- *   Challenge roll  -> result row on the shared challenge card (no orphan card)
- *                   -> player popup handles advancement / XP spend (via socket)
- *   Standalone roll -> posts its own result card with inline XP spend / claim
+ * All rolls use the global DC from the DC tracker (game.settings "globalDc").
+ * Results open a popup dialog (RfsRollResultDialog) — no chat card is posted
+ * until an advancement or XP-spend action completes.
  *
  * XP SPEND RULE:
  *   Cost = count of non-six dice. Checked at click time against live XP.
  *   Success/failure against DC is never affected by XP spend.
  */
 
-import { getActiveChallenge, recordChallengeRoll, rebuildChallengeCard, buildAdvancementCardContent } from "../helpers/settings.mjs";
+import { buildAdvancementCardContent } from "../helpers/settings.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 
@@ -24,8 +23,8 @@ export class RfsSkillRoll {
   /* -------------------------------------------- */
 
   static async roll(actor, skill, options = {}) {
-    const { difficulty, challengeId, tokenId } = RfsSkillRoll._resolveDifficulty(actor, options);
-    options = { ...options, difficulty, challengeId, tokenId };
+    const difficulty = RfsSkillRoll._resolveDifficulty(options);
+    options = { ...options, difficulty };
 
     const roll = new Roll(`${skill.level}d6`);
     await roll.evaluate();
@@ -48,17 +47,10 @@ export class RfsSkillRoll {
     // Record to roll history (actor flag — keyed per-actor, not global)
     await actor.addRollHistory({ skillName: skill.name, skillLevel: skill.level, dice, rawTotal, modifier, total, difficulty, failed, allSixes });
 
-    if (challengeId) {
-      await RfsSkillRoll._postChallengeResult({
-        actor, skill, roll, dice, rawTotal, modifier, total,
-        allSixes, failed, options,
-      });
-    } else {
-      await RfsSkillRoll._showRollResultPopup({
-        actor, skill, dice, rawTotal, modifier, total,
-        allSixes, failed, options,
-      });
-    }
+    await RfsSkillRoll._showRollResultPopup({
+      actor, skill, dice, rawTotal, modifier, total,
+      allSixes, failed, options,
+    });
 
     return { dice, allSixes, failed, nonSixCount: dice.filter(d => d !== 6).length, total, rawTotal, modifier };
   }
@@ -111,7 +103,7 @@ export class RfsSkillRoll {
       });
       game.socket.emit("system.roll-for-shoes", {
         type:       "advancementNeeded",
-        tokenId:    null,  challengeId: null,  messageId,
+        messageId,
         actorId:    flags.actorId,   actorName:  flags.actorName,
         skillId:    flags.skillId,   skillName:  flags.skillName,   skillLevel: flags.skillLevel,
         xpSpent:    true,            xpCost:     nonSixCount,
@@ -167,7 +159,7 @@ export class RfsSkillRoll {
     if (namer === "gm" && !game.user.isGM) {
       game.socket.emit("system.roll-for-shoes", {
         type:       "advancementNeeded",
-        tokenId:    null,   challengeId: null,   messageId,
+        messageId,
         actorId:    actor.id,   actorName:  actor.name,
         skillId:    skill.id,   skillName:  skill.name,   skillLevel: skill.level,
         xpSpent:    false,      xpCost:     0,
@@ -267,143 +259,6 @@ export class RfsSkillRoll {
   }
 
   /* -------------------------------------------- */
-  /*  Challenge Result                            */
-  /* -------------------------------------------- */
-
-  static async _postChallengeResult({ actor, skill, roll, dice, rawTotal, modifier, total, allSixes, failed, options }) {
-    const { challengeId } = options;
-    const nonSixCount = dice.filter(d => d !== 6).length;
-    const tokenId     = options.tokenId ?? actor.getActiveTokens()?.[0]?.id;
-    const namer       = game.settings.get("roll-for-shoes", "advancementNamer") ?? "gm";
-
-    const rollResult = {
-      actorName:          actor.name,
-      actorImg:           actor.img,
-      skillName:          skill.name,
-      skillLevel:         skill.level,
-      dice, rawTotal, modifier, total, allSixes, failed,
-      actorId:            actor.id,
-      skillId:            skill.id,
-      nonSixCount,
-      skillClaimed:       false,
-      advancementPending: allSixes,
-    };
-
-    // ── XP Spend (any roll that isn't all-sixes) ──────────────────────────
-    // actor.system.xp is already current (XP was awarded on failure before this call).
-    if (!allSixes && nonSixCount > 0 && actor.system.xp >= nonSixCount) {
-      const confirmed = await RfsSkillRoll._confirmXpSpend(skill, nonSixCount);
-      if (confirmed) {
-        await actor.spendXp(nonSixCount);
-        rollResult.xpSpent            = true;
-        rollResult.xpCost             = nonSixCount;
-        rollResult.advancementPending = true;
-
-        if (namer === "player" || game.user.isGM) {
-          const newSkillName = await RfsSkillRoll._promptSkillName(skill, true);
-          if (newSkillName) {
-            await actor.addSkill(newSkillName, skill.id);
-            rollResult.skillClaimed       = true;
-            rollResult.claimedSkillName   = newSkillName;
-            rollResult.advancementPending = false;
-          }
-        }
-        // namer=gm + player client: emit advancementNeeded after recordChallengeRoll below
-      }
-    }
-
-    // ── Record roll: GM writes directly; players send via socket ──────────
-    if (tokenId) {
-      if (game.user.isGM) {
-        await recordChallengeRoll(tokenId, rollResult);
-      } else {
-        game.socket.emit("system.roll-for-shoes", {
-          type: "recordChallengeRoll",
-          tokenId,
-          rollResult,
-        });
-      }
-    }
-
-    // ── XP Spend → GM naming (emit after recording so card shows pending) ─
-    if (rollResult.xpSpent && !rollResult.skillClaimed && !game.user.isGM && tokenId) {
-      game.socket.emit("system.roll-for-shoes", {
-        type:       "advancementNeeded",
-        tokenId,    challengeId,
-        actorId:    actor.id,   actorName:  actor.name,
-        skillId:    skill.id,   skillName:  skill.name,   skillLevel: skill.level,
-        xpSpent:    true,       xpCost:     nonSixCount,
-      });
-    }
-
-    // ── Natural advancement (all sixes, not already claimed via XP) ───────
-    if (allSixes && !rollResult.skillClaimed) {
-      if (namer === "player") {
-        const newSkillName = await RfsSkillRoll._promptSkillName(skill, false);
-        if (newSkillName && tokenId) {
-          await actor.addSkill(newSkillName, skill.id);
-          if (game.user.isGM) {
-            await RfsSkillRoll._gmMarkAdvancementClaimed(tokenId, newSkillName, actor.name, skill.name, skill.level + 1, false, 0);
-          } else {
-            game.socket.emit("system.roll-for-shoes", {
-              type:            "claimAdvancement",
-              tokenId,         challengeId,
-              newSkillName,
-              actorName:       actor.name,
-              parentSkillName: skill.name,
-              newLevel:        skill.level + 1,
-            });
-          }
-        }
-      } else {
-        // GM namer
-        if (game.user.isGM) {
-          const newSkillName = await RfsSkillRoll._promptGmSkillName(actor.name, skill, false);
-          if (newSkillName) {
-            await actor.addSkill(newSkillName, skill.id);
-            await RfsSkillRoll._gmMarkAdvancementClaimed(tokenId, newSkillName, actor.name, skill.name, skill.level + 1, false, 0);
-          }
-        } else if (tokenId) {
-          game.socket.emit("system.roll-for-shoes", {
-            type:       "advancementNeeded",
-            tokenId,    challengeId,
-            actorId:    actor.id,   actorName:  actor.name,
-            skillId:    skill.id,   skillName:  skill.name,   skillLevel: skill.level,
-            xpSpent:    false,      xpCost:     0,
-          });
-        }
-      }
-    }
-  }
-
-  // Updates challenge state after the GM has named a new skill,
-  // then posts the advancement announcement card.
-  static async _gmMarkAdvancementClaimed(tokenId, newSkillName, actorName, parentSkillName, newLevel, xpSpent = false, xpCost = 0) {
-    const challenge = getActiveChallenge();
-    if (challenge?.results?.[tokenId]) {
-      const updated = {
-        ...challenge,
-        results: {
-          ...challenge.results,
-          [tokenId]: {
-            ...challenge.results[tokenId],
-            skillClaimed:       true,
-            claimedSkillName:   newSkillName,
-            advancementPending: false,
-            xpSpent,
-            xpCost,
-          },
-        },
-      };
-      await game.settings.set("roll-for-shoes", "activeChallenge", updated);
-      await rebuildChallengeCard(updated);
-    }
-    await ChatMessage.create({
-      content: buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, xpSpent, xpCost),
-    });
-  }
-
-  /* -------------------------------------------- */
   /*  Standalone Roll Result Popup                */
   /* -------------------------------------------- */
 
@@ -449,7 +304,7 @@ export class RfsSkillRoll {
     if (namer === "gm" && !game.user.isGM) {
       game.socket.emit("system.roll-for-shoes", {
         type:       "advancementNeeded",
-        tokenId: null, challengeId: null, messageId: null,
+        messageId: null,
         actorId:    actor.id,   actorName:  actor.name,
         skillId:    skill.id,   skillName:  skill.name,   skillLevel: skill.level,
         xpSpent:    true,       xpCost:     nonSixCount,
@@ -471,28 +326,9 @@ export class RfsSkillRoll {
   /*  Internal Helpers                            */
   /* -------------------------------------------- */
 
-  static _resolveDifficulty(actor, options) {
-    if (options.difficulty !== undefined) {
-      return { difficulty: options.difficulty, challengeId: null, tokenId: null };
-    }
-
-    if (options.challengeId) {
-      const challenge = getActiveChallenge();
-      if (challenge && challenge.challengeId === options.challengeId) {
-        return { difficulty: challenge.dc, challengeId: challenge.challengeId, tokenId: options.tokenId ?? null };
-      }
-    }
-
-    const challenge = getActiveChallenge();
-    if (challenge) {
-      const actorTokens = actor.getActiveTokens?.() ?? [];
-      const matchingToken = actorTokens.find(t => challenge.tokenIds.includes(t.id));
-      if (matchingToken) {
-        return { difficulty: challenge.dc, challengeId: challenge.challengeId, tokenId: matchingToken.id };
-      }
-    }
-
-    return { difficulty: 4, challengeId: null, tokenId: null };
+  static _resolveDifficulty(options) {
+    if (options.difficulty !== undefined) return options.difficulty;
+    return game.settings.get("roll-for-shoes", "globalDc") ?? 4;
   }
 
   static _buildStandaloneContent(actorName, skill, dice, rawTotal, modifier, total, allSixes, failed, difficulty, rollData, messageId, nonSixCount = 0) {
