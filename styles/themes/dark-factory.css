@@ -69,21 +69,6 @@
   --rfs-color-roll-btn:       #2a3a5a;   /* dark steel blue */
   --rfs-color-roll-btn-hover: #3a4a7a;   /* lighter steel */
 
-  /* Challenge card — palette C: aged paper, warm brown, lifted from pure black */
-  --rfs-challenge-bg:          #2e2820;
-  --rfs-challenge-bg-header:   #241e18;
-  --rfs-challenge-bg-portrait: #3a3028;
-  --rfs-challenge-border:      #6a5a40;
-  --rfs-challenge-border-sub:  #3a3028;
-  --rfs-challenge-accent:      #c86a1a;
-  --rfs-challenge-text:        #e8d8b0;
-  --rfs-challenge-text-muted:  #7a6a50;
-  --rfs-challenge-text-skill:  #EF9F27;
-  --rfs-challenge-text-dc:     #9a8a6a;
-  --rfs-challenge-text-title:  #FAC775;
-  --rfs-challenge-row-waiting: #6a5a40;
-  --rfs-challenge-portrait-hover: #443830;
-
   /* ── Typography: lean into the industrial feel ────────────────────────── */
   --rfs-font-body:            "Palatino Linotype", "Palatino", "Book Antiqua", serif;
   --rfs-font-display:         "Palatino Linotype", "Palatino", serif;

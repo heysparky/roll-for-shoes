@@ -386,7 +386,7 @@ export class RfsSkillRoll {
           <p class="rfs-adv-dlg__detail">${game.i18n.format("RFS.Dialog.Advancement.Hint", { skill: skill.name, level: skill.level + 1 })}</p>
         </div>`,
       yes: { label: game.i18n.format("RFS.Chat.SpendXp", { cost }) },
-      no:  { label: game.i18n.localize("RFS.Dialog.Challenge.Cancel") },
+      no:  { label: game.i18n.localize("RFS.Action.Cancel") },
     });
   }
 

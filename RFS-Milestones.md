@@ -11,25 +11,17 @@
 7. **XP on failure + spend**
 8. **Opposed rolls & difficulty thresholds**
 9. **Statuses** — add/edit/remove with math
-10. **Challenge flow — sheet-based roll architecture**
-    - GM shoe button (or Q keybinding) → Challenge Dialog (DC stepper, dice picker, token list)
-    - Shared Challenge Card posts to public chat; portrait rows live-update as players roll
-    - Non-GM clients auto-switch to the chat sidebar when the challenge card is posted
-    - Players roll from their character sheet — `_resolveDifficulty` auto-detects called tokens
-    - Roll results recorded via socket (player → GM) so world settings writes are always GM-side
-    - Promise queue serialises concurrent `recordChallengeRoll` calls to prevent race conditions
-    - GM rolling on behalf of a player bypasses socket and writes directly
-    - All-sixes → blingy advancement announcement card posted to public chat
-    - Failure with non-sixes + enough XP → themed XP spend confirm + naming dialog
-    - Advancement naming respects `advancementNamer` on all paths (challenge + standalone)
-    - Challenge auto-completes when all tokens have rolled; times out after 3 minutes
-    - Portrait buttons on the challenge card open the character sheet (`rfsOpenSheet`)
+10. **DC Tracker + Player-Initiated Roll UX**
+    - Persistent DC tracker bar (`RfsDcTracker`) renders for all users at ready; GM adjusts global DC via named tier chips (Easy/Medium/Hard/Legendary/Mythic) or +/− buttons; players see DC read-only with connected character portraits on each side
+    - All rolls fire against `globalDc` — no per-challenge DC, no GM-gated initiation required
+    - `RfsRollResultDialog` popup (fire-and-forget) shows after every roll; displays dice, outcome vs DC, and optional Claim Skill / Spend XP buttons inline
+    - Challenge dialog, token HUD shoe button, shared challenge card, and `activeChallenge` state machine removed
+    - Socket reduced to one type: `advancementNeeded` (player → GM when `advancementNamer === "gm"`)
 11. **Advancement announcement card** — `.rfs-advancement` card posts to public chat on any skill gain; shows actor name, new skill name, and "From {parent}" (level/XP-cost detail removed)
-12. **GM Challenge Dialog — DC stepper**
-    - Spinner (2–24) with − / + buttons; canonical quick-jump buttons highlight the active value
+12. **DC Tracker — tier chips and step buttons**
     - `difficultyMode` world setting: Standard (default 3, canonicals 3/6/9…24) or More XP (default 4, canonicals 4/8/12…24)
-    - Dice picker: 1d6 = static DC (default), 2–4d6 = roll on Post; DSN shows the dice roll + sound plays
-    - Static DC: dice sound plays when the card posts
+    - Tier chip buttons highlight the active DC value; +/− step buttons nudge by 1
+    - GM changes take effect immediately for all connected clients via the `onChange` callback
 13. **Character sheet UX**
     - Two tabs: Skills (default) and Roll History; tab strip visually styled as raised tabs
     - Click skill name to roll (pips-only display, no level number)
@@ -60,33 +52,32 @@
 
 ## Up Next
 
-- **CSS polish** — roll result popup, advancement announcement card, any remaining visual gaps
+- **CSS polish** — DC tracker bar layout, roll result popup, advancement announcement card
 - **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement on the announcement card
 
 ---
 
 ## Current State of Development
 
-Core mechanics complete and table-tested. Challenge flow uses sheet-based rolls — no player popup. Standalone rolls use a themed popup dialog and record to roll history. Advancement UX is fully routed through `advancementNamer`. Theme system wired. Character sheet has Skills + Roll History tabs. CSS polish is the remaining priority.
+Core mechanics, roll UX, and advancement flow are complete and table-tested. Players roll directly from their character sheet against the global DC set by the GM via the DC tracker bar — no challenge dialog or card required. CSS polish is the remaining priority.
 
 ### Working
 - Character sheet: name, portrait (click to edit), skills (list), XP, statuses, biography, rename skill dialog, roll history tab
-- Skill rolls: popup dialog with dice + outcome; DSN + dice sound; result recorded to actor flag
-- Challenge flow end-to-end: GM calls roll → challenge card posts → non-GMs auto-switch to chat → players roll from sheet → card updates → advancement announced in chat
+- Skill rolls: fire-and-forget `RfsRollResultDialog` popup with dice + outcome vs DC; DSN + dice sound; result recorded to actor flag
+- DC tracker bar: visible to all users; GM adjusts globalDc via tier chips or +/− buttons
 - Advancement UX: themed dialogs, two-step XP spend (confirm → name), advancementNamer respected on all paths
 - Opposed rolls, difficulty thresholds, status math
 - Three themes registered; vellum is default
 
 ### Known Gaps / Next Work
 - **Advancement prompt copy**: same announcement card text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
-- **CSS polish**: roll result popup and announcement card styling could be tightened.
+- **CSS polish**: DC tracker bar, roll result popup, and announcement card styling.
 
 ### Architecture Decisions
-- Challenge state lives in `game.settings` (world-scoped), never in card HTML — single source of truth
-- Challenge card rebuilt from scratch on every update via `rebuildChallengeCard()` — no HTML patching
-- Players roll from their character sheet; `_resolveDifficulty` auto-routes to the active challenge
-- World-setting writes are GM-only; players delegate via socket (`recordChallengeRoll`, `claimAdvancement`, `advancementNeeded`)
-- Standalone roll cards use `ChatMessage.create()` with no `rolls` array; DSN called explicitly; speaker alias carries the skill context
+- Global DC lives in `game.settings.get("roll-for-shoes", "globalDc")` — world-scoped, GM-only writes
+- All rolls read globalDc via `_resolveDifficulty()` — no per-challenge state, no passive token detection
+- Roll results show in a fire-and-forget popup; chat only receives advancement announcement cards
+- World-setting writes are GM-only; players delegate via socket (only `advancementNeeded`)
 - CSS selectors in theme files match actual markup class names; scoped to `[data-rfs-theme="vellum"]`
 
 ---

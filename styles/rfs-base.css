@@ -90,22 +90,6 @@
   --rfs-color-allsixes:    #5a3a00;   /* all-sixes badge */
   --rfs-color-allsixes-bg: #fff8e6;
 
-  /* Challenge card */
-  --rfs-challenge-bg:          #1a1a18;
-  --rfs-challenge-bg-header:   #111110;
-  --rfs-challenge-bg-row:      #1a1a18;
-  --rfs-challenge-bg-portrait: #2C2C2A;
-  --rfs-challenge-border:      #5F5E5A;
-  --rfs-challenge-border-sub:  #2C2C2A;
-  --rfs-challenge-accent:      #BA7517;
-  --rfs-challenge-text:        #D3D1C7;
-  --rfs-challenge-text-muted:  #5F5E5A;
-  --rfs-challenge-text-skill:  #EF9F27;
-  --rfs-challenge-text-dc:     #888780;
-  --rfs-challenge-text-title:  #FAC775;
-  --rfs-challenge-row-waiting: #444441;
-  --rfs-challenge-portrait-hover: #3a3a38;
-
   /* Animations */
   --rfs-anim-fast:   150ms ease;
   --rfs-anim-normal: 250ms ease;
@@ -635,378 +619,6 @@
   padding: var(--rfs-space-md);
 }
 
-/* ── Challenge card ───────────────────────────────────────────────────────── */
-
-/* Defensive resets — Foundry's .message-content applies centering, image
-   margins, and block display that fight our flex layout. We use
-   .message-content .rfs-challenge to beat that specificity. */
-.message-content .rfs-challenge * { box-sizing: border-box; }
-.message-content .rfs-challenge p  { margin: 0; padding: 0; text-align: left; }
-.message-content .rfs-challenge img {
-  display: block;
-  margin: 0;
-  padding: 0;
-  border: none;
-  box-shadow: none;
-  max-width: none;
-}
-.message-content .rfs-challenge .rfs-challenge__portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.message-content .rfs-challenge button { line-height: 1; margin: 0; }
-.message-content .rfs-challenge .rfs-challenge__player {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  text-align: left !important;
-}
-.message-content .rfs-challenge .rfs-challenge__player-btn {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
-  width: 60px !important;
-  height: 60px !important;
-  padding: 0 !important;
-}
-.message-content .rfs-challenge .rfs-challenge__player-info {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 !important;
-  text-align: left !important;
-}
-.message-content .rfs-challenge .rfs-challenge__player-result {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-end !important;
-  flex-shrink: 0 !important;
-}
-/* TODO: border-left color stripe (success/failure/tie) on .rfs-challenge__player
-   is being overridden by Foundry. Needs !important + specificity investigation. */
-
-.rfs-challenge {
-  background: var(--rfs-challenge-bg);
-  border: 1px solid var(--rfs-challenge-border);
-  border-radius: var(--rfs-radius-lg);
-  overflow: hidden;
-  font-family: var(--rfs-font-body);
-}
-
-.rfs-challenge__header {
-  background: var(--rfs-challenge-bg-header);
-  padding: 7px 10px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border-bottom: 2px solid var(--rfs-challenge-accent);
-}
-
-.rfs-challenge__gear {
-  font-size: var(--rfs-font-size-md);
-  color: var(--rfs-challenge-text-skill);
-}
-
-.rfs-challenge__title {
-  font-size: var(--rfs-font-size-sm);
-  font-weight: bold;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--rfs-challenge-text-title);
-}
-
-.rfs-challenge__dc {
-  margin-left: auto;
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-challenge-text-dc);
-  background: var(--rfs-challenge-bg-portrait);
-  padding: 1px 8px;
-  border-radius: 20px;
-  border: 1px solid var(--rfs-challenge-border);
-}
-
-.rfs-challenge__dc--hidden {
-  font-style: italic;
-}
-
-.rfs-challenge__prompt {
-  padding: 7px 10px;
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-challenge-text);
-  border-bottom: 1px solid var(--rfs-challenge-border-sub);
-  font-style: italic;
-  line-height: 1.4;
-  opacity: 0.8;
-}
-
-.rfs-challenge__players {
-  display: flex;
-  flex-direction: column;
-}
-
-.rfs-challenge__player {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--rfs-challenge-border-sub);
-  border-left: 3px solid var(--rfs-challenge-row-waiting);
-  transition: border-left-color var(--rfs-anim-normal);
-
-  &:last-child { border-bottom: none; }
-  &--success   { border-left-color: var(--rfs-color-success); }
-  &--failure   { border-left-color: var(--rfs-color-failure); }
-  &--tie       { border-left-color: var(--rfs-color-allsixes); }
-  &--pending   { border-left-color: var(--rfs-challenge-row-waiting); }
-}
-
-.rfs-challenge__player-btn {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  background: var(--rfs-challenge-bg-portrait);
-  border: none;
-  border-right: 1px solid var(--rfs-challenge-border-sub);
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--rfs-anim-fast);
-
-  &:hover { background: var(--rfs-challenge-portrait-hover); }
-}
-
-.rfs-challenge__portrait {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: var(--rfs-radius-sm);
-  display: block;
-}
-
-.rfs-challenge__player-info {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.rfs-challenge__player-name {
-  font-size: var(--rfs-font-size-md);
-  font-weight: bold;
-  color: var(--rfs-challenge-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.rfs-challenge__player-skill {
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-challenge-text-skill);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  &--waiting {
-    color: var(--rfs-challenge-text-muted);
-    font-style: italic;
-  }
-}
-
-.rfs-challenge__player-result {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 1px;
-  padding-right: 10px;
-  flex-shrink: 0;
-}
-
-.rfs-challenge__player-total {
-  font-size: 1.4rem;
-  font-weight: bold;
-  line-height: 1;
-
-  &--success { color: var(--rfs-color-success); }
-  &--failure { color: var(--rfs-color-failure); }
-  &--tie     { color: var(--rfs-color-allsixes); }
-  &--waiting { color: var(--rfs-challenge-row-waiting); font-size: var(--rfs-font-size-lg); }
-}
-
-.rfs-challenge__player-dice {
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-challenge-text-muted);
-  font-family: var(--rfs-font-mono);
-}
-
-.rfs-challenge__footer {
-  background: var(--rfs-challenge-bg-header);
-  border-top: 1px solid var(--rfs-challenge-border-sub);
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.rfs-challenge__status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--rfs-challenge-text-skill);
-  flex-shrink: 0;
-
-  &--pulsing {
-    animation: rfs-pulse 1.5s infinite;
-  }
-
-  &--complete {
-    background: var(--rfs-color-success);
-  }
-}
-
-@keyframes rfs-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-.rfs-challenge__status-text {
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-challenge-text-muted);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.rfs-challenge__complete {
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-color-success);
-  margin-left: auto;
-  letter-spacing: 0.04em;
-}
-
-/* ── GM Challenge Setup Dialog ───────────────────────────────────────────── */
-.rfs-challenge-dialog {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rfs-space-md);
-  padding: var(--rfs-space-md);
-}
-
-.rfs-challenge-dialog__label {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-bottom: var(--rfs-space-xs);
-  color: var(--rfs-color-text-label);
-}
-
-.rfs-challenge-dialog__dc-stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: var(--rfs-space-sm);
-}
-
-.rfs-challenge-dialog__dc-value {
-  font-size: 52px;
-  font-weight: 700;
-  font-style: italic;
-  min-width: 3rem;
-  text-align: center;
-  line-height: 1;
-  color: var(--rfs-color-text);
-}
-
-.rfs-challenge-dialog__step-btn {
-  width: 2.25rem;
-  height: 2.25rem;
-  font-size: 1.4rem;
-  flex-shrink: 0;
-}
-
-.rfs-challenge-dialog__dc-canonicals {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  justify-content: center;
-}
-
-.rfs-challenge-dialog__dc-canonical {
-  min-width: 2.25rem;
-  padding: var(--rfs-space-xs) var(--rfs-space-sm);
-  font-size: var(--rfs-font-size-sm);
-  font-weight: 600;
-}
-
-.rfs-challenge-dialog__dc-canonical--active {
-  background: var(--rfs-color-accent);
-  border-color: var(--rfs-color-accent);
-  color: #fff;
-}
-
-.rfs-challenge-dialog__dice-picker {
-  display: flex;
-  gap: 4px;
-  margin-top: var(--rfs-space-xs);
-}
-
-.rfs-challenge-dialog__dice-opt {
-  flex: 1;
-  text-align: center;
-  font-size: var(--rfs-font-size-sm);
-  padding: var(--rfs-space-xs) var(--rfs-space-sm);
-}
-
-.rfs-challenge-dialog__dice-opt--active {
-  background: var(--rfs-color-accent);
-  border-color: var(--rfs-color-accent);
-  color: #fff;
-}
-
-.rfs-challenge-dialog__dice-hint {
-  font-size: var(--rfs-font-size-sm);
-  color: var(--rfs-color-text-muted);
-  font-style: italic;
-  margin-top: var(--rfs-space-xs);
-  text-align: center;
-}
-
-.rfs-challenge-dialog__token-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--rfs-space-xs);
-}
-
-.rfs-challenge-dialog__token {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px var(--rfs-space-sm);
-  border-radius: var(--rfs-radius);
-  border: 1px solid var(--rfs-color-border);
-  background: var(--rfs-color-bg-panel);
-}
-
-.rfs-challenge-dialog__token-name {
-  font-size: 14px;
-  color: var(--rfs-color-text);
-}
-
-.rfs-challenge-dialog__empty {
-  font-size: 13px;
-  color: var(--rfs-color-text-muted);
-  font-style: italic;
-}
-
 /* ── Sheet tab nav ───────────────────────────────────────────────────────── */
 .rfs-tabs {
   display: flex;
@@ -1179,14 +791,6 @@
   .rfs-skill-index__row:hover & { opacity: 1; }
 }
 
-.rfs-challenge-dialog__footer {
-  display: flex;
-  gap: var(--rfs-space-sm);
-  justify-content: flex-end;
-  padding-top: var(--rfs-space-sm);
-  border-top: 1px solid var(--rfs-color-border);
-}
-
 /* ── DC Tracker bar ──────────────────────────────────────────────────────── */
 
 /* The ApplicationV2 wrapper — pinned to top-centre, no window chrome */
@@ -1205,8 +809,8 @@
   display: flex;
   align-items: center;
   gap: var(--rfs-space-md);
-  background: var(--rfs-challenge-bg);
-  border: 1px solid var(--rfs-challenge-border);
+  background: var(--rfs-color-bg-panel);
+  border: 1px solid var(--rfs-color-border);
   border-radius: var(--rfs-radius-lg);
   padding: var(--rfs-space-xs) var(--rfs-space-md);
   box-shadow: var(--rfs-shadow-md);
@@ -1225,7 +829,7 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--rfs-challenge-border);
+  border: 2px solid var(--rfs-color-border);
   flex-shrink: 0;
   display: block;
 }
@@ -1247,16 +851,16 @@
   font-size: 1.1rem;
   line-height: 1;
   background: transparent;
-  border: 1px solid var(--rfs-challenge-border);
+  border: 1px solid var(--rfs-color-border);
   border-radius: var(--rfs-radius-sm);
-  color: var(--rfs-challenge-text);
+  color: var(--rfs-color-text);
   cursor: pointer;
   flex-shrink: 0;
   transition: background var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
 
   &:hover:not(:disabled) {
-    background: var(--rfs-challenge-bg-portrait);
-    border-color: var(--rfs-challenge-accent);
+    background: var(--rfs-color-bg-panel);
+    border-color: var(--rfs-color-accent);
   }
 }
 
@@ -1282,25 +886,25 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   background: transparent;
-  border: 1px solid var(--rfs-challenge-border);
+  border: 1px solid var(--rfs-color-border);
   border-radius: var(--rfs-radius-sm);
-  color: var(--rfs-challenge-text-muted);
+  color: var(--rfs-color-text-muted);
   cursor: pointer;
   transition: background var(--rfs-anim-fast), color var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
 
   &:hover:not(:disabled) {
-    background: var(--rfs-challenge-bg-portrait);
-    color: var(--rfs-challenge-text);
-    border-color: var(--rfs-challenge-accent);
+    background: var(--rfs-color-bg-panel);
+    color: var(--rfs-color-text);
+    border-color: var(--rfs-color-accent);
   }
 
   &--active {
-    background: var(--rfs-challenge-accent);
-    border-color: var(--rfs-challenge-accent);
+    background: var(--rfs-color-accent);
+    border-color: var(--rfs-color-accent);
     color: #fff;
 
     &:hover:not(:disabled) {
-      background: var(--rfs-challenge-accent);
+      background: var(--rfs-color-accent);
       color: #fff;
     }
   }
@@ -1312,7 +916,7 @@
   font-weight: 700;
   font-style: italic;
   line-height: 1;
-  color: var(--rfs-challenge-accent);
+  color: var(--rfs-color-accent);
   min-width: 2.5rem;
   text-align: center;
 }

@@ -1,7 +1,7 @@
 # Roll for Shoes — Architecture & Design Decisions
 
 This document captures RFS-specific design decisions and working patterns.
-Read before touching the challenge flow, card lifecycle, or button wiring.
+Read before touching the roll flow, advancement dialogs, or button wiring.
 
 ---
 
@@ -15,58 +15,57 @@ Read before touching the challenge flow, card lifecycle, or button wiring.
 
 ---
 
-## Challenge Flow
+## Roll Flow
 
-The challenge flow is the core GM-to-player interaction loop. **Players roll from their character sheet** — there is no player-facing popup dialog.
+Players roll directly from their character sheet — no GM initiation required.
 
-### GM Side
-1. Select tokens on canvas, click the shoe button on the token HUD (or press Q)
-2. Challenge Dialog opens — set DC via stepper/canonicals/dice picker, review token list
-3. Post → if `dcDice > 1`, rolls Nd6 for the DC (DSN shows the dice); sound plays either way
-4. The **shared Challenge Card** appears in public chat; all non-GM clients auto-switch to the chat sidebar
+### DC Tracker
 
-### Player Side
-5. Player sees the challenge card in chat; rolls any skill from their character sheet as normal
-6. `_resolveDifficulty` detects the player's token is in `challenge.tokenIds` → routes through `_postChallengeResult`
-7. Roll result is recorded via socket (player → GM); GM writes to settings and rebuilds the challenge card
-8. The portrait button on the challenge card opens the character sheet (`rfsOpenSheet`)
+The `RfsDcTracker` bar is rendered for all users at the `ready` hook. It sits at the top of the viewport (frameless `ApplicationV2`, `window.frame: false`).
 
-### Advancement After a Challenge Roll
+- GM sees named tier chips (Easy / Medium / Hard / Legendary / Mythic) + +/− step buttons
+- Players see the DC value read-only; connected character portraits appear on each side
+- DC is stored in `game.settings.get("roll-for-shoes", "globalDc")` (world-scoped, GM-only writes)
+- Re-renders on `userConnected` / `userDisconnected` to keep portraits current
+- `difficultyMode` setting determines the tier labels and defaults (`standard` vs `moreXp`)
+
+### Rolling
+
+1. Player clicks a skill name on the character sheet
+2. `_onRollSkill()` (`character-sheet.mjs`) calls `RfsSkillRoll.roll(actor, skill)`
+3. `_resolveDifficulty()` reads `globalDc` (or uses `options.difficulty` if passed explicitly)
+4. Dice evaluated; XP awarded on failure; `actor.addRollHistory()` records the result
+5. `RfsRollResultDialog.open()` — fire-and-forget popup
+
+### Advancement After a Roll
 
 All advancement dialogs use themed `.rfs-adv-dlg` HTML inside `DialogV2`.
 
 **XP spend (non-all-sixes roll):**
-1. Player sees `_confirmXpSpend` — "Spend N XP on a new skill?" (themed confirm dialog)
-2. On yes: `actor.spendXp()` runs immediately
-3. If `advancementNamer === "player"` or `game.user.isGM`: `_promptSkillName(skill, true)` opens on the rolling client
-4. If `advancementNamer === "gm"` and player client: `recordChallengeRoll` records pending state, then `advancementNeeded` socket → GM gets `_promptGmSkillName`; names skill; `_gmMarkAdvancementClaimed` updates state + posts announcement
+1. Player clicks "Spend N XP" in the popup → `_doStandaloneXpSpend(actor, skill, nonSixCount)`
+2. `_confirmXpSpend()` dialog — "Spend N XP on a new skill?"
+3. On yes: `actor.spendXp()` runs immediately
+4. If `advancementNamer === "player"` or `game.user.isGM`: `_promptSkillName(skill, true)` opens locally → `actor.addSkill()` → posts advancement announcement
+5. If `advancementNamer === "gm"` and player client: `advancementNeeded` socket → GM gets `_promptGmSkillName`; names skill; `actor.addSkill()`; posts announcement
 
 **All sixes (natural advancement):**
-- `advancementNamer === "player"`: `_promptSkillName(skill, false)` — "You earned a skill!" — opens on the rolling client; named result goes via `claimAdvancement` socket to GM
+- `advancementNamer === "player"`: `_promptSkillName(skill, false)` — "You earned a skill!" — opens locally
 - `advancementNamer === "gm"` and player client: `advancementNeeded` socket → GM gets `_promptGmSkillName` — "{Actor} earned a skill!"
 - `advancementNamer === "gm"` and GM is the rolling client: `_promptGmSkillName` opens inline
 
-Either path posts a `.rfs-advancement` announcement card to public chat.
-
-### After All Players Have Rolled
-- Challenge Card marks itself complete
-- Active challenge clears from settings after a 2-second delay (so final card update lands first)
-- Challenge also times out after 3 minutes if not all tokens roll
-
-### Race Condition Guard
-`recordChallengeRoll` in `settings.mjs` uses a module-level promise queue (`_rollQueue`) to serialise concurrent calls. Two players rolling simultaneously both get their results recorded in order without either clobbering the other.
+Either path calls `actor.addSkill()` then posts a `.rfs-advancement` announcement card to public chat.
 
 ---
 
-## Card Lifecycle — Crystallise, Never Delete
+## Roll Result Popup
 
-**Never delete a chat message.** Deletion shifts everything below it in the queue, which is disruptive during active play.
+`RfsRollResultDialog` (`src/dialogs/roll-result-dialog.mjs`) — fire-and-forget.
 
-Instead, when a card's action completes, **update its content in place** to a quiet static confirmation. The card stays, the queue stays stable.
-
-The challenge card is the only challenge-related card in chat (besides the advancement announcement). There are no per-player whisper cards.
-
-Standalone (non-challenge) skill rolls post their own self-contained card with inline XP spend and Claim Skill buttons. These crystallise in-place when acted on.
+- `roll()` calls `_showRollResultPopup()` without awaiting it; roll returns before the popup closes
+- Popup content: dice faces, outcome strip (success/failure/all-sixes + DC), optional Claim Skill or Spend XP buttons
+- Popup actions (`claimSkill`, `spendXp`) live in `RfsRollResultDialog.DEFAULT_OPTIONS.actions` — not in `renderChatMessageHTML`
+- DSN is called explicitly before opening the popup; `AudioHelper.play()` fallback when DSN is absent
+- After each roll, `actor.addRollHistory(entry)` records to `"roll-for-shoes.rollHistory"` flag (max 50, newest first)
 
 ---
 
@@ -74,41 +73,9 @@ Standalone (non-challenge) skill rolls post their own self-contained card with i
 
 | type | visibility | description |
 |------|------------|-------------|
-| `challenge` | public | Shared GM challenge card. Live-updating; one portrait row per called token. Rebuilt on every roll via `rebuildChallengeCard()`. Portrait buttons open the character sheet. |
-| `advancement` | public | Blingy announcement posted when any skill is gained (natural all-sixes or XP spend). Built by `buildAdvancementCardContent()`. Static — no interactive elements. |
+| `advancement` | public | Announcement posted when any skill is gained. Built by `buildAdvancementCardContent()`. Static — no interactive elements. |
 
-Standalone (non-challenge) skill rolls no longer post to chat. They show a `RfsRollResultDialog` fire-and-forget popup and record to the actor's roll history (flags). The advancement announcement card is still posted to public chat when a skill is gained.
-
----
-
-## Challenge State — Settings Are the Source of Truth
-
-The Challenge Card's content is rebuilt from scratch on every roll update.
-The source of truth is `game.settings.get("roll-for-shoes", "activeChallenge")`.
-
-**Never read state back from card HTML. Never use regex on message content.**
-
-Key functions in `src/helpers/settings.mjs`:
-- `buildChallengeCardContent(challenge)` — returns full card HTML from state
-- `buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, xpSpent, xpCost)` — returns advancement announcement HTML
-- `rebuildChallengeCard(challenge)` — fetches the card message and updates it
-- `recordChallengeRoll(tokenId, rollResult)` — records a result (serialised via promise queue), rebuilds card, clears challenge if all tokens have rolled
-
-Active challenge shape:
-```js
-{
-  challengeId:     string,    // stable ID linking the card and all related rolls
-  dc:              number,    // the difficulty
-  dcVisible:       boolean,   // whether players can see DC (always true currently)
-  prompt:          string,    // GM's situation description
-  tokenIds:        string[],  // tokens called to roll
-  rolledIds:       string[],  // tokens that have already rolled
-  results:         object,    // { [tokenId]: rollResult }
-  challengeCardId: string,    // messageId of the shared challenge card
-  timestamp:       number,    // Date.now() — used for 3-minute timeout
-  complete:        boolean,
-}
-```
+There are no challenge cards and no standalone roll cards. All roll results surface via the `RfsRollResultDialog` popup. Chat only receives advancement announcement cards.
 
 ---
 
@@ -119,70 +86,34 @@ GMs bypass the socket and call handlers directly (`game.user.isGM` guard before 
 
 | type | direction | handler |
 |------|-----------|---------|
-| `recordChallengeRoll` | player → GM | GM writes result to settings (via queue), rebuilds card |
-| `claimAdvancement` | player → GM | Player named the skill (player-namer path); GM updates result in settings, rebuilds card, posts announcement |
-| `advancementNeeded` | player → GM | GM gets `_promptGmSkillName` dialog; names skill; adds to actor; if challenge roll → `_gmMarkAdvancementClaimed`; if standalone → updates original card + posts announcement |
+| `advancementNeeded` | player → GM | GM gets `_promptGmSkillName` dialog; names skill; `actor.addSkill()`; posts advancement announcement. If `messageId` is present, also updates the originating chat card. |
 
 `"socket": true` must be in `system.json`. Requires a full world reload (not just browser refresh) to take effect after changing.
 
 ---
 
-## Standalone Roll Popup
-
-Standalone (non-challenge) skill rolls show a `RfsRollResultDialog` fire-and-forget popup instead of posting to chat.
-
-- **DSN** is called explicitly before opening the popup; fallback `AudioHelper.play(...)` when DSN is absent
-- Popup content: dice faces, outcome strip (success/failure + DC), optional Claim Skill or Spend XP buttons
-- Popup actions (`claimSkill`, `spendXp`) are in `RfsRollResultDialog.DEFAULT_OPTIONS.actions` — not in `renderChatMessageHTML`
-- After each roll, `actor.addRollHistory(entry)` records the result to the actor's `"roll-for-shoes.rollHistory"` flag (max 50 entries, newest first); this populates the Roll History tab on the character sheet
-- Advancement from the popup respects `advancementNamer` identically to the challenge path
-
----
-
 ## Button Wiring
 
-All chat button listeners live in the `renderChatMessageHTML` hook in `roll-for-shoes.mjs`. This hook fires on every render including after `message.update()` calls, so re-rendered cards always get fresh listeners.
+All chat button listeners live in the `renderChatMessageHTML` hook in `roll-for-shoes.mjs`. This hook fires on every render including after `message.update()` calls.
 
 | data-action | surface | calls |
 |-------------|---------|-------|
-| `rfsOpenSheet` | challenge card portrait (all rows) | `actor.sheet.render(true)` |
+| `rfsOpenSheet` | portrait buttons (advancement card or any future card) | `actor.sheet.render(true)` |
+| `rfsClaimAdvancement` | advancement card (all-sixes) | `RfsSkillRoll.claimAdvancement()` |
+| `rfsSpendXp` | standalone result card (failure, has XP) | `RfsSkillRoll.spendXpOnCard()` |
 
-Standalone roll card actions (`rfsClaimAdvancement`, `rfsSpendXp`) are no longer wired here — standalone rolls use the `RfsRollResultDialog` popup, whose `claimSkill` and `spendXp` actions live in its own `DEFAULT_OPTIONS.actions`.
+Roll result popup actions (`claimSkill`, `spendXp`) are in `RfsRollResultDialog.DEFAULT_OPTIONS.actions`.
 
 ---
 
-## DC Resolution Order
+## DC Resolution
 
-`RfsSkillRoll._resolveDifficulty(actor, options)` resolves in this order:
+`RfsSkillRoll._resolveDifficulty(options)` resolves in this order:
 
 1. `options.difficulty` set explicitly — use it
-2. `options.challengeId` matches active challenge — use that challenge's DC
-3. Actor has a token in active challenge `tokenIds` — use that DC (sheet-based roll auto-routing)
-4. Default — 4 (Easy)
+2. `game.settings.get("roll-for-shoes", "globalDc")` — use the global DC
 
-Sheet-initiated rolls pick up the active challenge DC automatically if the actor's token was called. No extra config needed from the player.
-
----
-
-## GM Challenge Dialog
-
-`src/dialogs/challenge-dialog.mjs` — `HandlebarsApplicationMixin(ApplicationV2)`.
-
-Instance state (not form data — survives template re-renders):
-- `this._dc` — current DC value (2–24)
-- `this._dcDice` — selected dice (1 = static, 2–4 = roll Nd6 on Post)
-
-Actions:
-- `stepDc` — ±1 via `data-dir`
-- `setDc` — jump to canonical value via `data-value`
-- `selectDice` — pick dice count via `data-dice`
-- `removeToken` — remove a called token
-
-`_onSubmit` reads `this._dc` and `this._dcDice` directly (not formData). If `_dcDice > 1`, evaluates that Roll, shows DSN, and uses the total as the final DC. If `_dcDice === 1`, uses `this._dc` as-is and plays a dice sound.
-
-`difficultyMode` world setting:
-- `standard` — default DC 3, canonical buttons: 3, 6, 9, 12, 15, 18, 21, 24
-- `moreXp` — default DC 4, canonical buttons: 4, 8, 12, 16, 20, 24
+There is no passive challenge detection. All rolls go through the same path.
 
 ---
 

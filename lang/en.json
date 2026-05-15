@@ -45,7 +45,8 @@
       "AddItem": "Add item",
       "DeleteItem": "Remove item",
       "PostDifficulty": "Post Difficulty to Chat",
-      "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)"
+      "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)",
+      "Cancel": "Cancel"
     },
     "Dialog": {
       "NewSkill": {
@@ -83,23 +84,6 @@
         "ValueLabel": "Modifier (negative = penalty)",
         "Confirm": "Add"
       },
-      "Challenge": {
-        "Title": "Call for Roll",
-        "DcModeRoll": "Roll for DC",
-        "DcModeStatic": "Static DC",
-        "DcDiceLabel": "Number of dice",
-        "DcValueLabel": "Target number",
-        "DcVisibleLabel": "Players can see DC",
-        "DcHiddenLabel": "DC hidden from players",
-        "PromptLabel": "Situation prompt",
-        "PromptPlaceholder": "calls for a roll",
-        "DefaultPrompt": "calls for a roll",
-        "CalledTokens": "Called to roll",
-        "NoTokens": "No tokens selected.",
-        "Confirm": "Post to Chat",
-        "Cancel": "Cancel",
-        "DiceHintRoll": "DC will be rolled on Post"
-      }
     },
     "Difficulty": {
       "Easy":      "Easy",
@@ -112,13 +96,6 @@
       "ActorName": "Character Name",
       "Biography": "Character background, appearance, notes…"
     },
-    "HUD": {
-      "CallForRoll": "Call for Roll"
-    },
-    "Keybinding": {
-      "CallForRoll": "Call for Roll",
-      "CallForRollHint": "Open the roll initiation dialog for selected tokens (GM only)"
-    },
     "Warn": {
       "CannotDeleteRoot": "The root skill (Do Anything) cannot be deleted.",
       "NoXpToSpend": "No XP to spend.",
@@ -128,12 +105,10 @@
       "NoSkill": "Could not find the selected skill."
     },
     "Chat": {
-      "SkillRoll": "rolls {skillName} ({level}d6)",
       "AllSixes": "✦ All sixes! Advancement opportunity!",
       "AllSixesHeading": "All Sixes!",
       "Failure": "Fail",
       "Success": "Success",
-      "Difficulty": "{actorName} difficulty: {difficulty}",
       "OpposedRoll": "Opposed Roll",
       "Winner": "{name} wins!",
       "Tie": "Tie",
@@ -141,26 +116,6 @@
       "SkillClaimed": "✦ {name} claimed!",
       "Claimed": "✦ {name} claimed!",
       "ClaimedXp": "✦ {name} claimed ({cost} XP spent)",
-      "Challenge": {
-        "Title": "Challenge",
-        "Speaker": "Game Master",
-        "DcRolled": "DC: rolled {dice}d6 → {result}",
-        "DcStatic": "DC: {dc}",
-        "DcValue": "DC: {dc}",
-        "DcHidden": "DC: hidden",
-        "CalledTo": "Called to roll:",
-        "Hint": "Roll a skill from your character sheet to respond.",
-        "Pending": "waiting…",
-        "Complete": "✔ All players have rolled.",
-        "UnknownToken": "Unknown",
-        "ColName": "Character",
-        "ColSkill": "Skill",
-        "ColDice": "Dice",
-        "ColOutcome": "Result",
-        "AdvancementPending": "advancement pending…",
-        "Waiting": "choosing skill…",
-        "Rolled": "rolled"
-      },
       "XpSpendTitle": "Spend XP for Advancement?",
       "AdvancementWaiting": "XP spent — waiting for GM to name the new skill…",
       "AdvancementCard": {

@@ -5,50 +5,49 @@
 ```
 roll-for-shoes/                    ← repo root
 ├── CLAUDE.md                      ← Claude Code instructions (read first)
-├── RFS-Architecture.md            ← design decisions, challenge flow, card lifecycle
+├── RFS-Architecture.md            ← design decisions, roll flow, button wiring
 ├── RFS-File-Structure.md          ← this file
 ├── RFS-Milestones.md              ← progress tracking, current dev state, rules reference
 ├── README.md
 ├── system.json                    ← Foundry manifest; styles array, socket: true,
 │                                    documentTypes (Actor: character + npc)
-├── roll-for-shoes.mjs             ← entry point; init, ready, createChatMessage,
+├── roll-for-shoes.mjs             ← entry point; init, ready, preCreateActor,
 │                                    renderChatMessageHTML hooks; socket listener
 ├── assets/
 │   ├── icons/
-│   │   └── rfs-call-for-roll.svg
 │   ├── tokens/
-│   │   └── rfs-default-token.svg
 │   └── ui/
 │       └── rfs-system-logo.webp
 ├── lang/
 │   └── en.json
 ├── src/
+│   ├── apps/
+│   │   └── dc-tracker.mjs         ← RfsDcTracker; persistent DC bar for all users;
+│   │                                 GM adjusts globalDc via tier chips or +/− buttons;
+│   │                                 players see DC read-only with connected portraits;
+│   │                                 re-renders on userConnected hook
 │   ├── data/
 │   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
 │   │                                 CharacterData: skills[], xp, statuses[], biography
 │   ├── dialogs/
-│   │   ├── challenge-dialog.mjs   ← GM challenge dialog; DC stepper + dice picker;
-│   │   │                            posts challenge card; DSN/sound on post
-│   │   └── roll-result-dialog.mjs ← fire-and-forget popup for standalone roll results;
+│   │   └── roll-result-dialog.mjs ← fire-and-forget popup for roll results;
 │   │                                 shows dice, outcome strip, Claim Skill / Spend XP;
 │   │                                 actions in DEFAULT_OPTIONS (not renderChatMessageHTML)
 │   ├── documents/
 │   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getSkillById,
 │   │                                 addRollHistory (flag-based, max 50 entries)
 │   ├── helpers/
-│   │   ├── config.mjs             ← RFS constants, DC scale, theme registry
-│   │   ├── settings.mjs           ← settings registration; activeChallenge state machine;
-│   │   │                            buildChallengeCardContent; buildAdvancementCardContent;
-│   │   │                            rebuildChallengeCard; recordChallengeRoll (promise-queued)
+│   │   ├── config.mjs             ← RFS constants, DC tiers (dcTiers), theme registry
+│   │   ├── settings.mjs           ← settings registration (globalDc, difficultyMode,
+│   │   │                            advancementNamer, theme, npcDefaultMode);
+│   │   │                            buildAdvancementCardContent()
 │   │   └── templates.mjs          ← template preloading, Handlebars helpers
-│   ├── hud/
-│   │   └── token-hud.mjs          ← shoe button → opens challenge dialog
 │   ├── rolls/
-│   │   └── skill-roll.mjs         ← all roll logic; challenge + standalone paths;
+│   │   └── skill-roll.mjs         ← all roll logic; reads globalDc via _resolveDifficulty;
 │   │                                 themed advancement dialogs (_confirmXpSpend,
 │   │                                 _promptSkillName, _promptGmSkillName);
 │   │                                 DSN showForRoll called explicitly for all paths;
-│   │                                 standalone: RfsRollResultDialog popup + addRollHistory
+│   │                                 RfsRollResultDialog popup + addRollHistory
 │   └── sheets/
 │       ├── character-sheet.mjs    ← ActorSheetV2; Skills tab + Roll History tab;
 │       │                            editPortrait, rollSkill, renameSkill, addStatus,
@@ -57,12 +56,11 @@ roll-for-shoes/                    ← repo root
 │       └── npc-sheet.mjs
 ├── styles/
 │   ├── rfs-base.css               ← layout, structure, custom property definitions on :root
-│   │                                includes: sheet, skill index, challenge card, buttons,
-│   │                                biography textarea, DC stepper
+│   │                                includes: sheet, skill index, DC tracker bar (.rfs-dct),
+│   │                                buttons, biography textarea
 │   ├── rfs-chat.css               ← roll result popup (.rfs-rrd), advancement
 │   │                                announcement card (.rfs-advancement), advancement
-│   │                                dialog content (.rfs-adv-dlg), button variants,
-│   │                                challenge card (.rfs-challenge), player dialog (.rfs-cpd)
+│   │                                dialog content (.rfs-adv-dlg), button variants
 │   └── themes/
 │       ├── dark-factory.css       ← steampunk dark theme
 │       ├── clean-light.css        ← minimal light theme
@@ -79,10 +77,11 @@ roll-for-shoes/                    ← repo root
     │       │                        depth via --rfs-skill-depth; rename + delete buttons
     │       ├── status-list.hbs
     │       └── xp-tracker.hbs
+    ├── apps/
+    │   └── dc-tracker.hbs         ← portraits left/right, DC value, tier chips (GM only),
+    │                                 +/− step buttons (GM only)
     └── dialog/
-        ├── challenge-dialog.hbs      ← DC stepper, canonical buttons, dice picker,
-        │                               token list, Post/Cancel footer
-        └── roll-result-dialog.hbs    ← dice row, outcome strip, Claim Skill / Spend XP
+        └── roll-result-dialog.hbs ← dice row, outcome strip, Claim Skill / Spend XP
 ```
 
 *(The skill map popup was removed — `skill-map-dialog.mjs`, `skill-node.hbs`, `skill-tree.hbs`, and `skill-map-dialog.hbs` no longer exist. Revert commit `41f27d8` to restore them.)*
@@ -93,10 +92,9 @@ roll-for-shoes/                    ← repo root
 
 | type | visibility | description |
 |------|------------|-------------|
-| `challenge` | public | Shared challenge card. One portrait row per called token. Live-updating via `rebuildChallengeCard()`. All portrait rows are `<button data-action="rfsOpenSheet">` — clicking opens the character sheet. |
-| `advancement` | public | Blingy announcement card posted when any skill is gained. Built by `buildAdvancementCardContent()`. Static, no buttons. |
+| `advancement` | public | Announcement posted when any skill is gained (natural all-sixes or XP spend). Built by `buildAdvancementCardContent()`. Static — no buttons. |
 
-There are no standalone roll cards and no whisper cards. Standalone rolls show a `RfsRollResultDialog` popup and record to the actor's roll history flag. All player-side challenge interaction happens via rolls from the character sheet.
+There are no challenge cards. All roll results surface via the `RfsRollResultDialog` fire-and-forget popup and record to the actor's roll history flag.
 
 ---
 
@@ -106,9 +104,9 @@ There are no standalone roll cards and no whisper cards. Standalone rolls show a
 |-----|------|-------------|
 | `theme` | String | Active visual theme (`dark-factory`, `clean-light`, `vellum`) |
 | `npcDefaultMode` | String | `fixed` or `full` — initial mode for new NPCs |
-| `advancementNamer` | String | `player` or `gm` — who names new skills (challenge + standalone, all-sixes + XP spend) |
-| `difficultyMode` | String | `standard` (default DC 3, 3/6/9…) or `moreXp` (default DC 4, 4/8/12…) |
-| `activeChallenge` | Object | Live challenge state; null when idle. Written by GM only. |
+| `advancementNamer` | String | `player` or `gm` — who names new skills (all-sixes + XP spend paths) |
+| `difficultyMode` | String | `standard` (default DC 3) or `moreXp` (default DC 4) — shapes DC tier chips |
+| `globalDc` | Number | Current global difficulty class; set by GM via DC tracker; read by all rolls |
 
 ---
 
@@ -116,103 +114,40 @@ There are no standalone roll cards and no whisper cards. Standalone rolls show a
 
 ```
 roll-for-shoes.mjs
-  ├── init hook            — registers sheets, settings, document classes, keybindings
-  ├── ready hook           — socket listener:
-  │     recordChallengeRoll  → GM writes result to settings (promise-queued), rebuilds card
-  │     claimAdvancement     → player named skill; GM updates settings, posts announcement
-  │     advancementNeeded    → GM gets _promptGmSkillName dialog; adds skill to actor;
-  │                            challenge roll → _gmMarkAdvancementClaimed (state + card);
-  │                            standalone roll → updates original message + posts announcement
-  ├── createChatMessage hook — non-GMs auto-switch to chat sidebar when challenge card posts
-  └── renderChatMessageHTML hook — wires ALL chat card buttons:
+  ├── init hook            — registers sheets, settings, document classes
+  ├── ready hook           — renders RfsDcTracker; socket listener:
+  │     advancementNeeded  → GM gets _promptGmSkillName dialog; adds skill to actor;
+  │                          if messageId present: updates originating card;
+  │                          posts advancement announcement to chat
+  └── renderChatMessageHTML hook — wires all chat card buttons:
         rfsOpenSheet         → actor.sheet.render(true)
         rfsClaimAdvancement  → RfsSkillRoll.claimAdvancement()
         rfsSpendXp           → RfsSkillRoll.spendXpOnCard()
 
-src/dialogs/challenge-dialog.mjs
-  └── _onSubmit() → if dcDice > 1: evaluates Roll, shows DSN, uses total as DC
-                    else: plays dice sound, uses this._dc
-  └── _postChallenge() → posts challenge card (public) + sets activeChallenge in settings
+src/apps/dc-tracker.mjs
+  └── _prepareContext() → reads globalDc + difficultyMode → builds tier array + portraits
+  └── _onStepDc()       → GM ±1 on globalDc
+  └── _onSetDc()        → GM jumps to named tier value
 
 src/rolls/skill-roll.mjs
   └── roll()
-        → _resolveDifficulty() auto-detects called token → challenge path
-        → DSN showForRoll or AudioHelper.play (all paths)
-        → challenge path: _postChallengeResult()
-            → _confirmXpSpend + _promptSkillName/_promptGmSkillName (advancementNamer-aware)
-            → emits recordChallengeRoll socket (or writes directly if GM)
-            → emits advancementNeeded socket if GM naming required
-        → standalone path: actor.addRollHistory() → RfsRollResultDialog.open()
-  └── claimAdvancement()  [called from popup or socket]
+        → _resolveDifficulty()  reads options.difficulty ?? globalDc
+        → DSN showForRoll or AudioHelper.play
+        → actor.addXp(1) on failure
+        → actor.addRollHistory()
+        → _showRollResultPopup() → RfsRollResultDialog.open()
+  └── _doStandaloneXpSpend()
+        → _confirmXpSpend → actor.spendXp → _promptSkillName | advancementNeeded socket
+  └── claimAdvancement()
         → advancementNamer=gm + non-GM: emits advancementNeeded
         → else: _promptSkillName → actor.addSkill → posts advancement announcement
-  └── _promptGmSkillName() — themed GM-facing naming dialog (also called from socket handler)
-  └── _gmMarkAdvancementClaimed() — updates challenge state, rebuilds card, posts announcement
+  └── _promptGmSkillName() — themed GM-facing naming dialog (called from socket handler too)
 
 src/helpers/settings.mjs
-  └── activeChallenge setting         — single source of truth
-  └── _rollQueue                      — promise chain serialising concurrent recordChallengeRoll calls
-  └── buildChallengeCardContent()     — renders challenge card HTML from state
-  └── buildAdvancementCardContent()   — renders advancement announcement HTML
-  └── rebuildChallengeCard()          — updates the live challenge card message
-  └── recordChallengeRoll()           — queues result write, rebuilds card, posts advancement
-                                        announcement if skillClaimed, clears when all rolled
+  └── buildAdvancementCardContent() — renders advancement announcement HTML
 ```
 
 ---
-
-## Challenge Card HTML Structure
-
-```html
-<div class="rfs-challenge" data-challenge-id="…">
-  <div class="rfs-challenge__header">
-    <span class="rfs-challenge__gear">⚙</span>
-    <span class="rfs-challenge__title">Challenge</span>
-    <span class="rfs-challenge__dc">DC N</span>
-  </div>
-  <div class="rfs-challenge__prompt">…</div>           <!-- only if prompt set -->
-  <div class="rfs-challenge__players">
-
-    <!-- pending player (not yet rolled) -->
-    <div class="rfs-challenge__player rfs-challenge__player--pending">
-      <button class="rfs-challenge__player-btn"
-              data-action="rfsOpenSheet" data-actor-id="…">
-        <div class="rfs-challenge__portrait"><img …></div>
-      </button>
-      <div class="rfs-challenge__player-info">
-        <span class="rfs-challenge__player-name">…</span>
-        <span class="rfs-challenge__player-skill rfs-challenge__player-skill--waiting">…</span>
-      </div>
-      <div class="rfs-challenge__player-result">
-        <span class="rfs-challenge__player-total rfs-challenge__player-total--waiting">--</span>
-      </div>
-    </div>
-
-    <!-- done player -->
-    <div class="rfs-challenge__player rfs-challenge__player--success|failure|tie">
-      <button class="rfs-challenge__player-btn"
-              data-action="rfsOpenSheet" data-actor-id="…">
-        <div class="rfs-challenge__portrait"><img …></div>
-      </button>
-      <div class="rfs-challenge__player-info">
-        <span class="rfs-challenge__player-name">…</span>
-        <span class="rfs-challenge__player-skill">Skill N [→ ✦ New Skill]</span>
-      </div>
-      <div class="rfs-challenge__player-result">
-        <span class="rfs-challenge__player-total rfs-challenge__player-total--success|failure|tie">N</span>
-        <span class="rfs-challenge__player-dice">[d, d, …]</span>
-      </div>
-    </div>
-
-  </div>
-  <div class="rfs-challenge__footer">
-    <div class="rfs-challenge__footer-left">
-      <span class="rfs-challenge__status-dot rfs-challenge__status-dot--pulsing|complete"></span>
-      <span class="rfs-challenge__status-text">X / Y rolled | ✔ All players have rolled.</span>
-    </div>
-  </div>
-</div>
-```
 
 ## Advancement Announcement Card HTML Structure
 
@@ -246,5 +181,26 @@ Standalone rolls show a fire-and-forget `RfsRollResultDialog` popup (not a chat 
   <!-- optional action buttons -->
   <button data-action="claimSkill">✦ Claim Skill</button>
   <button data-action="spendXp">Spend N XP & Advance</button>
+</div>
+```
+
+## DC Tracker (.rfs-dct)
+
+```html
+<div class="rfs-dct">
+  <div class="rfs-dct__portraits rfs-dct__portraits--left"> … </div>
+  <div class="rfs-dct__controls">
+    <!-- GM only: -->
+    <button data-action="stepDc" data-dir="-1">−</button>
+    <div class="rfs-dct__dc-inner">
+      <div class="rfs-dct__tiers">
+        <button data-action="setDc" data-value="N" class="[rfs-dct__tier--active]">Easy</button>
+        …
+      </div>
+      <div class="rfs-dct__dc-value">N</div>
+    </div>
+    <button data-action="stepDc" data-dir="1">+</button>
+  </div>
+  <div class="rfs-dct__portraits rfs-dct__portraits--right"> … </div>
 </div>
 ```
