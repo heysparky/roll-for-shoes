@@ -59,13 +59,14 @@
     - 5B: Codex folio header (display:contents flattens DOM into 2×2 portrait/name/XP/bio grid; portrait 168×216)
 21. **DC tracker — Foundry chrome reset** — strips ApplicationV2 background/border/padding via `!important` in `rfs-base.css`
 22. **Token name sync** — changing actor name updates prototypeToken.name and all linked scene tokens; gated by world setting `syncTokenName` (default on)
+23. **Character sheet header polish** — biography textarea fills remaining header space (`height: 264px` definite grid container; `align-self: stretch` on bio)
+24. **Skill list button polish** — rename/delete buttons shrunk to 1rem, borderless, hidden until row hover; rename glows gold, delete glows red
+25. **Tab focus ring removed** — browser `:focus-visible` outline suppressed on tab buttons; gold hairline indicator remains
 
 ---
 
 ## Up Next
 
-- **Portrait display** — further tweaks in progress
-- **Tab active highlight** — active tab indicator polish
 - **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
 - **CSS polish** — roll result popup, advancement announcement card
 
@@ -73,10 +74,13 @@
 
 ## Current State of Development
 
-Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. Minor visual polish on the character sheet (portrait, tab highlights) is the immediate next work.
+Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. Character sheet CSS polish is largely done; remaining work is advancement flavour text and chat card styling.
 
 ### Working
 - Character sheet: name, portrait (click to edit), skills, XP, statuses, biography, rename skill, roll history — all four tabs styled in vellum theme
+- Header: 2×2 codex folio grid; biography fills remaining space below name/XP row
+- Skill list: pips + clickable name; rename/delete buttons appear on row hover only
+- Tab nav: active tab gold hairline indicator; no browser focus ring
 - Skill rolls: fire-and-forget `RfsRollResultDialog` popup with dice + outcome vs DC; DSN + dice sound; result recorded to actor flag
 - DC tracker bar: visible to all users; GM adjusts globalDc via tier chips or +/− buttons; free-floating on canvas (chrome stripped)
 - Advancement UX: themed dialogs, two-step XP spend (confirm → name), advancementNamer respected on all paths
@@ -85,10 +89,8 @@ Core mechanics, roll UX, advancement flow, and the vellum character sheet visual
 - Token name syncs to prototype token and placed scene tokens on rename
 
 ### Known Gaps / Next Work
-- **Portrait**: display issues being investigated
-- **Tab highlights**: active tab indicator needs polish
 - **Advancement prompt copy**: same announcement card text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
-- **CSS polish**: roll result popup and announcement card styling.
+- **CSS polish**: roll result popup and advancement announcement card styling.
 
 ### Architecture Decisions
 - Global DC lives in `game.settings.get("roll-for-shoes", "globalDc")` — world-scoped, GM-only writes
