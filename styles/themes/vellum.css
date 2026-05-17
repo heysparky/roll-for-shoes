@@ -697,6 +697,9 @@
   transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
   position: relative;
 }
+[data-rfs-theme="vellum"] .rfs-tabs__btn:focus-visible {
+  outline: none;
+}
 [data-rfs-theme="vellum"] .rfs-tabs__btn:hover:not(.rfs-tabs__btn--active) {
   color: var(--rfs-text-soft);
   background: linear-gradient(180deg, var(--rfs-bg-alt), var(--rfs-bg));
