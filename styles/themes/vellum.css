@@ -1265,12 +1265,16 @@
 }
 [data-rfs-theme="vellum"] .rfs-sheet__portrait-btn {
   grid-area: portrait;
-  align-self: stretch;
+  align-self: start;
 }
 [data-rfs-theme="vellum"] .rfs-sheet__portrait {
   width: 168px;
-  height: 100%;
-  min-height: 216px;
+  height: 216px;
+  border-top: 1px solid var(--rfs-gold);
+  border-bottom: 1px solid var(--rfs-gold);
+  border-left: 1px solid var(--rfs-gold);
+  border-right: none;
+  border-radius: var(--rfs-radius) 0 0 var(--rfs-radius);
 }
 [data-rfs-theme="vellum"] .rfs-sheet__name {
   flex: 1;
