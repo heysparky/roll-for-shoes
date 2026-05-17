@@ -201,6 +201,28 @@
   color: var(--rfs-gold-hi);
   border-bottom-color: var(--rfs-gold);
 }
+[data-rfs-theme="vellum"] .rfs-skill-index__rename-btn,
+[data-rfs-theme="vellum"] .rfs-skill-index__delete-btn {
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.55rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--rfs-text-muted);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__row:hover .rfs-skill-index__rename-btn,
+[data-rfs-theme="vellum"] .rfs-skill-index__row:hover .rfs-skill-index__delete-btn {
+  opacity: 1;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__rename-btn:hover {
+  color: var(--rfs-gold);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__delete-btn:hover {
+  color: var(--rfs-error, #c0392b);
+}
 /* =============================================================================
    SKILL TREE — left-to-right bracket layout
    Markup expected:
