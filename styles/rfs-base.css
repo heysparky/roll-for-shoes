@@ -806,6 +806,32 @@
   transform: translateX(-50%);
   z-index: 60;         /* above canvas, below Foundry menus */
   pointer-events: none;
+
+  /* Foundry V13's themed ApplicationV2 still draws a panel background on
+     .application even with window.frame = false, AND wraps content in
+     .window-content with its own padding/background. Wipe all of it so the
+     widget reads as free-floating chits on the canvas. */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#rfs-dc-tracker .window-content,
+#rfs-dc-tracker .window-header,
+#rfs-dc-tracker .window-frame,
+#rfs-dc-tracker > section,
+#rfs-dc-tracker > form,
+#rfs-dc-tracker > div {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
 }
 
 /* Hangrow: flex row with portrait pegs flanking the target card */
