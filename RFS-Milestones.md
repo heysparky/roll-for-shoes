@@ -50,28 +50,45 @@
 
 ---
 
+19. **Inventory tab** — character sheet now has four tabs: Skills / Inventory / Statuses / History; statuses lifted out of Skills into its own tab
+20. **Vellum theme — character sheet visual design** (Claude Design handoff, 2026-05-17)
+    - 1A: Connected parchment tab nav (mono uppercase, active tab gold hairline, panel seam dissolves)
+    - 2B: Quill history cards (2-row grid, italic serif skill heading, circular outcome medallion, allsixes inner glow)
+    - 3B: Illuminated hedera empty state (❦ pseudo-element above, thin gold rule below)
+    - 4B: D6 die-face pip glyphs (canonical 1–6 pip positions via nth-child; rank 7+ shows numeral via attr(data-rank))
+    - 5B: Codex folio header (display:contents flattens DOM into 2×2 portrait/name/XP/bio grid; portrait 168×216)
+21. **DC tracker — Foundry chrome reset** — strips ApplicationV2 background/border/padding via `!important` in `rfs-base.css`
+22. **Token name sync** — changing actor name updates prototypeToken.name and all linked scene tokens; gated by world setting `syncTokenName` (default on)
+
+---
+
 ## Up Next
 
-- **CSS polish** — DC tracker bar layout, roll result popup, advancement announcement card
-- **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement on the announcement card
+- **Portrait display** — further tweaks in progress
+- **Tab active highlight** — active tab indicator polish
+- **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
+- **CSS polish** — roll result popup, advancement announcement card
 
 ---
 
 ## Current State of Development
 
-Core mechanics, roll UX, and advancement flow are complete and table-tested. Players roll directly from their character sheet against the global DC set by the GM via the DC tracker bar — no challenge dialog or card required. CSS polish is the remaining priority.
+Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. Minor visual polish on the character sheet (portrait, tab highlights) is the immediate next work.
 
 ### Working
-- Character sheet: name, portrait (click to edit), skills (list), XP, statuses, biography, rename skill dialog, roll history tab
+- Character sheet: name, portrait (click to edit), skills, XP, statuses, biography, rename skill, roll history — all four tabs styled in vellum theme
 - Skill rolls: fire-and-forget `RfsRollResultDialog` popup with dice + outcome vs DC; DSN + dice sound; result recorded to actor flag
-- DC tracker bar: visible to all users; GM adjusts globalDc via tier chips or +/− buttons
+- DC tracker bar: visible to all users; GM adjusts globalDc via tier chips or +/− buttons; free-floating on canvas (chrome stripped)
 - Advancement UX: themed dialogs, two-step XP spend (confirm → name), advancementNamer respected on all paths
 - Opposed rolls, difficulty thresholds, status math
 - Three themes registered; vellum is default
+- Token name syncs to prototype token and placed scene tokens on rename
 
 ### Known Gaps / Next Work
+- **Portrait**: display issues being investigated
+- **Tab highlights**: active tab indicator needs polish
 - **Advancement prompt copy**: same announcement card text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
-- **CSS polish**: DC tracker bar, roll result popup, and announcement card styling.
+- **CSS polish**: roll result popup and announcement card styling.
 
 ### Architecture Decisions
 - Global DC lives in `game.settings.get("roll-for-shoes", "globalDc")` — world-scoped, GM-only writes
