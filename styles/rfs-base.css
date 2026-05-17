@@ -796,10 +796,12 @@
 
 /* ── DC Tracker ──────────────────────────────────────────────────────────── */
 
-/* ApplicationV2 wrapper — pinned to top-centre, no window chrome */
+/* ApplicationV2 wrapper — pinned to top-centre of the canvas.
+   `left` and centering are CSS-driven; `top` is set dynamically in
+   _onRender to sit flush below #navigation (see dc-tracker.mjs). */
 #rfs-dc-tracker {
   position: fixed;
-  top: 0;
+  top: 0;              /* overridden at runtime to nav.getBoundingClientRect().bottom */
   left: 50%;
   transform: translateX(-50%);
   z-index: 60;         /* above canvas, below Foundry menus */

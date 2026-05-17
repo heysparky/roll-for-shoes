@@ -87,9 +87,24 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
   /*  Lifecycle                                   */
   /* -------------------------------------------- */
 
+  /**
+   * Prevent ApplicationV2 from setting inline left/top styles that override
+   * our CSS-driven centering (`left: 50%; transform: translateX(-50%)`).
+   * @override
+   */
+  setPosition(pos = {}) {
+    return this.position;
+  }
+
   /** @override */
   _onRender(context, options) {
     super._onRender(context, options);
+
+    // Hang from the bottom edge of Foundry's navigation bar so the widget
+    // sits flush at the top of the canvas area rather than behind the nav.
+    const nav = document.querySelector("#navigation");
+    this.element.style.top = nav ? `${nav.getBoundingClientRect().bottom}px` : "0px";
+
     // Close the popover when the pointer leaves the target widget
     const widget = this.element.querySelector(".rfs-target-display");
     if (widget) {
