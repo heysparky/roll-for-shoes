@@ -917,9 +917,9 @@
     linear-gradient(180deg, var(--rfs-bg-alt) 0%, var(--rfs-bg-deep) 100%);
   border: 1.5px solid var(--rfs-gold);
   border-radius: 4px;
+  /* Outer 3px bg-coloured ring + 4px brown ring removed — they read as a
+     framed border around the card in Foundry. Keep only the drop shadow + inset. */
   box-shadow:
-    0 0 0 3px var(--rfs-bg),
-    0 0 0 4px var(--rfs-border-strong),
     0 12px 30px rgba(0,0,0,0.65),
     inset 0 0 28px rgba(0,0,0,0.55);
 }
