@@ -155,7 +155,7 @@
 
 .rfs-sheet__header-top {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--rfs-space-md);
 }
 
