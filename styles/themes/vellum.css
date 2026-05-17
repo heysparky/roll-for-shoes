@@ -1004,7 +1004,7 @@
   column-gap: 26px;
   row-gap: 14px;
   padding: 26px 28px 22px;
-  min-height: 264px;
+  height: 264px;
   background: transparent;
   border-bottom: 1px solid var(--rfs-rule);
   position: relative;
@@ -1114,7 +1114,7 @@
   padding: 0;
   box-shadow: none;
   resize: none;
-  align-self: start;
+  align-self: stretch;
 }
 [data-rfs-theme="vellum"] .rfs-sheet__biography:focus {
   outline: none;
