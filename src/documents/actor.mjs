@@ -43,6 +43,16 @@ export class RfsActor extends Actor {
   }
 
   /* -------------------------------------------- */
+  /*  Document Overrides                          */
+  /* -------------------------------------------- */
+
+  /** @override — keep prototype token name in sync with actor name. */
+  async update(data = {}, options = {}) {
+    if ("name" in data) data["prototypeToken.name"] = data.name;
+    return super.update(data, options);
+  }
+
+  /* -------------------------------------------- */
   /*  Skill Tree Helpers                          */
   /* -------------------------------------------- */
 
