@@ -1,4 +1,4 @@
-﻿/* =============================================================================
+/* =============================================================================
    Roll for Shoes — VELLUM theme
    styles/themes/vellum.css
 
@@ -1008,10 +1008,20 @@
 
 /* ── Chips strip ─────────────────────────────────────────────────────────── */
 
+/* Chip strip is constrained to the card's outer footprint so chips wrap
+   under it instead of jutting past its edges. This keeps the widget's
+   overall bounding box tight to the card — important because Foundry's
+   surrounding app window auto-fits to the widget bbox; with chips wider
+   than the card the window drew a brown frame around the empty flanks.
+   Width = card content 176px + 2 × 16px padding + 2 × 1.5px border ≈ 211px,
+   so chips wrap at the card's outer edge exactly. Strip itself has no fill
+   — chips float over transparent space. */
 [data-rfs-theme="vellum"] .rfs-target-display__chips {
   gap: 4px;
   margin-top: 10px;
-  max-width: 240px;
+  width: 211px;
+  max-width: 211px;
+  background: transparent;
 }
 
 [data-rfs-theme="vellum"] .rfs-target-display__chip {
