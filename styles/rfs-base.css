@@ -98,6 +98,9 @@
   /* Tree layout */
   --rfs-skill-indent:    1.25rem;  /* per-level indentation */
   --rfs-skill-connector: 1px solid var(--rfs-color-border);
+
+  /* Portrait peg — placeholder fill for empty portrait slots */
+  --rfs-portrait-placeholder: #888;
 }
 
 /* ── Sheet wrapper ────────────────────────────────────────────────────────── */
@@ -791,133 +794,239 @@
   .rfs-skill-index__row:hover & { opacity: 1; }
 }
 
-/* ── DC Tracker bar ──────────────────────────────────────────────────────── */
+/* ── DC Tracker ──────────────────────────────────────────────────────────── */
 
-/* The ApplicationV2 wrapper — pinned to top-centre, no window chrome */
+/* ApplicationV2 wrapper — pinned to top-centre, no window chrome */
 #rfs-dc-tracker {
   position: fixed;
-  top: 6px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
   z-index: 60;         /* above canvas, below Foundry menus */
   pointer-events: none;
 }
 
-/* Inner layout — row of [portraits | controls | portraits] */
-.rfs-dct {
+/* Hangrow: flex row with portrait pegs flanking the target card */
+.rfs-dct-hangrow {
   pointer-events: auto;
   display: flex;
-  align-items: center;
-  gap: var(--rfs-space-md);
-  background: var(--rfs-color-bg-panel);
-  border: 1px solid var(--rfs-color-border);
-  border-radius: var(--rfs-radius-lg);
-  padding: var(--rfs-space-xs) var(--rfs-space-md);
-  box-shadow: var(--rfs-shadow-md);
+  align-items: flex-start;
+  gap: 11px;
 }
 
-/* Portrait strip — one side */
-.rfs-dct__portraits {
+/* Peg group on each side */
+.rfs-dct-pegs {
   display: flex;
-  gap: var(--rfs-space-xs);
-  align-items: center;
-  min-width: 0;
+  gap: 22px;
+  align-items: flex-start;
 }
 
-.rfs-dct__portrait {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--rfs-color-border);
+/* ── Portrait peg ──────────────────────────────────────────────────────── */
+
+.rfs-portrait-peg {
+  position: relative;
   flex-shrink: 0;
+}
+
+/* box-sizing: border-box keeps the card inside its declared width so the
+   peg-to-target visual gap stays symmetric on both sides */
+.rfs-portrait-peg__card {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.rfs-portrait-peg__portrait {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--rfs-portrait-placeholder);
+  position: relative;
+  overflow: hidden;
+}
+
+.rfs-portrait-peg__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
-/* Middle — step buttons + tier chips + DC value */
-.rfs-dct__controls {
+.rfs-portrait-peg__monogram {
+  position: absolute;
+  inset: 0;
   display: flex;
-  align-items: center;
-  gap: var(--rfs-space-sm);
-}
-
-/* +/− step buttons */
-.rfs-dct__step {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  font-size: 1.1rem;
   line-height: 1;
-  background: transparent;
-  border: 1px solid var(--rfs-color-border);
-  border-radius: var(--rfs-radius-sm);
-  color: var(--rfs-color-text);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
-
-  &:hover:not(:disabled) {
-    background: var(--rfs-color-bg-panel);
-    border-color: var(--rfs-color-accent);
-  }
 }
 
-/* Tier chips row + DC value column */
-.rfs-dct__dc-inner {
-  display: flex;
+.rfs-portrait-peg__rivet {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 5;         /* above the portrait image */
+}
+
+.rfs-portrait-peg__rivet--tl { top: 4px;    left: 4px; }
+.rfs-portrait-peg__rivet--tr { top: 4px;    right: 4px; }
+.rfs-portrait-peg__rivet--bl { bottom: 4px; left: 4px; }
+.rfs-portrait-peg__rivet--br { bottom: 4px; right: 4px; }
+
+.rfs-portrait-peg__name {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Target display (DC card) ───────────────────────────────────────────── */
+
+.rfs-target-display {
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  position: relative;
 }
 
-.rfs-dct__tiers {
+.rfs-target-display__card {
+  position: relative;
+}
+
+/* Decorative inner border — inset 6px, pointer-events: none */
+.rfs-target-display__inner {
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+}
+
+.rfs-target-display__rivet {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.rfs-target-display__rivet--tl { top: 4px;    left: 4px; }
+.rfs-target-display__rivet--tr { top: 4px;    right: 4px; }
+.rfs-target-display__rivet--bl { bottom: 4px; left: 4px; }
+.rfs-target-display__rivet--br { bottom: 4px; right: 4px; }
+
+.rfs-target-display__row {
   display: flex;
-  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-.rfs-dct__tier {
+/* +/− buttons: hidden at rest, fade/scale in on hover */
+.rfs-target-display__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px var(--rfs-space-sm);
-  font-size: var(--rfs-font-size-sm);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  background: transparent;
-  border: 1px solid var(--rfs-color-border);
-  border-radius: var(--rfs-radius-sm);
-  color: var(--rfs-color-text-muted);
   cursor: pointer;
-  transition: background var(--rfs-anim-fast), color var(--rfs-anim-fast), border-color var(--rfs-anim-fast);
-
-  &:hover:not(:disabled) {
-    background: var(--rfs-color-bg-panel);
-    color: var(--rfs-color-text);
-    border-color: var(--rfs-color-accent);
-  }
-
-  &--active {
-    background: var(--rfs-color-accent);
-    border-color: var(--rfs-color-accent);
-    color: #fff;
-
-    &:hover:not(:disabled) {
-      background: var(--rfs-color-accent);
-      color: #fff;
-    }
-  }
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 160ms ease, transform 160ms ease,
+              background 160ms ease, box-shadow 160ms ease;
 }
 
-/* Large DC number */
-.rfs-dct__dc-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  font-style: italic;
-  line-height: 1;
-  color: var(--rfs-color-accent);
-  min-width: 2.5rem;
-  text-align: center;
+.rfs-target-display:hover .rfs-target-display__btn,
+.rfs-target-display__btn:focus-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.rfs-target-display__btn:active { transform: translateY(1px); }
+
+/* Player-locked view: no controls visible */
+.rfs-target-display--locked .rfs-target-display__btn { display: none; }
+.rfs-target-display--locked .rfs-target-display__row { gap: 0; }
+
+.rfs-target-display__value { user-select: none; }
+
+/* Label button (menu picker) */
+.rfs-target-display__label-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rfs-target-display__caret {
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.rfs-target-display:hover .rfs-target-display__caret { opacity: 1; }
+
+/* ── Chips: fade in below card on hover ─── */
+.rfs-target-display__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.rfs-target-display:hover .rfs-target-display__chips {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.rfs-target-display__chip { cursor: pointer; }
+
+/* ── Popover: hidden by default, shown via data-menu-open attribute ─── */
+.rfs-target-display__popover {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.rfs-target-display[data-menu-open] .rfs-target-display__popover {
+  display: flex;
+}
+
+.rfs-target-display__popover-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+}
+
+/* ── Rail: slides out to the right on hover ─── */
+.rfs-target-display__rail {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 8px);
+  transform: translateY(-50%) translateX(-6px);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.rfs-target-display:hover .rfs-target-display__rail {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+
+.rfs-target-display__rail-item {
+  cursor: pointer;
+  background: none;
+  border: none;
+  white-space: nowrap;
+  text-align: left;
 }
 

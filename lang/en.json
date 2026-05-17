@@ -145,6 +145,14 @@
         "Standard": "Standard",
         "MoreXp": "More XP"
       },
+      "TargetNamePicker": {
+        "Name": "DC Widget: Tier Name Picker",
+        "Hint": "How the GM selects a named difficulty tier on the target widget. Chips: pill buttons appear below the card on hover. Menu: click the 'Target' label to open a dropdown. Rail: tier names slide out to the right on hover. None: use +/− buttons only.",
+        "None":  "None",
+        "Chips": "Chips (hover, below card)",
+        "Menu":  "Menu (click label)",
+        "Rail":  "Rail (hover, right side)"
+      },
       "SheetTextSize": {
         "Name": "Character Sheet Text Size",
         "Hint": "Sets the base font size for character sheet body text. Each player can set their own preference.",

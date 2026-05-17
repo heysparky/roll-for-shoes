@@ -1,56 +1,128 @@
 {{!-- templates/apps/dc-tracker.hbs --}}
-{{!-- Persistent DC tracker bar — portraits on each side, DC controls in the centre. --}}
-{{!-- GM sees tier chips and +/− buttons; players see the DC value read-only.         --}}
+{{!-- Hangrow: portrait pegs flank the target card along the top canvas edge.   --}}
+{{!-- GM sees tier picker + +/− buttons; players see the DC value read-only.    --}}
 
-<div class="rfs-dct">
+<div class="rfs-dct-hangrow">
 
-  {{!-- Left portraits (first half of connected players) --}}
-  <div class="rfs-dct__portraits rfs-dct__portraits--left">
+  {{!-- Left portrait pegs --}}
+  <div class="rfs-dct-pegs rfs-dct-pegs--left">
     {{#each left}}
-      <img class="rfs-dct__portrait" src="{{this.img}}" title="{{this.name}}" alt="{{this.name}}">
+    <div class="rfs-portrait-peg">
+      <div class="rfs-portrait-peg__card">
+        <div class="rfs-portrait-peg__portrait">
+          {{#if this.img}}
+          <img src="{{this.img}}" alt="{{this.name}}">
+          {{else}}
+          <span class="rfs-portrait-peg__monogram">{{this.initial}}</span>
+          {{/if}}
+        </div>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tl"></span>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tr"></span>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--bl"></span>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--br"></span>
+      </div>
+      <div class="rfs-portrait-peg__name">{{this.name}}</div>
+    </div>
     {{/each}}
   </div>
 
-  {{!-- DC area --}}
-  <div class="rfs-dct__controls">
-    {{#if isGM}}
-      <button type="button"
-              class="rfs-dct__step"
-              data-action="stepDc"
-              data-dir="-1"
-              aria-label="Decrease DC">&#x2212;</button>
-    {{/if}}
+  {{!-- Target card --}}
+  <div class="rfs-target-display{{#unless isGM}} rfs-target-display--locked{{/unless}}">
+    <div class="rfs-target-display__card">
+      <div class="rfs-target-display__inner"></div>
+      <span class="rfs-target-display__rivet rfs-target-display__rivet--tl"></span>
+      <span class="rfs-target-display__rivet rfs-target-display__rivet--tr"></span>
+      <span class="rfs-target-display__rivet rfs-target-display__rivet--bl"></span>
+      <span class="rfs-target-display__rivet rfs-target-display__rivet--br"></span>
 
-    <div class="rfs-dct__dc-inner">
-      {{#if isGM}}
-        <div class="rfs-dct__tiers">
-          {{#each tiers}}
-            <button type="button"
-                    class="rfs-dct__tier{{#if this.active}} rfs-dct__tier--active{{/if}}"
-                    data-action="setDc"
-                    data-value="{{this.dc}}"
-                    title="{{localize this.label}}">
-              {{localize this.label}}
-            </button>
-          {{/each}}
-        </div>
+      {{#if showMenu}}
+      <button type="button"
+              class="rfs-target-display__label-btn"
+              data-action="toggleMenu"
+              aria-label="Open difficulty tier menu">Target<span class="rfs-target-display__caret">▾</span></button>
+      {{else}}
+      <div class="rfs-target-display__label">Target</div>
       {{/if}}
-      <div class="rfs-dct__dc-value">{{dc}}</div>
+
+      <div class="rfs-target-display__row">
+        {{#if isGM}}
+        <button type="button"
+                class="rfs-target-display__btn"
+                data-action="stepDc"
+                data-dir="-1"
+                aria-label="Decrease DC">&#x2212;</button>
+        {{/if}}
+        <div class="rfs-target-display__value" title="{{dc}}">{{dc}}</div>
+        {{#if isGM}}
+        <button type="button"
+                class="rfs-target-display__btn"
+                data-action="stepDc"
+                data-dir="1"
+                aria-label="Increase DC">+</button>
+        {{/if}}
+      </div>
+
+      {{!-- Menu popover: shown when data-menu-open is toggled on the card --}}
+      {{#if showMenu}}
+      <div class="rfs-target-display__popover">
+        {{#each tiers}}
+        <button type="button"
+                class="rfs-target-display__popover-item{{#if this.active}} is-active{{/if}}"
+                data-action="setDc"
+                data-value="{{this.dc}}">
+          <span>{{localize this.label}}</span>
+          <span class="rfs-target-display__popover-num">DC {{this.dc}}</span>
+        </button>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- Rail: slides out to the right on hover --}}
+      {{#if showRail}}
+      <div class="rfs-target-display__rail">
+        {{#each tiers}}
+        <button type="button"
+                class="rfs-target-display__rail-item{{#if this.active}} is-active{{/if}}"
+                data-action="setDc"
+                data-value="{{this.dc}}">{{localize this.label}}</button>
+        {{/each}}
+      </div>
+      {{/if}}
     </div>
 
-    {{#if isGM}}
+    {{!-- Chips strip: fades in below the card on hover --}}
+    {{#if showChips}}
+    <div class="rfs-target-display__chips">
+      {{#each tiers}}
       <button type="button"
-              class="rfs-dct__step"
-              data-action="stepDc"
-              data-dir="1"
-              aria-label="Increase DC">+</button>
+              class="rfs-target-display__chip{{#if this.active}} rfs-target-display__chip--active{{/if}}"
+              data-action="setDc"
+              data-value="{{this.dc}}"
+              title="DC {{this.dc}}">{{localize this.label}}</button>
+      {{/each}}
+    </div>
     {{/if}}
   </div>
 
-  {{!-- Right portraits (remaining players) --}}
-  <div class="rfs-dct__portraits rfs-dct__portraits--right">
+  {{!-- Right portrait pegs --}}
+  <div class="rfs-dct-pegs rfs-dct-pegs--right">
     {{#each right}}
-      <img class="rfs-dct__portrait" src="{{this.img}}" title="{{this.name}}" alt="{{this.name}}">
+    <div class="rfs-portrait-peg">
+      <div class="rfs-portrait-peg__card">
+        <div class="rfs-portrait-peg__portrait">
+          {{#if this.img}}
+          <img src="{{this.img}}" alt="{{this.name}}">
+          {{else}}
+          <span class="rfs-portrait-peg__monogram">{{this.initial}}</span>
+          {{/if}}
+        </div>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tl"></span>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tr"></span>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--bl"></span>
+        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--br"></span>
+      </div>
+      <div class="rfs-portrait-peg__name">{{this.name}}</div>
+    </div>
     {{/each}}
   </div>
 

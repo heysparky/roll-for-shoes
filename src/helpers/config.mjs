@@ -77,3 +77,20 @@ export const RFS = {
     ],
   },
 };
+
+/**
+ * Returns the label of the highest tier whose DC anchor is ≤ the given DC.
+ * Falls back to the first tier if DC is below all anchors.
+ * Used to highlight the active chip/rail/menu item on the target widget.
+ *
+ * @param {number} dc     - The current global DC
+ * @param {Array}  tiers  - Array of { label, dc } from RFS.dcTiers[mode]
+ * @returns {string}      - The matching tier's label key (e.g. "RFS.Difficulty.Hard")
+ */
+export function tierOf(dc, tiers) {
+  let result = tiers[0];
+  for (const tier of tiers) {
+    if (dc >= tier.dc) result = tier;
+  }
+  return result.label;
+}

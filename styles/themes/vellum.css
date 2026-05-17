@@ -79,6 +79,9 @@
   --rfs-radius:    2px;
   --rfs-radius-sm: 1px;
 
+  /* Portrait peg — muted dusty-plum placeholder for empty portrait slots */
+  --rfs-portrait-placeholder: #5a3e44;
+
   color: var(--rfs-text);
   font-family: var(--rfs-serif);
 }
@@ -840,6 +843,278 @@
 [data-rfs-theme="vellum"] .rfs-skill-index__roll-btn:hover {
   border-color: var(--rfs-gold);
   background: rgba(200,153,90,0.12);
+}
+
+/* =============================================================================
+   DC TRACKER — TARGET WIDGET + PORTRAIT PEGS
+============================================================================= */
+
+/* ── Portrait pegs ───────────────────────────────────────────────────────── */
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg { width: 80px; }
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg__card {
+  width: 80px;
+  margin-top: 5px;
+  border: 1.5px solid var(--rfs-gold);
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 3px var(--rfs-bg),
+    0 0 0 4px var(--rfs-border-strong),
+    0 12px 30px rgba(0,0,0,0.65);
+}
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg__monogram {
+  font-family: var(--rfs-display);
+  font-size: 30px;
+  font-style: italic;
+  font-weight: 600;
+  color: rgba(236, 217, 184, 0.35);
+}
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg__rivet {
+  width: 6px;
+  height: 6px;
+  background: var(--rfs-gold);
+  box-shadow:
+    0 0 6px rgba(226,179,120,0.7),
+    inset 0 -1px 1px rgba(0,0,0,0.5),
+    0 1px 2px rgba(0,0,0,0.6);
+}
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg__name {
+  margin-top: 5px;
+  font-family: var(--rfs-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+}
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg--called .rfs-portrait-peg__card {
+  box-shadow:
+    0 0 0 3px var(--rfs-bg),
+    0 0 0 4px var(--rfs-gold),
+    0 0 14px rgba(226,179,120,0.35),
+    0 12px 30px rgba(0,0,0,0.6);
+}
+
+[data-rfs-theme="vellum"] .rfs-portrait-peg--called .rfs-portrait-peg__name {
+  color: var(--rfs-gold-hi);
+}
+
+/* ── Target card ─────────────────────────────────────────────────────────── */
+
+/* width is content-box (176px); visible width ~210px once padding + border added.
+   Do NOT add box-sizing: border-box without bumping width to 211px. */
+[data-rfs-theme="vellum"] .rfs-target-display__card {
+  width: 176px;
+  margin-top: 5px;
+  /* extra bottom padding for italic Georgia descenders (3,4,5,7,9) */
+  padding: 14px 16px 24px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(200,153,90,0.12), transparent 55%),
+    linear-gradient(180deg, var(--rfs-bg-alt) 0%, var(--rfs-bg-deep) 100%);
+  border: 1.5px solid var(--rfs-gold);
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 3px var(--rfs-bg),
+    0 0 0 4px var(--rfs-border-strong),
+    0 12px 30px rgba(0,0,0,0.65),
+    inset 0 0 28px rgba(0,0,0,0.55);
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__inner {
+  border: 1px solid rgba(200,153,90,0.28);
+  border-radius: 2px;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__rivet {
+  width: 6px;
+  height: 6px;
+  background: var(--rfs-gold);
+  box-shadow:
+    0 0 6px rgba(226,179,120,0.6),
+    inset 0 -1px 1px rgba(0,0,0,0.4);
+}
+
+/* Label */
+[data-rfs-theme="vellum"] .rfs-target-display__label,
+[data-rfs-theme="vellum"] .rfs-target-display__label-btn {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--rfs-gold);
+  text-align: center;
+  margin-bottom: 6px;
+  opacity: 0.9;
+  text-shadow: 0 0 8px rgba(200,153,90,0.3);
+  gap: 6px;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__label-btn:hover { color: var(--rfs-gold-hi); }
+
+[data-rfs-theme="vellum"] .rfs-target-display__caret {
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+/* Control row */
+[data-rfs-theme="vellum"] .rfs-target-display__row { gap: 10px; }
+
+[data-rfs-theme="vellum"] .rfs-target-display__btn {
+  width: 30px;
+  height: 30px;
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.10), rgba(0,0,0,0.3)),
+    var(--rfs-bg-alt);
+  border: 1px solid var(--rfs-gold);
+  border-radius: 2px;
+  color: var(--rfs-gold-hi);
+  font-family: Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 2px 6px rgba(0,0,0,0.4);
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__btn:hover {
+  background:
+    linear-gradient(180deg, rgba(200,153,90,0.22), rgba(0,0,0,0.2)),
+    var(--rfs-bg-alt);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 0 12px rgba(200,153,90,0.4);
+}
+
+/* DC numeral */
+[data-rfs-theme="vellum"] .rfs-target-display__value {
+  font-family: var(--rfs-display);
+  font-size: 56px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+  text-align: center;
+  line-height: 1;
+  min-width: 70px;
+  text-shadow:
+    0 0 24px rgba(226,179,120,0.45),
+    0 2px 0 rgba(0,0,0,0.7);
+  cursor: ns-resize;
+  letter-spacing: -0.01em;
+}
+
+/* ── Chips strip ─────────────────────────────────────────────────────────── */
+
+[data-rfs-theme="vellum"] .rfs-target-display__chips {
+  gap: 4px;
+  margin-top: 10px;
+  max-width: 240px;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__chip {
+  font-family: var(--rfs-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rfs-gold);
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--rfs-border-strong);
+  border-radius: 1px;
+  padding: 4px 8px;
+  transition: all 140ms ease;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__chip:hover {
+  border-color: var(--rfs-gold);
+  background: rgba(200,153,90,0.14);
+  color: var(--rfs-gold-hi);
+  box-shadow: 0 0 8px rgba(200,153,90,0.3);
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__chip--active {
+  border-color: var(--rfs-gold);
+  color: var(--rfs-gold-hi);
+  background: rgba(200,153,90,0.18);
+}
+
+/* ── Menu popover ────────────────────────────────────────────────────────── */
+
+[data-rfs-theme="vellum"] .rfs-target-display__popover {
+  top: calc(100% + 8px);
+  background: linear-gradient(180deg, var(--rfs-bg-alt), var(--rfs-bg-deep));
+  border: 1px solid var(--rfs-gold);
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 3px var(--rfs-bg),
+    0 12px 28px rgba(0,0,0,0.7);
+  padding: 6px;
+  min-width: 140px;
+  gap: 1px;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__popover-item {
+  gap: 12px;
+  padding: 6px 10px;
+  background: transparent;
+  font-family: var(--rfs-display);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text);
+  border-radius: 1px;
+  transition: all 120ms ease;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__popover-item:hover,
+[data-rfs-theme="vellum"] .rfs-target-display__popover-item.is-active {
+  background: rgba(200,153,90,0.12);
+  color: var(--rfs-gold-hi);
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__popover-num {
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--rfs-text-mute);
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__popover-item:hover .rfs-target-display__popover-num,
+[data-rfs-theme="vellum"] .rfs-target-display__popover-item.is-active .rfs-target-display__popover-num {
+  color: var(--rfs-gold);
+}
+
+/* ── Vertical rail ───────────────────────────────────────────────────────── */
+
+[data-rfs-theme="vellum"] .rfs-target-display__rail {
+  background: linear-gradient(180deg, var(--rfs-bg-alt), var(--rfs-bg-deep));
+  border: 1px solid var(--rfs-gold);
+  border-radius: 2px;
+  padding: 5px 4px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  gap: 1px;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__rail-item {
+  padding: 3px 8px;
+  font-family: var(--rfs-display);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--rfs-text-mute);
+  transition: all 120ms ease;
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__rail-item:hover {
+  color: var(--rfs-gold-hi);
+  background: rgba(200,153,90,0.10);
+}
+
+[data-rfs-theme="vellum"] .rfs-target-display__rail-item.is-active {
+  color: var(--rfs-gold-hi);
+  background: rgba(200,153,90,0.14);
+  border-left: 2px solid var(--rfs-gold);
+  padding-left: 6px;
 }
 
 /* =============================================================================

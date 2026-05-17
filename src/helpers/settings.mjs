@@ -88,6 +88,25 @@ export function registerSystemSettings() {
     onChange: (value) => applySheetTextSize(value),
   });
 
+  // ── Target Name Picker ────────────────────────────────────────────────────
+  // Which UI surface the GM uses to jump the DC to a named tier.
+  game.settings.register(RFS.id, "targetNamePicker", {
+    name: "RFS.Settings.TargetNamePicker.Name",
+    hint: "RFS.Settings.TargetNamePicker.Hint",
+    scope:  "world",
+    config: true,
+    type:   String,
+    choices: {
+      "none":  "RFS.Settings.TargetNamePicker.None",
+      "chips": "RFS.Settings.TargetNamePicker.Chips",
+      "menu":  "RFS.Settings.TargetNamePicker.Menu",
+      "rail":  "RFS.Settings.TargetNamePicker.Rail",
+    },
+    default: "chips",
+    requiresReload: false,
+    onChange: () => game.rfs?.dcTracker?.render(),
+  });
+
   // ── Global DC ─────────────────────────────────────────────────────────────
   // The room-temperature difficulty shown on the DC tracker bar.
   // GMs adjust it via the tracker; all clients read it when a skill is rolled.
