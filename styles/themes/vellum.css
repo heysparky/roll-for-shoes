@@ -1045,8 +1045,9 @@
   position: relative;
 }
 [data-rfs-theme="vellum"] .rfs-sheet__portrait {
-  width: 168px;
+  width: 100%;
   height: 216px;
+  box-sizing: border-box;
   border-top: 1px solid var(--rfs-gold);
   border-bottom: 1px solid var(--rfs-gold);
   border-left: 1px solid var(--rfs-gold);
@@ -1060,12 +1061,12 @@
   font-size: 46px;
   font-weight: 600;
   font-style: italic;
-  line-height: 0.95;
+  line-height: 1.1;
   color: var(--rfs-gold-hi);
   text-shadow: 0 1px 0 rgba(0,0,0,0.5);
   background: transparent;
   border: none;
-  padding: 6px 0 0;
+  padding: 6px 0 6px;
 }
 [data-rfs-theme="vellum"] .rfs-sheet__name:focus { outline: none; }
 [data-rfs-theme="vellum"] .rfs-sheet__xp {
