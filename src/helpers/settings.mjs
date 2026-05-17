@@ -107,6 +107,17 @@ export function registerSystemSettings() {
     onChange: () => game.rfs?.dcTracker?.render(),
   });
 
+  // ── Sync Token Name ───────────────────────────────────────────────────────
+  game.settings.register(RFS.id, "syncTokenName", {
+    name: "RFS.Settings.SyncTokenName.Name",
+    hint: "RFS.Settings.SyncTokenName.Hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true,
+    requiresReload: false,
+  });
+
   // ── Global DC ─────────────────────────────────────────────────────────────
   // The room-temperature difficulty shown on the DC tracker bar.
   // GMs adjust it via the tracker; all clients read it when a skill is rolled.

@@ -48,8 +48,23 @@ export class RfsActor extends Actor {
 
   /** @override — keep prototype token name in sync with actor name. */
   async update(data = {}, options = {}) {
-    if ("name" in data) data["prototypeToken.name"] = data.name;
+    if ("name" in data && game.settings.get("roll-for-shoes", "syncTokenName")) {
+      data["prototypeToken.name"] = data.name;
+    }
     return super.update(data, options);
+  }
+
+  /** @override — push name change to already-placed linked tokens in all scenes. */
+  _onUpdate(changed, options, userId) {
+    super._onUpdate(changed, options, userId);
+    if (!changed.name || userId !== game.user.id) return;
+    if (!game.settings.get("roll-for-shoes", "syncTokenName")) return;
+    for (const scene of game.scenes) {
+      const updates = scene.tokens
+        .filter(t => t.actorId === this.id && t.actorLink)
+        .map(t => ({ _id: t.id, name: changed.name }));
+      if (updates.length) scene.updateEmbeddedDocuments("Token", updates);
+    }
   }
 
   /* -------------------------------------------- */

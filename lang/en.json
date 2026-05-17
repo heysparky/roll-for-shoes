@@ -153,6 +153,10 @@
         "Menu":  "Menu (click label)",
         "Rail":  "Rail (hover, right side)"
       },
+      "SyncTokenName": {
+        "Name": "Sync Token Name on Rename",
+        "Hint": "When a character's name is changed, automatically update the prototype token and any tokens already placed in scenes."
+      },
       "SheetTextSize": {
         "Name": "Character Sheet Text Size",
         "Hint": "Sets the base font size for character sheet body text. Each player can set their own preference.",
