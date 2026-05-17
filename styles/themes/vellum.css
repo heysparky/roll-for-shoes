@@ -1004,6 +1004,7 @@
   column-gap: 26px;
   row-gap: 14px;
   padding: 26px 28px 22px;
+  min-height: 264px;
   background: transparent;
   border-bottom: 1px solid var(--rfs-rule);
   position: relative;
