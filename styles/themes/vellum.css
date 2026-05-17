@@ -176,173 +176,6 @@
   box-shadow: 0 0 12px rgba(200,153,90,0.2);
 }
 
-/* =============================================================================
-   CHARACTER SHEET
-============================================================================= */
-
-/* Top: portrait | identity | xp */
-[data-rfs-theme="vellum"] .rfs-sheet__header {
-  display: grid;
-  grid-template-columns: 152px 1fr auto;
-  gap: 22px;
-  padding: 24px 24px 20px;
-  border-bottom: 1px solid var(--rfs-rule);
-  position: relative;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__header::after {
-  content: "";
-  position: absolute;
-  left: 24px; right: 24px; bottom: -1px;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent, var(--rfs-gold) 30%, var(--rfs-gold) 70%, transparent);
-  opacity: 0.5;
-}
-
-/* Portrait — image OR monogram fallback */
-[data-rfs-theme="vellum"] .rfs-sheet__portrait {
-  width: 152px;
-  height: 192px;
-  border-radius: var(--rfs-radius);
-  border: 1px solid var(--rfs-gold);
-  background:
-    radial-gradient(ellipse at 50% 30%, rgba(200,153,90,0.18), transparent 60%),
-    linear-gradient(160deg, #3a2418 0%, var(--rfs-bg) 60%, #0a0503 100%);
-  box-shadow:
-    0 0 0 4px var(--rfs-bg),
-    0 0 0 5px var(--rfs-border-strong),
-    inset 0 0 30px rgba(0,0,0,0.7),
-    0 6px 18px rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__portrait::before {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  border: 1px solid rgba(200,153,90,0.25);
-  pointer-events: none;
-  z-index: 1;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__portrait img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__portrait-monogram {
-  font-family: var(--rfs-display);
-  font-size: 86px;
-  font-style: italic;
-  font-weight: 600;
-  color: var(--rfs-gold-hi);
-  text-shadow: 0 2px 0 rgba(0,0,0,0.6),
-               0 0 24px rgba(226,179,120,0.3);
-}
-
-/* Identity column */
-[data-rfs-theme="vellum"] .rfs-sheet__identity {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__name {
-  font-family: var(--rfs-display);
-  font-size: 36px;
-  font-weight: 600;
-  font-style: italic;
-  color: var(--rfs-gold-hi);
-  line-height: 1.05;
-  letter-spacing: 0.005em;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
-}
-[data-rfs-theme="vellum"] .rfs-sheet__subname {
-  font-family: var(--rfs-serif);
-  font-size: 14px;
-  font-style: italic;
-  color: var(--rfs-text-mute);
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__blurb {
-  font-family: var(--rfs-serif);
-  font-size: 14px;
-  font-style: italic;
-  color: var(--rfs-text-soft);
-  line-height: 1.45;
-  border-left: 2px solid var(--rfs-rule);
-  padding: 4px 0 4px 12px;
-  margin-top: 4px;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__meta {
-  display: flex;
-  gap: 18px;
-  margin-top: 10px;
-  font-family: var(--rfs-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--rfs-text-mute);
-  text-transform: uppercase;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__meta b {
-  color: var(--rfs-text);
-  font-weight: 500;
-}
-
-/* XP readout */
-[data-rfs-theme="vellum"] .rfs-sheet__xp {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  align-self: start;
-  padding: 10px 16px;
-  background: linear-gradient(180deg,
-    rgba(200,153,90,0.08), rgba(0,0,0,0.2));
-  border: 1px solid var(--rfs-gold);
-  border-radius: var(--rfs-radius);
-  box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
-}
-[data-rfs-theme="vellum"] .rfs-sheet__xp-label {
-  font-family: var(--rfs-mono);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--rfs-text-mute);
-}
-[data-rfs-theme="vellum"] .rfs-sheet__xp-value {
-  font-family: var(--rfs-display);
-  font-size: 36px;
-  font-weight: 700;
-  font-style: italic;
-  color: var(--rfs-gold-hi);
-  line-height: 1;
-  text-shadow: 0 0 10px rgba(226,179,120,0.25);
-}
-
-/* Background block */
-[data-rfs-theme="vellum"] .rfs-sheet__background {
-  padding: 14px 24px 16px;
-  border-bottom: 1px solid var(--rfs-rule);
-}
-[data-rfs-theme="vellum"] .rfs-sheet__background-label {
-  font-family: var(--rfs-mono);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--rfs-text-mute);
-  margin-bottom: 6px;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__background-body {
-  font-family: var(--rfs-serif);
-  font-size: 14px;
-  font-style: italic;
-  color: var(--rfs-text-soft);
-  line-height: 1.5;
-}
-[data-rfs-theme="vellum"] .rfs-sheet__background-body p { margin: 0 0 6px 0; }
-[data-rfs-theme="vellum"] .rfs-sheet__background-body p:last-child { margin-bottom: 0; }
 
 /* =============================================================================
    COMPACT SKILL INDEX (sheet panel)
@@ -750,10 +583,7 @@
    CHARACTER SHEET — EDITABLE STATE
 ============================================================================= */
 
-/* Portrait button: no button chrome, hover hint */
-[data-rfs-theme="vellum"] .rfs-sheet__portrait-btn {
-  position: relative;
-}
+/* Portrait button: pencil overlay on hover */
 [data-rfs-theme="vellum"] .rfs-sheet__portrait-btn::after {
   content: "✎";
   position: absolute;
@@ -773,43 +603,10 @@
 }
 [data-rfs-theme="vellum"] .rfs-sheet__portrait-btn:hover::after { opacity: 1; }
 
-/* XP — input reset keeping the display-number look */
-[data-rfs-theme="vellum"] .rfs-sheet__xp-value {
-  font-family: var(--rfs-display);
-  font-size: 36px;
-  font-style: italic;
-  font-weight: 700;
-  color: var(--rfs-gold-hi);
-  width: 4rem;
-  text-align: center;
-  height: auto;
-  min-height: 0;
-  line-height: 1;
-  border-bottom-color: transparent;
-  padding: 0;
-}
 [data-rfs-theme="vellum"] .rfs-sheet__xp-value:focus {
   border-bottom-color: var(--rfs-gold);
 }
 
-/* Biography textarea */
-[data-rfs-theme="vellum"] .rfs-sheet__biography {
-  background: var(--rfs-bg-input);
-  border: 1px solid var(--rfs-border);
-  color: var(--rfs-text);
-  font-family: var(--rfs-serif);
-  font-size: 14px;
-  font-style: italic;
-  line-height: 1.5;
-  min-height: 90px;
-  padding: 10px 12px;
-  border-radius: var(--rfs-radius-sm);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-[data-rfs-theme="vellum"] .rfs-sheet__biography:focus {
-  border-color: var(--rfs-gold);
-  outline: none;
-}
 [data-rfs-theme="vellum"] .rfs-sheet__biography::placeholder {
   color: var(--rfs-text-mute);
   font-style: italic;
@@ -846,26 +643,10 @@
 }
 
 /* =============================================================================
-   CHARACTER SHEET — VARIANT PICKS (added 2026-05-17)
-
-   Five overrides selected from the design exploration. Each is scoped
-   under [data-rfs-theme="vellum"] and works against canonical
-   rfs-base.css markup.
-
-     1A · Connected parchment tabs
-     2B · Quill cards (roll history)
-     3B · Illuminated emblem (empty state)
-     4B · D6 face glyphs (skill index, ranks 1–6 + numeral fallback)
-     5B · Codex folio (sheet header — uses display:contents to flatten
-                       .rfs-sheet__header-right/.rfs-sheet__header-top
-                       into the parent grid; existing DOM untouched)
-
-   NOTE on Statuses: the markup change to give Statuses its own tab
-   lives in templates/character-sheet.hbs — not here. The status row
-   styling itself is unchanged from the existing CHARACTER SHEET section.
+   CHARACTER SHEET
 ============================================================================= */
 
-/* ── 1A · Tabs — Connected parchment ─────────────────────────────── */
+/* ── Tab nav ──────────────────────────────────────────────────────── */
 [data-rfs-theme="vellum"] .rfs-tabs {
   display: flex;
   gap: 4px;
@@ -927,7 +708,7 @@
   padding: 18px 20px;
 }
 
-/* ── 2B · Roll History — Quill cards ─────────────────────────────── */
+/* ── Roll history ─────────────────────────────────────────────────── */
 [data-rfs-theme="vellum"] .rfs-history {
   display: flex;
   flex-direction: column;
@@ -1025,7 +806,7 @@
   text-shadow: 0 0 6px rgba(226,179,120,0.6);
 }
 
-/* ── 3B · Empty state — Illuminated emblem ───────────────────────── */
+/* ── Empty state ──────────────────────────────────────────────────── */
 [data-rfs-theme="vellum"] .rfs-empty {
   color: var(--rfs-text-mute);
   font-family: var(--rfs-display);
@@ -1060,7 +841,7 @@
   opacity: 0.55;
 }
 
-/* ── 4B · Skill Index — D6 face glyphs ───────────────────────────── */
+/* ── Skill index — D6 face glyphs ────────────────────────────────── */
 /* Skills panel scrolls its list when the tree grows beyond the
    available height. Do Anything stays anchored as the root. */
 [data-rfs-theme="vellum"] .rfs-panel--skills {
@@ -1212,13 +993,7 @@
   text-shadow: 0 0 6px rgba(226,179,120,0.45);
 }
 
-/* ── 5B · Sheet header — Codex folio ─────────────────────────────── */
-/* Flattens the nested header DOM via display:contents so all four
-   leaves (portrait · name · xp · bio) become direct grid children
-   of .rfs-sheet__header, laid out as a 2×2 folio:
-        "portrait identity"
-        "portrait bio"
-*/
+/* ── Sheet header ─────────────────────────────────────────────────── */
 [data-rfs-theme="vellum"] .rfs-sheet__header {
   display: grid;
   grid-template-columns: 168px 1fr;
@@ -1266,6 +1041,7 @@
 [data-rfs-theme="vellum"] .rfs-sheet__portrait-btn {
   grid-area: portrait;
   align-self: start;
+  position: relative;
 }
 [data-rfs-theme="vellum"] .rfs-sheet__portrait {
   width: 168px;
