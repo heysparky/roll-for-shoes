@@ -846,6 +846,504 @@
 }
 
 /* =============================================================================
+   CHARACTER SHEET — VARIANT PICKS (added 2026-05-17)
+
+   Five overrides selected from the design exploration. Each is scoped
+   under [data-rfs-theme="vellum"] and works against canonical
+   rfs-base.css markup.
+
+     1A · Connected parchment tabs
+     2B · Quill cards (roll history)
+     3B · Illuminated emblem (empty state)
+     4B · D6 face glyphs (skill index, ranks 1–6 + numeral fallback)
+     5B · Codex folio (sheet header — uses display:contents to flatten
+                       .rfs-sheet__header-right/.rfs-sheet__header-top
+                       into the parent grid; existing DOM untouched)
+
+   NOTE on Statuses: the markup change to give Statuses its own tab
+   lives in templates/character-sheet.hbs — not here. The status row
+   styling itself is unchanged from the existing CHARACTER SHEET section.
+============================================================================= */
+
+/* ── 1A · Tabs — Connected parchment ─────────────────────────────── */
+[data-rfs-theme="vellum"] .rfs-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 14px 24px 0;
+  background: transparent;
+  border: none;
+  margin-bottom: -1px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+[data-rfs-theme="vellum"] .rfs-tabs__btn {
+  background: linear-gradient(180deg, var(--rfs-bg-deep), #0a0503);
+  border: 1px solid var(--rfs-border);
+  border-bottom: 1px solid var(--rfs-border);
+  border-radius: 3px 3px 0 0;
+  color: var(--rfs-text-mute);
+  cursor: pointer;
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 10px 22px 11px;
+  margin-bottom: 0;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-tabs__btn:hover:not(.rfs-tabs__btn--active) {
+  color: var(--rfs-text-soft);
+  background: linear-gradient(180deg, var(--rfs-bg-alt), var(--rfs-bg));
+  border-color: var(--rfs-border-strong);
+}
+[data-rfs-theme="vellum"] .rfs-tabs__btn--active {
+  background: var(--rfs-bg-alt);
+  color: var(--rfs-gold-hi);
+  border-color: var(--rfs-border-strong);
+  border-bottom-color: var(--rfs-bg-alt);
+  font-weight: 600;
+  z-index: 2;
+}
+/* Hairline of gold that ignites at the top of the active tab */
+[data-rfs-theme="vellum"] .rfs-tabs__btn--active::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 3px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rfs-gold-hi), transparent);
+  opacity: 0.8;
+}
+/* Tab panels meet the tabs at a single hairline */
+[data-rfs-theme="vellum"] .rfs-tab-panels {
+  background: var(--rfs-bg-alt);
+  border-top: 1px solid var(--rfs-border-strong);
+}
+[data-rfs-theme="vellum"] .rfs-tab-panel {
+  padding: 18px 20px;
+}
+
+/* ── 2B · Roll History — Quill cards ─────────────────────────────── */
+[data-rfs-theme="vellum"] .rfs-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 16px 16px;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry {
+  display: grid;
+  grid-template-columns: auto auto 1fr 44px;
+  grid-template-areas:
+    "skill skill skill outcome"
+    "time  dice  total outcome";
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 5px;
+  padding: 12px 14px 12px 16px;
+  background: var(--rfs-bg);
+  border: 1px solid var(--rfs-rule);
+  border-left-width: 3px;
+  border-radius: var(--rfs-radius);
+  transition: background 140ms ease, border-color 140ms ease;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry:hover {
+  background: var(--rfs-bg-input);
+  border-color: var(--rfs-border);
+}
+[data-rfs-theme="vellum"] .rfs-history-entry--success  { border-left-color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-history-entry--failure  { border-left-color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-history-entry--allsixes {
+  border-left-color: var(--rfs-gold-hi);
+  background: linear-gradient(135deg, rgba(226,179,120,0.06), transparent 55%), var(--rfs-bg);
+  box-shadow: inset 0 0 30px rgba(226,179,120,0.05);
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__skill {
+  grid-area: skill;
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--rfs-text);
+  line-height: 1.1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__time {
+  grid-area: time;
+  color: var(--rfs-text-mute);
+  font-family: var(--rfs-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__dice {
+  grid-area: dice;
+  color: var(--rfs-text-mute);
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__dice::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--rfs-rule);
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__total {
+  grid-area: total;
+  color: var(--rfs-text-soft);
+  font-family: var(--rfs-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__total::before {
+  content: "·";
+  margin-right: 8px;
+  color: var(--rfs-rule);
+}
+[data-rfs-theme="vellum"] .rfs-history-entry__outcome {
+  grid-area: outcome;
+  align-self: center;
+  justify-self: center;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.32);
+  border: 1px solid currentColor;
+  font-size: 17px;
+  line-height: 1;
+}
+[data-rfs-theme="vellum"] .rfs-history-entry--success  .rfs-history-entry__outcome { color: var(--rfs-success); }
+[data-rfs-theme="vellum"] .rfs-history-entry--failure  .rfs-history-entry__outcome { color: var(--rfs-failure); }
+[data-rfs-theme="vellum"] .rfs-history-entry--allsixes .rfs-history-entry__outcome {
+  color: var(--rfs-gold-hi);
+  box-shadow: 0 0 14px rgba(226,179,120,0.5), inset 0 0 8px rgba(226,179,120,0.25);
+  text-shadow: 0 0 6px rgba(226,179,120,0.6);
+}
+
+/* ── 3B · Empty state — Illuminated emblem ───────────────────────── */
+[data-rfs-theme="vellum"] .rfs-empty {
+  color: var(--rfs-text-mute);
+  font-family: var(--rfs-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  text-align: center;
+  padding: 52px 32px 58px;
+  line-height: 1.4;
+  margin: 0;
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-empty::before {
+  content: "❦";
+  display: block;
+  color: var(--rfs-gold);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 26px;
+  margin-bottom: 16px;
+  opacity: 0.75;
+  text-shadow: 0 0 14px rgba(200,153,90,0.4);
+}
+[data-rfs-theme="vellum"] .rfs-empty::after {
+  content: "";
+  display: block;
+  margin: 18px auto 0;
+  width: 84px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rfs-gold) 50%, transparent);
+  opacity: 0.55;
+}
+
+/* ── 4B · Skill Index — D6 face glyphs ───────────────────────────── */
+/* Skills panel scrolls its list when the tree grows beyond the
+   available height. Do Anything stays anchored as the root. */
+[data-rfs-theme="vellum"] .rfs-panel--skills {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+[data-rfs-theme="vellum"] .rfs-panel--skills .rfs-skill-index {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Thin vellum-toned scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--rfs-border) transparent;
+}
+[data-rfs-theme="vellum"] .rfs-panel--skills .rfs-skill-index::-webkit-scrollbar {
+  width: 6px;
+}
+[data-rfs-theme="vellum"] .rfs-panel--skills .rfs-skill-index::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-rfs-theme="vellum"] .rfs-panel--skills .rfs-skill-index::-webkit-scrollbar-thumb {
+  background: var(--rfs-border);
+  border-radius: 3px;
+}
+[data-rfs-theme="vellum"] .rfs-panel--skills .rfs-skill-index::-webkit-scrollbar-thumb:hover {
+  background: var(--rfs-border-strong);
+}
+
+[data-rfs-theme="vellum"] .rfs-skill-index__pips {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  position: relative;
+  background: linear-gradient(140deg, #2a1810 0%, #0e0604 100%);
+  border: 1px solid var(--rfs-border-strong);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(200,153,90,0.18),
+    inset 0 -1px 4px rgba(0,0,0,0.55),
+    0 1px 0 rgba(0,0,0,0.6);
+  display: block;
+  gap: 0;
+  flex-shrink: 0;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip {
+  width: 4px;
+  height: 4px;
+  position: absolute;
+  border-radius: 50%;
+  background: var(--rfs-gold-hi);
+  box-shadow:
+    0 0 4px rgba(226,179,120,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.4);
+}
+/* 1-face: single center pip */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:only-child {
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+/* 2-face: TL + BR */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:first-child:nth-last-child(2) {
+  top: 28%; left: 28%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(2):last-child {
+  top: 72%; left: 72%; transform: translate(-50%,-50%);
+}
+/* 3-face: TL + center + BR */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:first-child:nth-last-child(3) {
+  top: 26%; left: 26%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(2):nth-last-child(2) {
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:last-child:nth-child(3) {
+  top: 74%; left: 74%; transform: translate(-50%,-50%);
+}
+/* 4-face: corners */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:first-child:nth-last-child(4) {
+  top: 26%; left: 26%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(2):nth-last-child(3) {
+  top: 26%; left: 74%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(3):nth-last-child(2) {
+  top: 74%; left: 26%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(4):last-child {
+  top: 74%; left: 74%; transform: translate(-50%,-50%);
+}
+/* 5-face: corners + center */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:first-child:nth-last-child(5) {
+  top: 26%; left: 26%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(2):nth-last-child(4) {
+  top: 26%; left: 74%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(3):nth-last-child(3) {
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(4):nth-last-child(2) {
+  top: 74%; left: 26%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(5):last-child {
+  top: 74%; left: 74%; transform: translate(-50%,-50%);
+}
+/* 6-face: two columns of three pips */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:first-child:nth-last-child(6) {
+  top: 24%; left: 28%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(2):nth-last-child(5) {
+  top: 24%; left: 72%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(3):nth-last-child(4) {
+  top: 50%; left: 28%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(4):nth-last-child(3) {
+  top: 50%; left: 72%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(5):nth-last-child(2) {
+  top: 76%; left: 28%; transform: translate(-50%,-50%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips .rfs-pip:nth-child(6):last-child {
+  top: 76%; left: 72%; transform: translate(-50%,-50%);
+}
+/* Rank 7+: pips exhaust the canonical d6 faces. Show the rank as a
+   small numeral via attr() if the parent row carries data-rank, or
+   fall back to dimming the overflow. The row template sets data-rank
+   on the row in the populated case; CSS reads it through :has().
+   For rows that don't set it, pips 7+ simply stack at the center —
+   which still reads as "many pips" and signals overflow. */
+[data-rfs-theme="vellum"] .rfs-skill-index__pips:has(.rfs-pip:nth-child(7)) {
+  background: linear-gradient(140deg, #3a2418 0%, #0e0604 100%);
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips:has(.rfs-pip:nth-child(7)) .rfs-pip {
+  opacity: 0;
+}
+[data-rfs-theme="vellum"] .rfs-skill-index__pips:has(.rfs-pip:nth-child(7))::after {
+  content: attr(data-rank);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--rfs-display);
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 0 6px rgba(226,179,120,0.45);
+}
+
+/* ── 5B · Sheet header — Codex folio ─────────────────────────────── */
+/* Flattens the nested header DOM via display:contents so all four
+   leaves (portrait · name · xp · bio) become direct grid children
+   of .rfs-sheet__header, laid out as a 2×2 folio:
+        "portrait identity"
+        "portrait bio"
+*/
+[data-rfs-theme="vellum"] .rfs-sheet__header {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "portrait identity"
+    "portrait bio";
+  column-gap: 26px;
+  row-gap: 14px;
+  padding: 26px 28px 22px;
+  background: transparent;
+  border-bottom: 1px solid var(--rfs-rule);
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__header::after {
+  content: "";
+  position: absolute;
+  left: 28px; right: 28px; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, var(--rfs-gold) 30%, var(--rfs-gold) 70%, transparent);
+  opacity: 0.55;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__header-right { display: contents; }
+[data-rfs-theme="vellum"] .rfs-sheet__header-top {
+  grid-area: identity;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--rfs-rule);
+  position: relative;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__header-top::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    var(--rfs-gold) 0%, var(--rfs-gold) 25%, transparent 70%);
+  opacity: 0.35;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait-btn {
+  grid-area: portrait;
+  align-self: stretch;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__portrait {
+  width: 168px;
+  height: 100%;
+  min-height: 216px;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--rfs-display);
+  font-size: 46px;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 0.95;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+  background: transparent;
+  border: none;
+  padding: 6px 0 0;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__name:focus { outline: none; }
+[data-rfs-theme="vellum"] .rfs-sheet__xp {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--rfs-rule);
+  border-radius: 0;
+  box-shadow: none;
+  align-self: center;
+  flex-shrink: 0;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__xp-label {
+  font-family: var(--rfs-mono);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--rfs-text-mute);
+  line-height: 1;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__xp-value {
+  font-family: var(--rfs-display);
+  font-size: 32px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--rfs-gold-hi);
+  text-shadow: 0 0 8px rgba(226,179,120,0.25);
+  background: transparent;
+  border: none;
+  width: 2.4rem;
+  text-align: left;
+  padding: 0;
+  line-height: 1;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__biography {
+  grid-area: bio;
+  background: transparent;
+  border: none;
+  color: var(--rfs-text-soft);
+  font-family: var(--rfs-serif);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.55;
+  padding: 0;
+  box-shadow: none;
+  resize: none;
+  align-self: start;
+}
+[data-rfs-theme="vellum"] .rfs-sheet__biography:focus {
+  outline: none;
+  box-shadow: inset 2px 0 0 var(--rfs-gold);
+  padding-left: 12px;
+}
+
+/* =============================================================================
    DC TRACKER — TARGET WIDGET + PORTRAIT PEGS
 ============================================================================= */
 

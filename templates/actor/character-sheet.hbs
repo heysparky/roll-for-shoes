@@ -57,6 +57,12 @@
     <button type="button"
             class="rfs-tabs__btn"
             data-action="switchTab"
+            data-tab="statuses">
+      {{localize 'RFS.Label.Statuses'}}
+    </button>
+    <button type="button"
+            class="rfs-tabs__btn"
+            data-action="switchTab"
             data-tab="history">
       {{localize 'RFS.Label.RollHistory'}}
     </button>
@@ -65,7 +71,7 @@
   {{!-- ── Tab panels ─────────────────────────────────────────────────────── --}}
   <div class="rfs-tab-panels">
 
-    {{!-- Skills tab --}}
+    {{!-- Skills tab — ONLY skills here. Statuses moved to its own tab below. --}}
     <div class="rfs-tab-panel rfs-tab-panel--active" data-tab="skills">
 
       <div class="rfs-panel rfs-panel--skills">
@@ -73,6 +79,11 @@
             skills=skills
             isEditable=isEditable }}
       </div>
+
+    </div>
+
+    {{!-- Statuses tab (was nested inside Skills) --}}
+    <div class="rfs-tab-panel" data-tab="statuses">
 
       <div class="rfs-panel rfs-panel--statuses">
         <div class="rfs-panel__header">
