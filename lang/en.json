@@ -89,6 +89,7 @@
       "Easy":      "Easy",
       "Medium":    "Medium",
       "Hard":      "Hard",
+      "Elite":     "Elite",
       "Legendary": "Legendary",
       "Mythic":    "Mythic"
     },
@@ -141,7 +142,7 @@
       },
       "DifficultyMode": {
         "Name": "Difficulty Mode",
-        "Hint": "Standard: canonical DCs are 3, 6, 9…24 (default DC 3). More XP: canonical DCs are 4, 8, 12…24 (default DC 4) — players fail more often and earn more XP.",
+        "Hint": "Standard: canonical DCs are 3, 6, 9, 12, 15, 18 (default DC 3). More XP: canonical DCs are 4, 8, 12, 16, 20, 24 (default DC 4) — players fail more often and earn more XP.",
         "Standard": "Standard",
         "MoreXp": "More XP"
       },

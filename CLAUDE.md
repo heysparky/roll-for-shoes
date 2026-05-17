@@ -64,7 +64,7 @@ src/
 - Roll: dice count = skill level; meet-or-beat DC (ties go to roller)
 - All sixes → player names a new child skill at level +1
 - Failure → earn 1 XP; spend XP (1 per non-six die) to force advancement without a full-six roll
-- DC scale: Easy 4 / Medium 8 / Hard 12 / Legendary 18 / Mythic 24
+- DC scale: Easy 3 / Medium 6 / Hard 9 / Elite 12 / Legendary 15 / Mythic 18 (standard); Easy 4 / Medium 8 / Hard 12 / Elite 16 / Legendary 20 / Mythic 24 (More XP)
 
 ### Theme System
 
