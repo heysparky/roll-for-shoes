@@ -200,9 +200,17 @@
   background: transparent;
   border: none;
   border-bottom: 1px dashed transparent;
-  width: 3rem;
+  width: 3ch;
   text-align: center;
   padding: 0;
+  /* hide number spinners — XP changes via roll/advancement mechanics */
+  -moz-appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
 
   &:focus {
     outline: none;
