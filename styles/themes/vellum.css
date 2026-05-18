@@ -1124,8 +1124,8 @@
   border: none;
   width: 2.4rem;
   text-align: left;
-  padding: 0;
-  line-height: 1;
+  padding: 0 0 0.2em;
+  line-height: 1.3;
 }
 [data-rfs-theme="vellum"] .rfs-sheet__biography {
   grid-area: bio;
