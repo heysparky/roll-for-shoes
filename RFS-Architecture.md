@@ -23,7 +23,7 @@ Players roll directly from their character sheet — no GM initiation required.
 
 The `RfsDcTracker` bar is rendered for all users at the `ready` hook. It sits at the top of the viewport (frameless `ApplicationV2`, `window.frame: false`).
 
-- GM sees named tier chips (Easy / Medium / Hard / Legendary / Mythic) + +/− step buttons
+- GM sees named tier chips (Easy / Medium / Hard / Elite / Legendary / Mythic) + +/− step buttons
 - Players see the DC value read-only; connected character portraits appear on each side
 - DC is stored in `game.settings.get("roll-for-shoes", "globalDc")` (world-scoped, GM-only writes)
 - Re-renders on `userConnected` / `userDisconnected` to keep portraits current
