@@ -19,6 +19,7 @@
   "styles": [
     "styles/rfs-base.css",
     "styles/rfs-chat.css",
+    "styles/rfs-splash.css",
     "styles/themes/clean-light.css",
     "styles/themes/dark-factory.css",
     "styles/themes/vellum.css"

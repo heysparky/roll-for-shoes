@@ -13,6 +13,7 @@ import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/hel
 import { registerSystemSettings, buildAdvancementCardContent } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
 import { RfsSkillRoll } from "./src/rolls/skill-roll.mjs";
+import { RollSplash } from "./src/ui/roll-splash.mjs";
 
 /* -------------------------------------------- */
 /*  Init Hook                                   */
@@ -69,6 +70,11 @@ Hooks.once("ready", async function () {
 
   game.socket.on("system.roll-for-shoes", async (data) => {
     switch (data.type) {
+
+      // ── Splash broadcast (splashAudience "all" or "roller_gm") ──────────
+      case "splashShow":
+        if (!data.gmOnly || game.user.isGM) RollSplash.show(data.kind);
+        break;
 
       // ── GM receives: name a new skill for a player (GM-namer path) ──────
       case "advancementNeeded": {

@@ -13,6 +13,7 @@
  */
 
 import { buildAdvancementCardContent } from "../helpers/settings.mjs";
+import { RollSplash } from "../ui/roll-splash.mjs";
 
 const { DialogV2 } = foundry.applications.api;
 
@@ -46,6 +47,17 @@ export class RfsSkillRoll {
 
     // Record to roll history (actor flag — keyed per-actor, not global)
     await actor.addRollHistory({ skillName: skill.name, skillLevel: skill.level, dice, rawTotal, modifier, total, difficulty, failed, allSixes });
+
+    const splashKind     = allSixes ? "critical" : failed ? "fail" : "success";
+    const splashAudience = game.settings.get("roll-for-shoes", "splashAudience");
+    RollSplash.show(splashKind);
+    if (splashAudience === "all" || (splashAudience === "roller_gm" && !game.user.isGM)) {
+      game.socket.emit("system.roll-for-shoes", {
+        type:   "splashShow",
+        kind:   splashKind,
+        gmOnly: splashAudience === "roller_gm",
+      });
+    }
 
     await RfsSkillRoll._showRollResultPopup({
       actor, skill, dice, rawTotal, modifier, total,

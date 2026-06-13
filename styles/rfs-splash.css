@@ -1,0 +1,220 @@
+/* =============================================================================
+   styles/rfs-splash.css
+   =====================
+   Roll-result splash overlay — a full-screen flourish that stamps SUCCESS /
+   FAIL across the viewport when a skill roll resolves.
+
+   ARCHITECTURE (matches styles/rfs-base.css conventions):
+   - Structure + motion live here. No theme decisions are hardcoded.
+   - All colour comes from theme custom properties via var() with fallbacks,
+     so the splash inherits whatever theme is active on <body data-rfs-theme>.
+       · Vellum already defines --rfs-gold / --rfs-gold-hi / --rfs-oxblood /
+         --rfs-text-soft / --rfs-text-mute — the splash looks "designed" there.
+       · Other themes fall back to --rfs-color-accent / --rfs-color-* so it
+         still works, just less ornate. Define the --rfs-gold family in a theme
+         to opt that theme into the gold treatment.
+   - One specular glint (--rfs-splash-sheen) is intentionally light-coloured;
+     override per theme if a theme needs a different highlight.
+
+   REGISTER: add "styles/rfs-splash.css" to the "styles" array in system.json.
+   ============================================================================= */
+
+/* ── Resolved palette (theme tokens → splash vars, with safe fallbacks) ────── */
+:root {
+  --rfs-splash-sheen:      #fff3da;                                   /* specular glint */
+  --rfs-splash-z:          2000;                                      /* above app windows */
+  --rfs-splash-word-size:  clamp(72px, 14vw, 128px);
+
+  --rfs-splash-gold:    var(--rfs-gold,    var(--rfs-color-accent,       #c8995a));
+  --rfs-splash-gold-hi: var(--rfs-gold-hi, var(--rfs-color-accent-hover, #e2b378));
+  --rfs-splash-ox:      var(--rfs-oxblood, var(--rfs-color-failure,      #6a1e16));
+  --rfs-splash-soft:    var(--rfs-text-soft, var(--rfs-color-text,       #c2a878));
+  --rfs-splash-mute:    var(--rfs-text-mute, var(--rfs-color-text-muted, #8a6c4a));
+  --rfs-splash-display: var(--rfs-display, var(--rfs-font-display, Georgia, serif));
+  --rfs-splash-mono:    var(--rfs-mono,    var(--rfs-font-mono, monospace));
+}
+
+/* ── Overlay shell ─────────────────────────────────────────────────────────
+   Appended once to <body> by roll-splash.mjs. Fixed, click-through until armed. */
+.rfs-splash {
+  position: fixed; inset: 0; z-index: var(--rfs-splash-z);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 24px;
+  pointer-events: none; opacity: 0;
+  transition: opacity 360ms ease;
+}
+.rfs-splash.is-on { opacity: 1; pointer-events: auto; cursor: pointer; }
+
+.rfs-splash__veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 46% at 50% 47%, var(--veil-core), transparent 70%),
+    rgba(8, 4, 3, 0.62);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 360ms ease;
+}
+.rfs-splash.is-on .rfs-splash__veil { opacity: 1; }
+
+/* Expanding shockwave ring on entry */
+.rfs-splash__ring {
+  position: absolute; left: 50%; top: 47%;
+  width: 240px; height: 240px; margin: -120px 0 0 -120px;
+  border-radius: 50%;
+  border: 1px solid var(--ring-color);
+  opacity: 0;
+}
+.rfs-splash.is-on .rfs-splash__ring { animation: rfsSplashRing 900ms ease-out 60ms forwards; }
+@keyframes rfsSplashRing {
+  0%   { transform: scale(0.35); opacity: 0.9; }
+  100% { transform: scale(2.4);  opacity: 0; }
+}
+
+.rfs-splash__stack {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px;
+}
+
+/* Eyebrow / kicker line, flanked by hairlines */
+.rfs-splash__kicker {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--rfs-splash-mono);
+  font-size: 12px; letter-spacing: 0.42em; text-transform: uppercase;
+  color: var(--kicker-color);
+}
+.rfs-splash__kicker::before,
+.rfs-splash__kicker::after {
+  content: ""; width: 46px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--kicker-color));
+}
+.rfs-splash__kicker::after { transform: scaleX(-1); }
+.rfs-splash.is-on .rfs-splash__kicker {
+  animation: rfsSplashRise 520ms cubic-bezier(.2,.7,.3,1) 200ms backwards;
+}
+
+/* The headline word — metallic, with a light sweep across the letters.
+   NOTE: end-state is the BASE style; the entrance animates FROM hidden, so if
+   animations are disabled (reduced-motion / print) the word still shows. */
+.rfs-splash__word {
+  font-family: var(--rfs-splash-display);
+  font-weight: 700; font-style: italic;
+  font-size: var(--rfs-splash-word-size); line-height: 0.9; letter-spacing: 0.01em;
+  margin: 0;
+  background-image: var(--word-grad);
+  background-size: 260% 100%; background-position: 42% 0;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 14px var(--word-glow));
+}
+.rfs-splash.is-on .rfs-splash__word {
+  animation:
+    rfsSplashStamp 460ms cubic-bezier(.16,.84,.3,1) 40ms backwards,
+    rfsSplashShimmer 2.6s linear 520ms infinite;
+}
+@keyframes rfsSplashStamp {
+  0%   { transform: scale(1.28); opacity: 0; filter: blur(10px); }
+  60%  { opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; filter: blur(0); }
+}
+@keyframes rfsSplashShimmer {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -110% 0; }
+}
+
+/* Tagline */
+.rfs-splash__tag {
+  font-family: var(--rfs-splash-display);
+  font-style: italic; font-weight: 500;
+  font-size: 26px; letter-spacing: 0.02em;
+  color: var(--tag-color);
+  margin: 0;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+.rfs-splash__reward {
+  font-weight: 700; font-style: normal;
+  color: var(--tag-accent);
+  text-shadow: 0 0 12px var(--word-glow);
+}
+.rfs-splash.is-on .rfs-splash__tag {
+  animation: rfsSplashRise 560ms cubic-bezier(.2,.7,.3,1) 320ms backwards;
+}
+/* Plain success carries no kicker / tagline */
+.rfs-splash[data-kind="success"] .rfs-splash__tag,
+.rfs-splash[data-kind="success"] .rfs-splash__kicker { display: none; }
+
+@keyframes rfsSplashRise {
+  0%   { transform: translateY(14px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Per-outcome theming ───────────────────────────────────────────────────
+   Each block only sets colour vars consumed above. */
+.rfs-splash[data-kind="success"] {
+  --veil-core:    color-mix(in srgb, var(--rfs-splash-gold) 22%, transparent);
+  --ring-color:   color-mix(in srgb, var(--rfs-splash-gold-hi) 55%, transparent);
+  --kicker-color: var(--rfs-splash-gold);
+  --word-glow:    color-mix(in srgb, var(--rfs-splash-gold-hi) 45%, transparent);
+  --word-grad: linear-gradient(100deg,
+    color-mix(in srgb, var(--rfs-splash-gold) 80%, #000) 0%,
+    var(--rfs-splash-gold) 30%, var(--rfs-splash-gold-hi) 44%,
+    var(--rfs-splash-sheen) 50%, var(--rfs-splash-gold-hi) 56%,
+    var(--rfs-splash-gold) 70%, color-mix(in srgb, var(--rfs-splash-gold) 80%, #000) 100%);
+  --tag-color:  var(--rfs-splash-soft);
+  --tag-accent: var(--rfs-splash-gold-hi);
+}
+
+.rfs-splash[data-kind="critical"] {
+  --veil-core:    color-mix(in srgb, var(--rfs-splash-gold-hi) 30%, transparent);
+  --ring-color:   color-mix(in srgb, var(--rfs-splash-sheen) 70%, transparent);
+  --kicker-color: var(--rfs-splash-gold-hi);
+  --word-glow:    color-mix(in srgb, var(--rfs-splash-sheen) 60%, transparent);
+  --word-grad: linear-gradient(100deg,
+    var(--rfs-splash-gold) 0%, var(--rfs-splash-gold-hi) 26%,
+    var(--rfs-splash-sheen) 46%, #ffffff 50%, var(--rfs-splash-sheen) 54%,
+    var(--rfs-splash-gold-hi) 74%, var(--rfs-splash-gold) 100%);
+  --tag-color:  var(--rfs-splash-gold-hi);
+  --tag-accent: var(--rfs-splash-sheen);
+}
+.rfs-splash[data-kind="critical"] .rfs-splash__word {
+  filter: drop-shadow(0 0 22px var(--word-glow)) drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+}
+.rfs-splash[data-kind="critical"].is-on .rfs-splash__word {
+  animation:
+    rfsSplashStamp 460ms cubic-bezier(.16,.84,.3,1) 40ms backwards,
+    rfsSplashShimmer 1.9s linear 480ms infinite;          /* faster = more brilliant */
+}
+
+.rfs-splash[data-kind="fail"] {
+  --veil-core:    color-mix(in srgb, var(--rfs-splash-ox) 34%, transparent);
+  --ring-color:   color-mix(in srgb, var(--rfs-splash-ox) 60%, transparent);
+  --kicker-color: color-mix(in srgb, var(--rfs-splash-ox) 60%, var(--rfs-splash-mute));
+  --word-glow:    rgba(0, 0, 0, 0.55);
+  --word-grad: linear-gradient(100deg,
+    color-mix(in srgb, var(--rfs-splash-ox) 40%, #000) 0%,
+    var(--rfs-splash-ox) 28%,
+    color-mix(in srgb, var(--rfs-splash-ox) 60%, #d9a) 46%,
+    color-mix(in srgb, var(--rfs-splash-ox) 35%, #e9b) 50%,
+    color-mix(in srgb, var(--rfs-splash-ox) 60%, #d9a) 54%,
+    var(--rfs-splash-ox) 72%,
+    color-mix(in srgb, var(--rfs-splash-ox) 40%, #000) 100%);
+  --tag-color:  var(--rfs-splash-mute);
+  --tag-accent: var(--rfs-splash-gold);
+}
+.rfs-splash[data-kind="fail"] .rfs-splash__word {
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,0.7));
+}
+.rfs-splash[data-kind="fail"].is-on .rfs-splash__word {
+  animation:
+    rfsSplashStamp 520ms cubic-bezier(.16,.84,.3,1) 40ms backwards,
+    rfsSplashShimmer 3.4s linear 560ms infinite;          /* slower = heavier, colder */
+}
+
+/* ── Reduced motion: show the resolved end-state, skip the theatrics ──────── */
+@media (prefers-reduced-motion: reduce) {
+  .rfs-splash__word,
+  .rfs-splash__kicker,
+  .rfs-splash__tag { animation: none !important; }
+  .rfs-splash__ring { display: none; }
+}

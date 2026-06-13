@@ -53,6 +53,22 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
+  // ── Splash Audience ────────────────────────────────────────────────────────
+  game.settings.register(RFS.id, "splashAudience", {
+    name: "RFS.Settings.SplashAudience.Name",
+    hint: "RFS.Settings.SplashAudience.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      "roller":    "RFS.Settings.SplashAudience.Roller",
+      "roller_gm": "RFS.Settings.SplashAudience.RollerGm",
+      "all":       "RFS.Settings.SplashAudience.All",
+    },
+    default: "roller",
+    requiresReload: false,
+  });
+
   // ── Difficulty Mode ────────────────────────────────────────────────────────
   game.settings.register(RFS.id, "difficultyMode", {
     name: "RFS.Settings.DifficultyMode.Name",

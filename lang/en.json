@@ -125,6 +125,16 @@
         "MetaXp": "From {parent}"
       }
     },
+    "Splash": {
+      "SuccessWord": "Success",
+      "FailWord":    "Fail",
+      "CritKicker":  "All Sixes",
+      "CritTagPre":  "You earned",
+      "CritReward":  "a new skill",
+      "FailKicker":  "No matches",
+      "FailTagPre":  "You earned",
+      "FailReward":  "XP"
+    },
     "Settings": {
       "Theme": {
         "Name": "Theme",
@@ -139,6 +149,13 @@
         "Hint": "When a player rolls all sixes in a challenge, who is prompted to name the new skill? 'GM' is the default — the GM types the name and it appears on the actor. 'Player' prompts the player's own client.",
         "Player": "Player",
         "Gm": "GM"
+      },
+      "SplashAudience": {
+        "Name":     "Roll Splash Audience",
+        "Hint":     "Who sees the full-screen result flourish when a skill is rolled.",
+        "Roller":   "Roller only",
+        "RollerGm": "Roller + GM always",
+        "All":      "Everyone"
       },
       "DifficultyMode": {
         "Name": "Difficulty Mode",
