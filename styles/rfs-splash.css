@@ -49,9 +49,10 @@
 .rfs-splash__veil {
   position: absolute; inset: 0;
   background:
+    radial-gradient(ellipse 56% 42% at 50% 47%, rgba(6, 3, 2, 0.55), transparent 72%),
     radial-gradient(ellipse 60% 46% at 50% 47%, var(--veil-core), transparent 70%),
-    rgba(8, 4, 3, 0.62);
-  backdrop-filter: blur(2px);
+    rgba(8, 4, 3, 0.86);
+  backdrop-filter: blur(3px);
   opacity: 0;
   transition: opacity 360ms ease;
 }
@@ -75,6 +76,15 @@
   position: relative;
   display: flex; flex-direction: column; align-items: center;
   gap: 14px;
+}
+/* Localised darkening pad behind the text so the metallic colours read
+   clearly over whatever screen is beneath the overlay. */
+.rfs-splash__stack::before {
+  content: ""; position: absolute; z-index: -1;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 150%; height: 220%;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    rgba(6,3,2,0.78), rgba(6,3,2,0.42) 46%, transparent 72%);
 }
 
 /* Eyebrow / kicker line, flanked by hairlines */
@@ -106,7 +116,7 @@
   background-size: 260% 100%; background-position: 42% 0;
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 4px 14px var(--word-glow));
+  filter: drop-shadow(0 4px 14px var(--word-glow)) drop-shadow(0 6px 22px rgba(0,0,0,0.85));
 }
 .rfs-splash.is-on .rfs-splash__word {
   animation:
@@ -178,7 +188,7 @@
   --tag-accent: var(--rfs-splash-sheen);
 }
 .rfs-splash[data-kind="critical"] .rfs-splash__word {
-  filter: drop-shadow(0 0 22px var(--word-glow)) drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 0 22px var(--word-glow)) drop-shadow(0 6px 22px rgba(0,0,0,0.85));
 }
 .rfs-splash[data-kind="critical"].is-on .rfs-splash__word {
   animation:
@@ -203,7 +213,7 @@
   --tag-accent: var(--rfs-splash-gold);
 }
 .rfs-splash[data-kind="fail"] .rfs-splash__word {
-  filter: drop-shadow(0 3px 10px rgba(0,0,0,0.7));
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,0.7)) drop-shadow(0 6px 22px rgba(0,0,0,0.85));
 }
 .rfs-splash[data-kind="fail"].is-on .rfs-splash__word {
   animation:

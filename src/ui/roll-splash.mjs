@@ -114,7 +114,7 @@ export const RollSplash = {
     void this._el.offsetWidth;
     this._el.classList.add("is-on");
 
-    const dwell = kind === "success" ? 2200 : 3200;
+    const dwell = kind === "success" ? 1100 : 1600;
     this._hideTimer = setTimeout(() => this.hide(), dwell);
   },
 
