@@ -10,7 +10,7 @@ import { RfsCharacterSheet } from "./src/sheets/character-sheet.mjs";
 import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
 import { RfsDcTracker } from "./src/apps/dc-tracker.mjs";
 import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
-import { registerSystemSettings, buildAdvancementCardContent } from "./src/helpers/settings.mjs";
+import { registerSystemSettings } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
 import { RfsSkillRoll } from "./src/rolls/skill-roll.mjs";
 import { RollSplash } from "./src/ui/roll-splash.mjs";
@@ -76,43 +76,6 @@ Hooks.once("ready", async function () {
         if (!data.gmOnly || game.user.isGM) RollSplash.show(data.kind);
         break;
 
-      // ── GM receives: name a new skill for a player (GM-namer path) ──────
-      case "advancementNeeded": {
-        if (!game.user.isGM) break;
-        const advSkill     = { name: data.skillName, level: data.skillLevel };
-        const newSkillName = await RfsSkillRoll._promptGmSkillName(data.actorName, advSkill, data.xpSpent ?? false);
-        if (!newSkillName) break;
-
-        const advActor = game.actors.get(data.actorId);
-        if (!advActor) break;
-        await advActor.addSkill(newSkillName, data.skillId);
-
-        if (data.messageId) {
-          const msg = game.messages.get(data.messageId);
-          if (msg) {
-            const flags    = msg.getFlag("roll-for-shoes", "rollData");
-            const newFlags = { ...flags, skillClaimed: true, claimedSkillName: newSkillName, xpPending: false };
-            const skillObj = { id: flags.skillId, name: flags.skillName, level: flags.skillLevel };
-            await msg.update({
-              content: RfsSkillRoll._buildStandaloneContent(
-                flags.actorName, skillObj, flags.xpSpent ? flags.dice.map(() => 6) : flags.dice,
-                flags.rawTotal, flags.modifier, flags.total,
-                flags.allSixes || !!flags.xpSpent, flags.failed, flags.difficulty,
-                newFlags, data.messageId, 0,
-              ),
-              flags: { "roll-for-shoes": { rollData: newFlags } },
-            });
-          }
-        }
-        await ChatMessage.create({
-          content: buildAdvancementCardContent(
-            data.actorName, newSkillName,
-            data.skillName, data.skillLevel + 1,
-            data.xpSpent ?? false, data.xpCost ?? 0,
-          ),
-        });
-        break;
-      }
     }
   });
 });
@@ -134,8 +97,7 @@ Hooks.on("preCreateActor", (actor, data, options, userId) => {
 /**
  * Wire up all interactive RFS chat card buttons.
  *
- * advancement card → rfsClaimAdvancement (all-sixes: claim new skill)
- * standalone card  → rfsSpendXp          (failure: spend XP to advance)
+ * opposed roll card → rfsClaimAdvancement (all-sixes: claim new skill)
  */
 Hooks.on("renderChatMessageHTML", (message, html) => {
 
@@ -147,18 +109,11 @@ Hooks.on("renderChatMessageHTML", (message, html) => {
     });
   });
 
-  // ── Standalone: Claim Skill (opens dialog) ─────────────────────────────────
+  // ── Opposed roll: Claim Skill (all-sixes advancement) ─────────────────────
   html.querySelectorAll("[data-action='rfsClaimAdvancement']").forEach(btn => {
     btn.addEventListener("click", () => {
-      const { actorId, skillId, messageId } = btn.dataset;
-      RfsSkillRoll.claimAdvancement(actorId, skillId, messageId);
-    });
-  });
-
-  // ── Standalone: Spend XP ──────────────────────────────────────────────────
-  html.querySelectorAll("[data-action='rfsSpendXp']").forEach(btn => {
-    btn.addEventListener("click", () => {
-      RfsSkillRoll.spendXpOnCard(message.id);
+      const { actorId, skillId } = btn.dataset;
+      RfsSkillRoll.claimAdvancement(actorId, skillId);
     });
   });
 

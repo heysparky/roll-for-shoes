@@ -38,21 +38,6 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
-  // ── Advancement Namer ──────────────────────────────────────────────────────
-  game.settings.register(RFS.id, "advancementNamer", {
-    name: "RFS.Settings.AdvancementNamer.Name",
-    hint: "RFS.Settings.AdvancementNamer.Hint",
-    scope: "world",
-    config: true,
-    type: String,
-    choices: {
-      "player": "RFS.Settings.AdvancementNamer.Player",
-      "gm":     "RFS.Settings.AdvancementNamer.Gm",
-    },
-    default: "gm",
-    requiresReload: false,
-  });
-
   // ── Splash Audience ────────────────────────────────────────────────────────
   game.settings.register(RFS.id, "splashAudience", {
     name: "RFS.Settings.SplashAudience.Name",

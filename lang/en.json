@@ -144,12 +144,6 @@
         "Name": "NPC Default Mode",
         "Hint": "Whether NPCs use fixed difficulty or a full skill tree."
       },
-      "AdvancementNamer": {
-        "Name": "Skill Advancement: Who Names the New Skill?",
-        "Hint": "When a player rolls all sixes in a challenge, who is prompted to name the new skill? 'GM' is the default — the GM types the name and it appears on the actor. 'Player' prompts the player's own client.",
-        "Player": "Player",
-        "Gm": "GM"
-      },
       "SplashAudience": {
         "Name":     "Roll Splash Audience",
         "Hint":     "Who sees the full-screen result flourish when a skill is rolled.",
