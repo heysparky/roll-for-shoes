@@ -59,12 +59,17 @@ export class RfsSkillRoll {
       });
     }
 
-    await RfsSkillRoll._showRollResultPopup({
-      actor, skill, dice, rawTotal, modifier, total,
-      allSixes, failed, options,
-    });
+    const nonSixCount = dice.filter(d => d !== 6).length;
+    const canSpendXp  = failed && nonSixCount > 0 && actor.system.xp >= nonSixCount;
 
-    return { dice, allSixes, failed, nonSixCount: dice.filter(d => d !== 6).length, total, rawTotal, modifier };
+    if (allSixes || canSpendXp) {
+      await RfsSkillRoll._showRollResultPopup({
+        actor, skill, dice, rawTotal, modifier, total,
+        allSixes, failed, options,
+      });
+    }
+
+    return { dice, allSixes, failed, nonSixCount, total, rawTotal, modifier };
   }
 
   /**
