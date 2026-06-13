@@ -1,32 +1,19 @@
 /* =============================================================================
    styles/rfs-verdict.css
    ======================
-   Roll-result dialog — "Verdict" layout (the chosen direction).
+   Roll-result "Verdict" dialog.
 
-   A compact roll-result popup whose hierarchy is: dice (evidence) → a large
-   typographic VERDICT word → a reward badge → stacked actions. On a failed
-   roll, "Spend N XP" turns every die to a 6 and the dialog becomes the
-   all-sixes "claim a skill" view in place.
+   All selectors are scoped under .rfs-verdict (the ApplicationV2 root class)
+   so they win over Foundry's global button/heading/element resets, which use
+   at most class + element specificity (0,1,1). Our class + class rules (0,2,0)
+   beat those cleanly without !important except where noted.
 
-   ARCHITECTURE (matches styles/themes/vellum.css conventions):
-   - Structure + motion live here; NO theme colours are hardcoded. Everything
-     reads the --rfs-* tokens already defined by the active theme on
-     <body data-rfs-theme>, so this inherits vellum's palette for free and
-     degrades sanely under other themes.
-   - Reuses the existing component vocabulary where it already exists:
-       · buttons      → .rfs-btn / .rfs-btn--gold / .rfs-btn--ghost (vellum.css)
-       · skill-name   → pattern of .rfs-advance__input (re-expressed here as
-                        .rfs-verdict__input so the dialog is drop-in standalone)
-     The pip-face die below is NEW (vellum.css ships a numeric .rfs-die; this
-     direction uses real d6 pip faces — keep whichever the team prefers).
-
-   REGISTER: add "styles/rfs-verdict.css" to the "styles" array in system.json.
+   Pip elements use <span class="pip"> — NOT <i> — to avoid FontAwesome
+   overrides in Foundry's global stylesheet.
    ============================================================================= */
 
-/* ── Body: the dialog's content column (sits inside the app window chrome) ──
-   The window title bar ("<Character> rolling <Skill>") is the Foundry
-   Application header — set it via the Application's `title`, not here. */
-.rfs-verdict__body {
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.rfs-verdict .rfs-verdict__body {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -36,23 +23,21 @@
   font-family: var(--rfs-serif);
 }
 
-/* ── Evidence row: the rolled dice, shown small above the verdict ─────────── */
-.rfs-verdict__evidence {
+/* ── Evidence row: rolled dice above the verdict word ────────────────────── */
+.rfs-verdict .rfs-verdict__evidence {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
 }
 
-/* d6 with real pip faces. Add .is-six (or value === 6) for the gold treatment.
-   Pip visibility is driven by a .d-1 … .d-6 value class on the die. */
-.rfs-pip-die {
-  position: relative;
+/* ── Pip-face d6 ─────────────────────────────────────────────────────────── */
+.rfs-verdict .rfs-pip-die {
   width: 30px; height: 30px;
   box-sizing: border-box;
-  display: grid;
+  display: grid !important;          /* guard against Foundry span resets */
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-rows:    repeat(3, 1fr);
   padding: 5px;
   border-radius: 5px;
   background: linear-gradient(155deg,
@@ -61,64 +46,86 @@
   border: 1px solid var(--rfs-border-strong);
   box-shadow: inset 0 1px 0 rgba(226,179,120,0.08), 0 2px 5px rgba(0,0,0,0.45);
 }
-.rfs-pip-die i {
+
+.rfs-verdict .rfs-pip-die .pip {
   place-self: center;
+  display: block !important;          /* guard against Foundry span/inline resets */
   width: 4px; height: 4px;
   border-radius: 50%;
   background: var(--rfs-gold-hi);
   box-shadow: 0 0 4px rgba(226,179,120,0.5);
   visibility: hidden;
 }
-.rfs-pip-die.is-six {
+
+.rfs-verdict .rfs-pip-die.is-six {
   border-color: var(--rfs-gold-hi);
   box-shadow: 0 0 12px rgba(226,179,120,0.4), inset 0 1px 0 rgba(226,179,120,0.15);
 }
+
 /* Pip layouts — nine grid cells, lit per face value */
-.rfs-pip-die.d-1 i:nth-child(5),
-.rfs-pip-die.d-2 i:nth-child(1), .rfs-pip-die.d-2 i:nth-child(9),
-.rfs-pip-die.d-3 i:nth-child(1), .rfs-pip-die.d-3 i:nth-child(5), .rfs-pip-die.d-3 i:nth-child(9),
-.rfs-pip-die.d-4 i:nth-child(1), .rfs-pip-die.d-4 i:nth-child(3), .rfs-pip-die.d-4 i:nth-child(7), .rfs-pip-die.d-4 i:nth-child(9),
-.rfs-pip-die.d-5 i:nth-child(1), .rfs-pip-die.d-5 i:nth-child(3), .rfs-pip-die.d-5 i:nth-child(5), .rfs-pip-die.d-5 i:nth-child(7), .rfs-pip-die.d-5 i:nth-child(9),
-.rfs-pip-die.d-6 i:nth-child(1), .rfs-pip-die.d-6 i:nth-child(3), .rfs-pip-die.d-6 i:nth-child(4), .rfs-pip-die.d-6 i:nth-child(6), .rfs-pip-die.d-6 i:nth-child(7), .rfs-pip-die.d-6 i:nth-child(9)
+.rfs-verdict .rfs-pip-die.d-1 .pip:nth-child(5),
+.rfs-verdict .rfs-pip-die.d-2 .pip:nth-child(1),
+.rfs-verdict .rfs-pip-die.d-2 .pip:nth-child(9),
+.rfs-verdict .rfs-pip-die.d-3 .pip:nth-child(1),
+.rfs-verdict .rfs-pip-die.d-3 .pip:nth-child(5),
+.rfs-verdict .rfs-pip-die.d-3 .pip:nth-child(9),
+.rfs-verdict .rfs-pip-die.d-4 .pip:nth-child(1),
+.rfs-verdict .rfs-pip-die.d-4 .pip:nth-child(3),
+.rfs-verdict .rfs-pip-die.d-4 .pip:nth-child(7),
+.rfs-verdict .rfs-pip-die.d-4 .pip:nth-child(9),
+.rfs-verdict .rfs-pip-die.d-5 .pip:nth-child(1),
+.rfs-verdict .rfs-pip-die.d-5 .pip:nth-child(3),
+.rfs-verdict .rfs-pip-die.d-5 .pip:nth-child(5),
+.rfs-verdict .rfs-pip-die.d-5 .pip:nth-child(7),
+.rfs-verdict .rfs-pip-die.d-5 .pip:nth-child(9),
+.rfs-verdict .rfs-pip-die.d-6 .pip:nth-child(1),
+.rfs-verdict .rfs-pip-die.d-6 .pip:nth-child(3),
+.rfs-verdict .rfs-pip-die.d-6 .pip:nth-child(4),
+.rfs-verdict .rfs-pip-die.d-6 .pip:nth-child(6),
+.rfs-verdict .rfs-pip-die.d-6 .pip:nth-child(7),
+.rfs-verdict .rfs-pip-die.d-6 .pip:nth-child(9)
 { visibility: visible; }
 
-/* ── The verdict word — big metallic display type ────────────────────────── */
-.rfs-verdict__word {
+/* ── Verdict word — big metallic display type ────────────────────────────── */
+.rfs-verdict .rfs-verdict__word {
   font-family: var(--rfs-display);
   font-style: italic; font-weight: 700;
   font-size: 46px; line-height: 0.95; letter-spacing: 0;
   margin: 6px 0 12px;
 }
-.rfs-verdict__word--fail {
+.rfs-verdict .rfs-verdict__word--fail {
   background: linear-gradient(100deg,
     color-mix(in srgb, var(--rfs-failure) 30%, #000) 0%,
     var(--rfs-failure) 45%,
     color-mix(in srgb, var(--rfs-failure) 55%, #fff) 50%,
     var(--rfs-failure) 55%,
     color-mix(in srgb, var(--rfs-failure) 30%, #000) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent !important;     /* !important: Foundry h2 colour rules */
   filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
 }
-.rfs-verdict__word--win {
+.rfs-verdict .rfs-verdict__word--win {
   background: linear-gradient(100deg,
     color-mix(in srgb, var(--rfs-success) 70%, #000) 0%,
     var(--rfs-success) 46%,
     color-mix(in srgb, var(--rfs-success) 55%, #fff) 50%,
     var(--rfs-success) 54%,
     color-mix(in srgb, var(--rfs-success) 70%, #000) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent !important;
   filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
 }
-.rfs-verdict__word--six {
+.rfs-verdict .rfs-verdict__word--six {
   background: linear-gradient(100deg,
     var(--rfs-gold) 0%, var(--rfs-gold-hi) 44%, #fff3da 50%,
     var(--rfs-gold-hi) 56%, var(--rfs-gold) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent !important;
   filter: drop-shadow(0 0 16px rgba(226,179,120,0.45));
 }
 
 /* ── Reward badge ────────────────────────────────────────────────────────── */
-.rfs-verdict__badge {
+.rfs-verdict .rfs-verdict__badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--rfs-mono);
   font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
@@ -127,26 +134,67 @@
   padding: 4px 10px;
   background: rgba(200,153,90,0.08);
 }
-.rfs-verdict__badge--win {
+.rfs-verdict .rfs-verdict__badge--win {
   color: var(--rfs-success);
   border-color: rgba(154,186,106,0.4);
   background: rgba(154,186,106,0.08);
 }
 
 /* ── Action stack ────────────────────────────────────────────────────────── */
-.rfs-verdict__acts {
+.rfs-verdict .rfs-verdict__acts {
   width: 100%; margin-top: 18px;
   display: flex; flex-direction: column; gap: 8px;
 }
-.rfs-verdict__hint {
+.rfs-verdict .rfs-verdict__hint {
   margin: 0;
   font-family: var(--rfs-mono);
   font-size: 10px; line-height: 1.55; letter-spacing: 0.02em;
   color: var(--rfs-text-mute);
 }
 
-/* ── Skill-name input (claim view) — mirrors .rfs-advance__input ──────────── */
-.rfs-verdict__input {
+/* ── Buttons — scoped to beat Foundry's global button element resets ─────── */
+.rfs-verdict .rfs-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  border-radius: var(--rfs-radius, 2px);
+  font-family: var(--rfs-display);
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: filter 120ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+.rfs-verdict .rfs-btn--block {
+  display: block !important;
+  width: 100%;
+  text-align: center;
+}
+.rfs-verdict .rfs-btn--gold {
+  background: linear-gradient(180deg, var(--rfs-gold-hi), var(--rfs-gold)) !important;
+  border: 1px solid var(--rfs-gold-hi) !important;
+  color: var(--rfs-bg) !important;
+  box-shadow: 0 4px 14px rgba(226,179,120,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.rfs-verdict .rfs-btn--gold:hover:not(:disabled) {
+  filter: brightness(1.05);
+  box-shadow: 0 6px 18px rgba(226,179,120,0.4);
+}
+.rfs-verdict .rfs-btn--ghost {
+  background: transparent !important;
+  border: 1px solid var(--rfs-border-strong) !important;
+  color: var(--rfs-text-soft, var(--rfs-text)) !important;
+}
+.rfs-verdict .rfs-btn--ghost:hover:not(:disabled) {
+  background: rgba(200,153,90,0.08) !important;
+  border-color: var(--rfs-gold) !important;
+}
+
+/* ── Skill-name input (claim view) ──────────────────────────────────────── */
+.rfs-verdict .rfs-verdict__input {
   width: 100%; box-sizing: border-box;
   padding: 9px 11px;
   background: var(--rfs-bg-input);
@@ -154,18 +202,14 @@
   color: var(--rfs-text);
   font-family: var(--rfs-display); font-style: italic; font-size: 16px;
 }
-.rfs-verdict__input::placeholder { color: var(--rfs-text-mute); }
-.rfs-verdict__input:focus {
+.rfs-verdict .rfs-verdict__input::placeholder { color: var(--rfs-text-mute); }
+.rfs-verdict .rfs-verdict__input:focus {
   outline: none; border-color: var(--rfs-gold);
   box-shadow: 0 0 0 2px rgba(200,153,90,0.15);
 }
 
-/* ── Advance glow: applied to the window/body when sixes are showing ──────── */
+/* ── Advance glow: applied when all-sixes are showing ───────────────────── */
 .rfs-verdict.is-advance,
-.rfs-verdict__body.is-advance {
+.rfs-verdict .rfs-verdict__body.is-advance {
   box-shadow: 0 0 30px rgba(200,153,90,0.18);
 }
-
-/* color-mix() is used above to derive tints from theme tokens; supported in
-   all evergreen Chromium (Foundry v12+). For older engines, substitute the
-   literal values from reference/Roll Result Dialog - Versions.html. */

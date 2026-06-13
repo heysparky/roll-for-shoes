@@ -32,7 +32,7 @@ function renderVerdict(mount, data) {
   let xpWasSpent = false;
 
   const dieHtml = (v) =>
-    `<span class="rfs-pip-die d-${v}${v === 6 ? " is-six" : ""}">${"<i></i>".repeat(9)}</span>`;
+    `<span class="rfs-pip-die d-${v}${v === 6 ? " is-six" : ""}">${'<span class="pip"></span>'.repeat(9)}</span>`;
 
   const evidence = () =>
     `<div class="rfs-verdict__evidence">${dice.map(dieHtml).join("")}</div>`;
