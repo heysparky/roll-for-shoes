@@ -6,7 +6,7 @@
 2. **Data model** — Actor has skills[], xp, statuses[], biography — visible in actor.system in console
 3. **Sheet renders** — Character sheet opens, shows name + "Do Anything 1" + XP
 4. **Sheet writes** — XP field edits persist, skill names editable inline
-5. **Skill rolls** — standalone rolls show a themed `RfsRollResultDialog` popup (not chat); results recorded to actor roll-history flag (max 50)
+5. **Skill rolls** — rolls fire against globalDc; results recorded to actor roll-history flag (max 50)
 6. **All-sixes advancement flow**
 7. **XP on failure + spend**
 8. **Opposed rolls & difficulty thresholds**
@@ -14,9 +14,7 @@
 10. **DC Tracker + Player-Initiated Roll UX**
     - Persistent DC tracker bar (`RfsDcTracker`) renders for all users at ready; GM adjusts global DC via named tier chips or +/− buttons; players see DC read-only with connected character portraits on each side
     - All rolls fire against `globalDc` — no per-challenge DC, no GM-gated initiation required
-    - `RfsRollResultDialog` popup (fire-and-forget) shows after every roll; displays dice, outcome vs DC, and optional Claim Skill / Spend XP buttons inline
     - Challenge dialog, token HUD shoe button, shared challenge card, and `activeChallenge` state machine removed
-    - Socket reduced to one type: `advancementNeeded` (player → GM when `advancementNamer === "gm"`)
 11. **Advancement announcement card** — `.rfs-advancement` card posts to public chat on any skill gain; shows actor name, new skill name, and "From {parent}" (level/XP-cost detail removed)
 12. **DC Tracker — tier chips and step buttons**
     - `difficultyMode` world setting: Standard (default DC 3) or More XP (default DC 4)
@@ -36,10 +34,16 @@
 15. **Skill list** — compact flat skill list (`skill-index.hbs`): pips + clickable name, depth-indented by CSS `--rfs-skill-depth` custom property
     - *(The ⤢ horizontal bracket tree popup, `RfsSkillMapDialog`, was removed — revert commit `41f27d8` to restore it)*
 16. **Dice So Nice + dice sounds** — DSN (`game.dice3d.showForRoll`) is called explicitly for ALL roll paths; fallback to `foundry.audio.AudioHelper.play` when DSN is absent
-17. **Themed advancement dialogs**
-    - Three distinct themed popups using `.rfs-adv-dlg`
-    - `advancementNamer` setting respected on all paths (player-namer, GM-namer, socket routing)
-18. **Standalone roll popup** — `RfsRollResultDialog` fire-and-forget popup; DSN called explicitly before popup opens; result recorded to actor roll-history flag
+17. **Roll result splash overlay** (`src/ui/roll-splash.mjs`, `styles/rfs-splash.css`)
+    - Full-screen cinematic flourish after every roll: success (gold shimmer), critical/all-sixes (near-white gold, "You earned a new skill"), fail (oxblood, "You earned XP")
+    - `splashAudience` world setting: roller only / roller + GM / everyone; broadcast via socket
+    - Dwell: 1 100 ms success, 1 600 ms critical/fail
+18. **Verdict dialog** (`src/ui/roll-verdict-dialog.mjs`, `styles/rfs-verdict.css`)
+    - Replaces `RfsRollResultDialog` and the old multi-step advancement dialogs
+    - Single unified window: dice evidence row → verdict word → reward badge → action stack
+    - Outcomes: allsixes (claim skill free), fail-with-enough-XP (spend N XP → in-place transition to claim view), plain success (splash only — no dialog)
+    - `advancementNamer` setting and `advancementNeeded` socket removed; players always name their own skills
+    - Enter key submits the skill name input
 19. **Inventory tab** — character sheet now has four tabs: Skills / Inventory / Statuses / History
 20. **Vellum theme — character sheet visual design**
     - Connected parchment tab nav (mono uppercase, active tab gold hairline, panel seam dissolves)
@@ -67,37 +71,38 @@
 
 ## Up Next
 
-- **Advancement prompt copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
-- **CSS polish** — roll result popup, advancement announcement card
+- **Advancement announcement card copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
+- **Further CSS polish** — as needed after table testing
 
 ---
 
 ## Current State of Development
 
-Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. Character sheet and XP display polish is done; remaining work is advancement flavour text and chat card styling.
+Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. The post-roll experience (splash + verdict dialog) is implemented and styled.
 
 ### Working
 - Character sheet: name, portrait (click to edit), skills, XP, statuses, biography, rename skill, roll history — all four tabs styled in vellum theme
 - Header: 2×2 codex folio grid; biography fills remaining space below name/XP row; XP number vertically centred with name, descenders visible
 - Skill list: pips + clickable name; rename/delete buttons appear on row hover only
 - Tab nav: active tab gold hairline indicator; no browser focus ring
-- Skill rolls: fire-and-forget `RfsRollResultDialog` popup with dice + outcome vs DC; DSN + dice sound; result recorded to actor flag
 - DC tracker bar: visible to all users; GM adjusts globalDc via six tier chips (Easy/Medium/Hard/Elite/Legendary/Mythic) or +/− buttons; free-floating on canvas (chrome stripped)
-- Advancement UX: themed dialogs, two-step XP spend (confirm → name), advancementNamer respected on all paths
+- Roll aftermath: full-screen splash overlay (success/critical/fail) → verdict dialog opens only when actionable (allsixes or fail-with-enough-XP); plain success gets splash only
+- Verdict dialog: pip dice + verdict word + badge + action stack; in-place XP-spend transition; Enter submits skill name
+- Advancement announcement card posted to public chat on every skill gain
 - Opposed rolls, difficulty thresholds, status math
 - Three themes registered; vellum is default
 - Token name syncs to prototype token and placed scene tokens on rename
 
 ### Known Gaps / Next Work
-- **Advancement prompt copy**: same announcement card text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
-- **CSS polish**: roll result popup and advancement announcement card styling.
+- **Advancement announcement card copy**: same text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
 
 ### Architecture Decisions
 - Global DC lives in `game.settings.get("roll-for-shoes", "globalDc")` — world-scoped, GM-only writes
 - All rolls read globalDc via `_resolveDifficulty()` — no per-challenge state, no passive token detection
-- Roll results show in a fire-and-forget popup; chat only receives advancement announcement cards
-- World-setting writes are GM-only; players delegate via socket (only `advancementNeeded`)
-- CSS selectors in theme files match actual markup class names; scoped to `[data-rfs-theme="vellum"]`
+- Roll aftermath: splash (`RollSplash`) → verdict dialog (`RfsVerdictDialog`) when actionable; chat only receives advancement announcement cards
+- Players always name their own skills — no GM-namer socket path
+- Socket reduced to one type: `splashShow` (broadcast roll flourish to other clients)
+- CSS selectors in theme files scoped to `[data-rfs-theme="vellum"]`; verdict dialog CSS scoped to `.rfs-verdict` to beat Foundry's global element resets
 
 ---
 
