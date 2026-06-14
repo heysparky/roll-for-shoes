@@ -46,7 +46,9 @@
       "DeleteItem": "Remove item",
       "PostDifficulty": "Post Difficulty to Chat",
       "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)",
-      "Cancel": "Cancel"
+      "Cancel": "Cancel",
+      "EditCharacter": "Edit Character",
+      "DoneEditing": "Done Editing"
     },
     "Dialog": {
       "NewSkill": {

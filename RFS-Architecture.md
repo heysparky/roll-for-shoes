@@ -121,19 +121,31 @@ There is no passive challenge detection. All rolls go through the same path.
 
 `HandlebarsApplicationMixin(ActorSheetV2)` with `submitOnChange: true` for auto-save.
 
-Two tabs (`switchTab` action, no framework):
-- **Skills** (default) — compact flat skill list + statuses panel
-- **Roll History** — plain list of the last 50 rolls from the actor's `"roll-for-shoes.rollHistory"` flag
+### Tabs
 
-Per-field:
-- **Portrait** — `<button data-action="editPortrait">` opens a `FilePicker` with `render(true)`; vellum shows pencil overlay on hover
-- **Name** — text input; auto-saves
-- **XP** — number input (`system.xp`); auto-saves
-- **Biography** — textarea (`system.biography`); auto-saves
-- **Skills** — compact flat list (`skill-index.hbs`); clicking the skill name button rolls that skill; depth-indented via `--rfs-skill-depth` CSS custom property
-- **Rename skill** — pencil icon button per skill (except root) opens `DialogV2.input`; root skill excluded
-- **`originalIndex`** — added by `_sortSkillsForDisplay()` so sorted display order cannot cause form submissions to update the wrong skill in the stored array
+Custom tab switching via `switchTab` action (not Foundry's tab framework). Active tab tracked in `this._activeTab` (default `"skills"`) and restored in `_onRender` after every re-render.
+
+- **Skills** (default) — compact flat skill list
+- **Statuses**, **Inventory**, **Roll History**
+
+### Edit Mode
+
+Toggled by a pencil/check button in the window header controls (see `_getHeaderControls()` override and `Foundry-v14-API.md`). Stored as `this._editMode` (instance state). Passed to templates as `editMode` context variable (`isEditable && _editMode`).
+
+| | Play mode (default) | Edit mode |
+|-|---------------------|-----------|
+| Portrait | static `<img>` | `<button data-action="editPortrait">` → FilePicker |
+| Name | `<span>` | `<input name="name">` auto-saves |
+| XP | `<span>` | `<input name="system.xp">` auto-saves |
+| Biography | read-only `<div>` | `<textarea name="system.biography">` auto-saves |
+| Skill names | roll buttons | inline `<input>` auto-saves; root is `readonly` |
+| Delete skill | hidden | ✕ button per skill (except root) |
+
+### Other Per-Field Notes
+
+- **`originalIndex`** — added by `_sortSkillsForDisplay()` so display-sorted order cannot cause form submissions to update the wrong skill in the stored array
 - **`_processFormData`** — merges incoming skill name inputs with the rest of each skill's data (level, id, parentId) so partial form updates don't reset unsubmitted fields
+- **Rename skill dialog** (`renameSkill` action) — still registered but has no UI entry point; edit mode inline inputs replaced it
 
 *(The ⤢ skill map popup, `RfsSkillMapDialog`, was removed. Revert commit `41f27d8` to restore it.)*
 

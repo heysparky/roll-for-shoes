@@ -4,38 +4,53 @@
   {{!-- ── Header: portrait | (name + xp) / background ─────────────────── --}}
   <header class="rfs-sheet__header">
 
-    <button type="button"
-            class="rfs-sheet__portrait-btn"
-            data-action="editPortrait"
-            title="Click to change portrait">
+    {{#if editMode}}
+      <button type="button"
+              class="rfs-sheet__portrait-btn"
+              data-action="editPortrait"
+              title="Click to change portrait">
+        <img class="rfs-sheet__portrait"
+             src="{{actor.img}}"
+             alt="{{actor.name}}">
+      </button>
+    {{else}}
       <img class="rfs-sheet__portrait"
            src="{{actor.img}}"
            alt="{{actor.name}}">
-    </button>
+    {{/if}}
 
     <div class="rfs-sheet__header-right">
       <div class="rfs-sheet__header-top">
-        <input class="rfs-sheet__name"
-               type="text"
-               name="name"
-               value="{{actor.name}}"
-               placeholder="{{localize 'RFS.Placeholder.ActorName'}}"
-               {{#unless isEditable}}disabled{{/unless}}>
+        {{#if editMode}}
+          <input class="rfs-sheet__name"
+                 type="text"
+                 name="name"
+                 value="{{actor.name}}"
+                 placeholder="{{localize 'RFS.Placeholder.ActorName'}}">
+        {{else}}
+          <span class="rfs-sheet__name rfs-sheet__name--display">{{actor.name}}</span>
+        {{/if}}
         <div class="rfs-sheet__xp">
-          <label class="rfs-sheet__xp-label" for="rfs-xp-input">{{localize 'RFS.Label.XP'}}</label>
-          <input class="rfs-sheet__xp-value"
-                 id="rfs-xp-input"
-                 type="number"
-                 name="system.xp"
-                 value="{{xp}}"
-                 min="0"
-                 {{#unless isEditable}}disabled{{/unless}}>
+          <span class="rfs-sheet__xp-label">{{localize 'RFS.Label.XP'}}</span>
+          {{#if editMode}}
+            <input class="rfs-sheet__xp-value"
+                   type="number"
+                   name="system.xp"
+                   value="{{xp}}"
+                   min="0">
+          {{else}}
+            <span class="rfs-sheet__xp-value">{{xp}}</span>
+          {{/if}}
         </div>
       </div>
-      <textarea class="rfs-sheet__biography"
-                name="system.biography"
-                placeholder="{{localize 'RFS.Placeholder.Biography'}}"
-                {{#unless isEditable}}disabled{{/unless}}>{{actor.system.biography}}</textarea>
+      {{#if editMode}}
+        <textarea class="rfs-sheet__biography"
+                  name="system.biography"
+                  placeholder="{{localize 'RFS.Placeholder.Biography'}}">{{actor.system.biography}}</textarea>
+      {{else}}
+        <div class="rfs-sheet__biography--display"
+             data-placeholder="{{localize 'RFS.Placeholder.Biography'}}">{{actor.system.biography}}</div>
+      {{/if}}
     </div>
 
   </header>
@@ -77,7 +92,7 @@
       <div class="rfs-panel rfs-panel--skills">
         {{> "systems/roll-for-shoes/templates/actor/partials/skill-index.hbs"
             skills=skills
-            isEditable=isEditable }}
+            editMode=editMode }}
       </div>
 
     </div>

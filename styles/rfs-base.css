@@ -747,6 +747,42 @@
   .rfs-history-entry--allsixes & { color: var(--rfs-color-allsixes); }
 }
 
+/* ── Character name — play-mode display ──────────────────────────────────── */
+.rfs-sheet__name--display {
+  flex: 1;
+  font-family: var(--rfs-font-display);
+  font-size: var(--rfs-font-size-xl);
+  font-weight: bold;
+  color: var(--rfs-color-text);
+  padding: var(--rfs-space-xs) 0;
+}
+
+/* ── Biography — play-mode display ───────────────────────────────────────── */
+.rfs-sheet__biography--display {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+  font-size: var(--rfs-font-size-md);
+  line-height: 1.5;
+  padding: var(--rfs-space-xs) 0;
+}
+
+.rfs-sheet__biography--display:empty::after {
+  content: attr(data-placeholder);
+  color: var(--rfs-color-text-muted);
+  font-style: italic;
+}
+
+/* ── XP — play-mode span ─────────────────────────────────────────────────── */
+span.rfs-sheet__xp-value {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: center;
+}
+
 /* ── Biography textarea ──────────────────────────────────────────────────── */
 .rfs-sheet__biography {
   flex: 1;

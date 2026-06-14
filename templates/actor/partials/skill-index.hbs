@@ -6,27 +6,27 @@
         {{#rfsRepeat level}}<span class="rfs-pip"></span>{{/rfsRepeat}}
       </div>
 
-      <button type="button"
-              class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
-              data-action="rollSkill"
-              data-skill-id="{{id}}"
-              title="Roll {{name}} ({{level}}d6)">
-        {{name}}
-      </button>
-
-      {{#if ../isEditable}}
+      {{#if ../editMode}}
+        <input class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
+               type="text"
+               name="system.skills.{{originalIndex}}.name"
+               value="{{name}}"
+               {{#if (rfsIsRoot this)}}readonly{{/if}}>
         {{#unless (rfsIsRoot this)}}
           <button type="button"
-                  class="rfs-btn rfs-btn--icon rfs-skill-index__rename-btn"
-                  data-action="renameSkill"
-                  data-skill-id="{{id}}"
-                  title="Rename">&#x270e;</button>
-          <button type="button"
-                  class="rfs-btn rfs-btn--icon rfs-skill-index__delete-btn"
+                  class="rfs-btn rfs-btn--icon rfs-btn--danger"
                   data-action="deleteSkill"
                   data-skill-id="{{id}}"
                   title="Delete {{name}}">&#x2715;</button>
         {{/unless}}
+      {{else}}
+        <button type="button"
+                class="rfs-skill-index__name{{#if (rfsIsRoot this)}} rfs-skill-index__name--root{{/if}}"
+                data-action="rollSkill"
+                data-skill-id="{{id}}"
+                title="Roll {{name}} ({{level}}d6)">
+          {{name}}
+        </button>
       {{/if}}
     </div>
   {{/each}}

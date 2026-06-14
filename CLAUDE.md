@@ -77,6 +77,7 @@ All CSS values use custom properties from `styles/rfs-base.css` — no hardcoded
 - **`RFS-Architecture.md`** — Design decisions, roll flow, advancement dialogs, button wiring rationale
 - **`RFS-File-Structure.md`** — Full directory map, chat card types, key relationships
 - **`RFS-Milestones.md`** — Progress tracking, current dev state, rules reference
+- **`Foundry-v14-API.md`** — Verified Foundry v14 API patterns (header controls, lifecycle hooks, deprecations). Check this before writing any Foundry core API call.
 
 ## Current Development State
 

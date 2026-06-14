@@ -30,6 +30,9 @@ const { ActorSheetV2 } = foundry.applications.sheets;
 
 export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
+  _editMode = false;
+  _activeTab = "skills";
+
   /* -------------------------------------------- */
   /*  Static Configuration                        */
   /* -------------------------------------------- */
@@ -45,8 +48,9 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     },
     actions: {
       // Sheet
-      editPortrait: RfsCharacterSheet._onEditPortrait,
-      switchTab:    RfsCharacterSheet._onSwitchTab,
+      editPortrait:   RfsCharacterSheet._onEditPortrait,
+      toggleEditMode: RfsCharacterSheet._onToggleEditMode,
+      switchTab:      RfsCharacterSheet._onSwitchTab,
 
       // Skill actions
       rollSkill:    RfsCharacterSheet._onRollSkill,
@@ -70,6 +74,39 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       template: "systems/roll-for-shoes/templates/actor/character-sheet.hbs",
     },
   };
+
+  /* -------------------------------------------- */
+  /*  Header Controls                             */
+  /* -------------------------------------------- */
+
+  /** @override */
+  _getHeaderControls() {
+    const controls = super._getHeaderControls();
+    controls.unshift({
+      icon:    this._editMode ? "fa-solid fa-check" : "fa-solid fa-pencil",
+      label:   this._editMode ? "RFS.Action.DoneEditing" : "RFS.Action.EditCharacter",
+      action:  "toggleEditMode",
+      visible: this.isEditable,
+    });
+    return controls;
+  }
+
+  /* -------------------------------------------- */
+  /*  Lifecycle                                   */
+  /* -------------------------------------------- */
+
+  /** @override */
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    if (this._activeTab !== "skills") {
+      this.element.querySelectorAll(".rfs-tabs__btn").forEach(btn => {
+        btn.classList.toggle("rfs-tabs__btn--active", btn.dataset.tab === this._activeTab);
+      });
+      this.element.querySelectorAll(".rfs-tab-panel").forEach(panel => {
+        panel.classList.toggle("rfs-tab-panel--active", panel.dataset.tab === this._activeTab);
+      });
+    }
+  }
 
   /* -------------------------------------------- */
   /*  Context Preparation                         */
@@ -100,6 +137,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       inventory:  system.inventory,
       totalStatusModifier: system.totalStatusModifier,
       xp:         system.xp,
+      editMode:   this.isEditable && this._editMode,
       rollHistory,
       labels: {
         xp:        game.i18n.localize("RFS.Label.XP"),
@@ -301,12 +339,18 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
   static _onSwitchTab(event, target) {
     const tab = target.dataset.tab;
+    this._activeTab = tab;
     this.element.querySelectorAll(".rfs-tabs__btn").forEach(btn => {
       btn.classList.toggle("rfs-tabs__btn--active", btn.dataset.tab === tab);
     });
     this.element.querySelectorAll(".rfs-tab-panel").forEach(panel => {
       panel.classList.toggle("rfs-tab-panel--active", panel.dataset.tab === tab);
     });
+  }
+
+  static _onToggleEditMode() {
+    this._editMode = !this._editMode;
+    this.render();
   }
 
 }
