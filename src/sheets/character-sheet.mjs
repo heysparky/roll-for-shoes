@@ -48,7 +48,6 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     },
     actions: {
       // Sheet
-      editPortrait:   RfsCharacterSheet._onEditPortrait,
       toggleEditMode: RfsCharacterSheet._onToggleEditMode,
       switchTab:      RfsCharacterSheet._onSwitchTab,
 
@@ -94,6 +93,14 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
   /*  Lifecycle                                   */
   /* -------------------------------------------- */
+
+  /** @override */
+  async _preClose(options) {
+    await super._preClose(options);
+    if (this.form) {
+      this.form.dispatchEvent(new Event("submit", { cancelable: true }));
+    }
+  }
 
   /** @override */
   async _onRender(context, options) {
@@ -216,14 +223,6 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
   /*  Action Handlers                             */
   /* -------------------------------------------- */
-
-  static async _onEditPortrait() {
-    new FilePicker({
-      type: "image",
-      current: this.actor.img,
-      callback: (path) => this.actor.update({ img: path }),
-    }).render(true);
-  }
 
   static async _onRollSkill(event, target) {
     const skillId = target.dataset.skillId;

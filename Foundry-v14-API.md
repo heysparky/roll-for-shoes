@@ -87,6 +87,57 @@ Use the new names for all new code. The old names trigger `logCompatibilityWarni
 
 ---
 
+## DocumentSheetV2 — Built-in `editImage` Action
+
+`DocumentSheetV2` (parent of `ActorSheetV2`) provides a built-in `editImage` action. Use it by putting `data-action` and `data-edit` directly on the `<img>` element — **not** on a wrapper button:
+
+```html
+<img src="{{actor.img}}"
+     data-action="editImage"
+     data-edit="img"
+     title="Click to change portrait">
+```
+
+- `data-edit` is the dot-path into `document._source` (e.g. `"img"`, `"prototypeToken.texture.src"`)
+- The handler opens a `FilePicker`, updates `target.src` immediately, then dispatches a `submit` event to trigger `submitOnChange`
+- Do **not** wrap in a `<button>` — the action checks `target.nodeName !== "IMG"` and throws if the target isn't the image itself
+
+Since `DEFAULT_OPTIONS.actions` deep-merges up the inheritance chain, `editImage` is available in any `ActorSheetV2` subclass without re-registering it.
+
+---
+
+## FilePicker — v14 Instantiation
+
+```javascript
+// ❌ v13 / broken in v14
+new FilePicker({ type: "image", callback: path => { ... } }).render(true);
+
+// ✅ v14 correct
+const fp = new FilePicker.implementation({ type: "image", callback: path => { ... } });
+await fp.browse();
+```
+
+Use `FilePicker.implementation` (not `FilePicker` directly) and call `.browse()` (not `.render(true)`).
+
+---
+
+## ApplicationV2 — `_preClose(options)` — Save Before Close
+
+`_preClose` is awaited by the close process — the right place to flush unsaved form state:
+
+```javascript
+async _preClose(options) {
+  await super._preClose(options);
+  if (this.form) {
+    this.form.dispatchEvent(new Event("submit", { cancelable: true }));
+  }
+}
+```
+
+This covers the case where a user closes the sheet while an input is focused but hasn't blurred (so `submitOnChange` hasn't fired yet). Dispatching `submit` on `this.form` triggers the same save path as a normal `change` event.
+
+---
+
 ## ActorSheetV2 — `_getHeaderControls()` with Ownership
 
 `DocumentSheetV2` (parent of `ActorSheetV2`) supports an `ownership` field on header controls to auto-gate visibility by document ownership level:
