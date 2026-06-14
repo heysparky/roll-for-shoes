@@ -89,6 +89,9 @@ function renderVerdict(mount, data) {
     ref("close")  && ref("close").addEventListener("click", () => data.onClose?.());
     ref("claim")  && ref("claim").addEventListener("click", () =>
       data.onClaim?.(ref("skillName")?.value.trim() || "", xpWasSpent));
+    ref("skillName") && ref("skillName").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") data.onClaim?.(ref("skillName").value.trim() || "", xpWasSpent);
+    });
   }
 
   function spend() {
