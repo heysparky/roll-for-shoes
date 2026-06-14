@@ -746,6 +746,17 @@
   .rfs-history-entry--allsixes & { color: var(--rfs-color-allsixes); }
 }
 
+/* ── Edit mode footer ────────────────────────────────────────────────────── */
+.rfs-sheet__edit-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rfs-space-sm) var(--rfs-space-md);
+  background: var(--rfs-color-bg-panel);
+  border-top: var(--rfs-border-width) var(--rfs-border-style) var(--rfs-color-border);
+  flex-shrink: 0;
+}
+
 /* ── Character name — play-mode display ──────────────────────────────────── */
 .rfs-sheet__name--display {
   flex: 1;

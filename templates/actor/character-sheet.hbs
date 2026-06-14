@@ -32,13 +32,6 @@
             <span class="rfs-sheet__xp-value">{{xp}}</span>
           {{/if}}
         </div>
-        {{#if editMode}}
-          <button type="button"
-                  class="rfs-btn rfs-btn--gold rfs-btn--small"
-                  data-action="toggleEditMode">
-            &#x2714; {{localize 'RFS.Action.DoneEditing'}}
-          </button>
-        {{/if}}
       </div>
       {{#if editMode}}
         <textarea class="rfs-sheet__biography"
@@ -165,5 +158,15 @@
     </div>
 
   </div>
+
+  {{#if editMode}}
+    <footer class="rfs-sheet__edit-footer">
+      <button type="button"
+              class="rfs-btn rfs-btn--gold"
+              data-action="toggleEditMode">
+        &#x2714; {{localize 'RFS.Action.DoneEditing'}}
+      </button>
+    </footer>
+  {{/if}}
 
 </div>
