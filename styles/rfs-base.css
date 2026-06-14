@@ -112,6 +112,12 @@
   color: var(--rfs-color-text);
   font-family: var(--rfs-font-body);
   font-size: var(--rfs-sheet-font-size, 14px);
+
+  /* Prevent Foundry's global input/textarea font from overriding ours */
+  & input,
+  & textarea {
+    font-family: inherit;
+  }
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
