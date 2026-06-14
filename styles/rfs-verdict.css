@@ -158,7 +158,8 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding: 10px 16px;
+  padding: 9px 16px 11px;   /* extra bottom compensates for Cormorant descenders */
+  line-height: 1;
   border-radius: var(--rfs-radius, 2px);
   font-family: var(--rfs-display);
   font-size: 16px;
@@ -169,9 +170,8 @@
   transition: filter 120ms ease, box-shadow 140ms ease, background 140ms ease;
 }
 .rfs-verdict .rfs-btn--block {
-  display: block !important;
+  display: flex !important;  /* flex, not block — keeps align-items: center working */
   width: 100%;
-  text-align: center;
 }
 .rfs-verdict .rfs-btn--gold {
   background: linear-gradient(180deg, var(--rfs-gold-hi), var(--rfs-gold)) !important;
