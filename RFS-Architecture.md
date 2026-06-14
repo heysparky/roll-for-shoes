@@ -132,9 +132,13 @@ Custom tab switching via `switchTab` action (not Foundry's tab framework). Activ
 
 Toggled by a pencil/check button in the window header controls (see `_getHeaderControls()` override and `Foundry-v14-API.md`). Stored as `this._editMode` (instance state). Passed to templates as `editMode` context variable (`isEditable && _editMode`).
 
+A **Done Editing** footer bar appears at the bottom of the sheet in edit mode (`.rfs-sheet__edit-footer`), giving a visible exit point without digging into the window controls menu.
+
+`_preClose` flushes any focused-but-unblurred input by dispatching a `submit` event on the form, so edits are never lost when the sheet is closed mid-type.
+
 | | Play mode (default) | Edit mode |
 |-|---------------------|-----------|
-| Portrait | static `<img>` | `<button data-action="editPortrait">` → FilePicker |
+| Portrait | static `<img>` | `<img data-action="editImage" data-edit="img">` → built-in FilePicker (dims on hover) |
 | Name | `<span>` | `<input name="name">` auto-saves |
 | XP | `<span>` | `<input name="system.xp">` auto-saves |
 | Biography | read-only `<div>` | `<textarea name="system.biography">` auto-saves |
@@ -143,9 +147,11 @@ Toggled by a pencil/check button in the window header controls (see `_getHeaderC
 
 ### Other Per-Field Notes
 
+- **Portrait** uses the built-in `editImage` action from `DocumentSheetV2` — `data-action` must be on the `<img>` itself, not a wrapper element (see `Foundry-v14-API.md`)
 - **`originalIndex`** — added by `_sortSkillsForDisplay()` so display-sorted order cannot cause form submissions to update the wrong skill in the stored array
 - **`_processFormData`** — merges incoming skill name inputs with the rest of each skill's data (level, id, parentId) so partial form updates don't reset unsubmitted fields
 - **Rename skill dialog** (`renameSkill` action) — still registered but has no UI entry point; edit mode inline inputs replaced it
+- **Font inheritance** — `.rfs-sheet` scopes `input, textarea { font-family: inherit }` to prevent Foundry's global stylesheet from overriding the sheet font on form elements
 
 *(The ⤢ skill map popup, `RfsSkillMapDialog`, was removed. Revert commit `41f27d8` to restore it.)*
 

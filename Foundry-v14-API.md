@@ -152,3 +152,25 @@ This covers the case where a user closes the sheet while an input is focused but
 ```
 
 `visible` and `ownership` can be combined; both must pass for the control to show.
+
+---
+
+## CSS — Foundry Overrides Form Element Fonts
+
+Foundry's global stylesheet sets `font-family` on `input`, `textarea`, and `select` at a specificity that beats a single-class rule. Any custom font set on a parent element won't automatically reach form fields — this is especially noticeable when switching between display elements (spans/divs) and form inputs at runtime.
+
+Fix: scope a `font-family: inherit` rule inside your sheet's root class:
+
+```css
+.my-sheet {
+  font-family: var(--my-font-body);
+
+  & input,
+  & textarea,
+  & select {
+    font-family: inherit;  /* beats Foundry's global rule via nesting specificity */
+  }
+}
+```
+
+More-specific per-element rules (e.g. monospace on a number field) still apply normally on top of this.

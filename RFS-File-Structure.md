@@ -49,10 +49,10 @@ roll-for-shoes/                    ← repo root
 │   │                                 DSN showForRoll called explicitly for all paths;
 │   │                                 RfsRollResultDialog popup + addRollHistory
 │   └── sheets/
-│       ├── character-sheet.mjs    ← ActorSheetV2; Skills tab + Roll History tab;
-│       │                            editPortrait, rollSkill, renameSkill, addStatus,
-│       │                            switchTab actions; _sortSkillsForDisplay with
-│       │                            originalIndex; submitOnChange
+│       ├── character-sheet.mjs    ← ActorSheetV2; play/edit mode toggle (_editMode,
+│       │                            _getHeaderControls); _preClose flushes form on close;
+│       │                            rollSkill, renameSkill, addStatus, switchTab actions;
+│       │                            _sortSkillsForDisplay with originalIndex; submitOnChange
 │       └── npc-sheet.mjs
 ├── styles/
 │   ├── rfs-base.css               ← layout, structure, custom property definitions on :root
