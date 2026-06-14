@@ -90,7 +90,10 @@ function renderVerdict(mount, data) {
     ref("claim")  && ref("claim").addEventListener("click", () =>
       data.onClaim?.(ref("skillName")?.value.trim() || "", xpWasSpent));
     ref("skillName") && ref("skillName").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") data.onClaim?.(ref("skillName").value.trim() || "", xpWasSpent);
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      e.stopPropagation();
+      data.onClaim?.(ref("skillName").value.trim() || "", xpWasSpent);
     });
   }
 
