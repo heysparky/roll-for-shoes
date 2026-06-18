@@ -167,6 +167,10 @@
         "Menu":  "Menu (click label)",
         "Rail":  "Rail (hover, right side)"
       },
+      "PcFolder": {
+        "Name": "PC Folder",
+        "Hint": "Name of the actor folder whose members appear as portrait pegs in the DC tracker. A folder with this name is created automatically if it does not exist."
+      },
       "SyncTokenName": {
         "Name": "Sync Token Name on Rename",
         "Hint": "When a character's name is changed, automatically update the prototype token and any tokens already placed in scenes."

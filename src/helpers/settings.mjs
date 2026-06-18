@@ -119,6 +119,19 @@ export function registerSystemSettings() {
     requiresReload: false,
   });
 
+  // ── PC Folder ─────────────────────────────────────────────────────────────
+  // Name of the actor folder whose members appear as DC tracker portrait pegs.
+  game.settings.register(RFS.id, "pcFolder", {
+    name:    "RFS.Settings.PcFolder.Name",
+    hint:    "RFS.Settings.PcFolder.Hint",
+    scope:   "world",
+    config:  true,
+    type:    String,
+    default: "PCs",
+    requiresReload: false,
+    onChange: () => game.rfs?.dcTracker?.render(),
+  });
+
   // ── Global DC ─────────────────────────────────────────────────────────────
   // The room-temperature difficulty shown on the DC tracker bar.
   // GMs adjust it via the tracker; all clients read it when a skill is rolled.

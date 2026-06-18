@@ -61,12 +61,40 @@ Hooks.once("init", function () {
 Hooks.once("ready", async function () {
   console.log("RFS | Roll for Shoes is ready.");
 
+  // Ensure the PC folder exists (GM only — world-level write)
+  if (game.user.isGM) {
+    const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
+    const exists = game.folders.some(f => f.type === "Actor" && f.name === folderName);
+    if (!exists) await Folder.create({ name: folderName, type: "Actor" });
+  }
+
   // Render the persistent DC tracker bar for all users
   game.rfs.dcTracker = new RfsDcTracker();
   await game.rfs.dcTracker.render({ force: true });
 
-  // Update portraits when users connect or disconnect
-  Hooks.on("userConnected", () => game.rfs?.dcTracker?.render());
+  // Re-render portraits when actors are created, folder-moved, or deleted
+  Hooks.on("createActor", () => game.rfs?.dcTracker?.render());
+  Hooks.on("updateActor", (actor, changes) => {
+    if ("folder" in changes) game.rfs?.dcTracker?.render();
+  });
+  Hooks.on("deleteActor", async (actor) => {
+    game.rfs?.dcTracker?.render();
+
+    // Token cleanup — only GM runs this to avoid duplicate deletes
+    if (!game.user.isGM) return;
+    const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
+    const folder = game.folders.find(f => f.type === "Actor" && f.name === folderName);
+    if (!folder) return;
+
+    // actor._source.folder holds the raw folder ID even after the document is deleted
+    const actorFolderId = actor._source?.folder ?? actor.folder?.id;
+    if (actorFolderId !== folder.id) return;
+
+    for (const scene of game.scenes) {
+      const toDelete = scene.tokens.filter(t => t.actorId === actor.id).map(t => t.id);
+      if (toDelete.length) await scene.deleteEmbeddedDocuments("Token", toDelete);
+    }
+  });
 
   game.socket.on("system.roll-for-shoes", async (data) => {
     switch (data.type) {

@@ -61,13 +61,14 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     const activeTierLabel = tierOf(dc, rawTiers);
     const tiers = rawTiers.map(t => ({ ...t, active: t.label === activeTierLabel }));
 
-    const players = game.users.filter(u => !u.isGM && u.active && u.character);
-    const toPortrait = u => ({
-      name:    u.character.name,
-      img:     u.character.img,
-      initial: u.character.name?.[0]?.toUpperCase() ?? "?",
-      actorId: u.character.id,
-    });
+    const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
+    const folder     = game.folders.find(f => f.type === "Actor" && f.name === folderName);
+    const portraits  = (folder?.contents ?? []).map(a => ({
+      name:    a.name,
+      img:     a.img,
+      initial: a.name?.[0]?.toUpperCase() ?? "?",
+      actorId: a.id,
+    }));
 
     return {
       ...await super._prepareContext(options),
@@ -78,7 +79,7 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
       showChips: isGM && namePicker === "chips",
       showMenu:  isGM && namePicker === "menu",
       showRail:  isGM && namePicker === "rail",
-      portraits: players.map(toPortrait),
+      portraits,
     };
   }
 
