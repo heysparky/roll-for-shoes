@@ -9,8 +9,8 @@
  * portrait pegs read-only.
  *
  * Rendered on the "ready" hook; re-renders automatically via the
- * globalDc / targetNamePicker / pcFolder settings' onChange callbacks and
- * the createActor / updateActor / deleteActor hooks.
+ * globalDc / targetNamePicker settings' onChange callbacks and the
+ * "userConnected" hook.
  *
  * Note: window.frame = false removes Foundry's title/close chrome,
  * leaving a bare element positioned by CSS. Verify against Foundry v14
@@ -22,8 +22,6 @@ import { RFS, tierOf } from "../helpers/config.mjs";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
-
-  #listenerAbort = null;
 
   /* -------------------------------------------- */
   /*  Static Configuration                        */
@@ -65,15 +63,12 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
 
     const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
     const folder     = game.folders.find(f => f.type === "Actor" && f.name === folderName);
-    const seen       = new Set();
-    const portraits  = (folder?.contents ?? [])
-      .filter(a => !seen.has(a.id) && seen.add(a.id))
-      .map(a => ({
-        name:    a.name,
-        img:     a.img,
-        initial: a.name?.[0]?.toUpperCase() ?? "?",
-        actorId: a.id,
-      }));
+    const portraits  = (folder?.contents ?? []).map(a => ({
+      name:    a.name,
+      img:     a.img,
+      initial: a.name?.[0]?.toUpperCase() ?? "?",
+      actorId: a.id,
+    }));
 
     return {
       ...await super._prepareContext(options),
@@ -103,10 +98,7 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** @override */
   _onRender(context, options) {
-    // Abort all listeners from the previous render before attaching new ones
-    this.#listenerAbort?.abort();
-    this.#listenerAbort = new AbortController();
-    const { signal } = this.#listenerAbort;
+    super._onRender(context, options);
 
     // Hang from the bottom edge of Foundry's navigation bar so the widget
     // sits flush at the top of the canvas area rather than behind the nav.
@@ -116,12 +108,14 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     // Close the popover when the pointer leaves the target widget
     const widget = this.element.querySelector(".rfs-target-display");
     if (widget) {
-      widget.addEventListener("mouseleave", () => widget.removeAttribute("data-menu-open"), { signal });
+      widget.addEventListener("mouseleave", () => {
+        widget.removeAttribute("data-menu-open");
+      });
     }
 
     // Portrait double-click: pan to token (all users) + open sheet (owner/GM)
     this.element.querySelectorAll(".rfs-portrait-peg[data-actor-id]").forEach(el => {
-      el.addEventListener("dblclick", RfsDcTracker._onPortraitDblClick, { signal });
+      el.addEventListener("dblclick", RfsDcTracker._onPortraitDblClick);
     });
   }
 

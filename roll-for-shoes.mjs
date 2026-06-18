@@ -72,14 +72,8 @@ Hooks.once("ready", async function () {
   game.rfs.dcTracker = new RfsDcTracker();
   await game.rfs.dcTracker.render({ force: true });
 
-  // Re-render portraits when actors are created, folder-moved, or deleted.
-  // createActor: GM-only, and only when the new actor lands in the PC folder.
-  Hooks.on("createActor", (actor) => {
-    if (!game.user.isGM) return;
-    const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
-    const folder = game.folders.find(f => f.type === "Actor" && f.name === folderName);
-    if (folder && actor.folder?.id === folder.id) game.rfs?.dcTracker?.render();
-  });
+  // Re-render portraits when actors are created, folder-moved, or deleted
+  Hooks.on("createActor", () => game.rfs?.dcTracker?.render());
   Hooks.on("updateActor", (actor, changes) => {
     if ("folder" in changes) game.rfs?.dcTracker?.render();
   });
