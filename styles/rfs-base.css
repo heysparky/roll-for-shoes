@@ -902,12 +902,11 @@ span.rfs-sheet__xp-value {
   gap: 11px;
 }
 
-/* Portrait peg group — sits to the right of the target card */
+/* Portrait peg group — rendered by RfsPcDisplay, positioned via JS */
 .rfs-dct-pegs {
   display: flex;
   gap: 22px;
   align-items: flex-start;
-  margin-left: 16px;
 }
 
 /* ── Portrait peg ──────────────────────────────────────────────────────── */

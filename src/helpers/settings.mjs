@@ -120,7 +120,7 @@ export function registerSystemSettings() {
   });
 
   // ── PC Folder ─────────────────────────────────────────────────────────────
-  // Name of the actor folder whose members appear as DC tracker portrait pegs.
+  // Name of the actor folder whose members appear as portrait pegs.
   game.settings.register(RFS.id, "pcFolder", {
     name:    "RFS.Settings.PcFolder.Name",
     hint:    "RFS.Settings.PcFolder.Hint",
@@ -129,7 +129,7 @@ export function registerSystemSettings() {
     type:    String,
     default: "PCs",
     requiresReload: false,
-    onChange: () => game.rfs?.dcTracker?.render(),
+    onChange: () => game.rfs?.pcDisplay?.render(),
   });
 
   // ── Global DC ─────────────────────────────────────────────────────────────

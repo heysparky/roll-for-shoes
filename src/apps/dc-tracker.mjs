@@ -5,12 +5,10 @@
  *
  * Shows the current global DC (read from the "globalDc" world setting).
  * The GM can step the DC with +/− buttons, jump to a named tier chip/rail/menu
- * item, or toggle a popover. Players see the DC value and connected character
- * portrait pegs read-only.
+ * item, or toggle a popover. Players see the DC value read-only.
  *
  * Rendered on the "ready" hook; re-renders automatically via the
- * globalDc / targetNamePicker / pcFolder settings' onChange callbacks and
- * the createActor / updateActor / deleteActor hooks.
+ * globalDc / targetNamePicker settings' onChange callbacks.
  *
  * Note: window.frame = false removes Foundry's title/close chrome,
  * leaving a bare element positioned by CSS. Verify against Foundry v14
@@ -22,8 +20,6 @@ import { RFS, tierOf } from "../helpers/config.mjs";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
-
-  #listenerAbort = null;
 
   /* -------------------------------------------- */
   /*  Static Configuration                        */
@@ -59,21 +55,9 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     const namePicker = game.settings.get("roll-for-shoes", "targetNamePicker") ?? "chips";
     const isGM       = game.user.isGM;
 
-    const rawTiers      = RFS.dcTiers[mode] ?? RFS.dcTiers.moreXp;
+    const rawTiers        = RFS.dcTiers[mode] ?? RFS.dcTiers.moreXp;
     const activeTierLabel = tierOf(dc, rawTiers);
-    const tiers = rawTiers.map(t => ({ ...t, active: t.label === activeTierLabel }));
-
-    const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
-    const folder     = game.folders.find(f => f.type === "Actor" && f.name === folderName);
-    const seen       = new Set();
-    const portraits  = (folder?.contents ?? [])
-      .filter(a => !seen.has(a.id) && seen.add(a.id))
-      .map(a => ({
-        name:    a.name,
-        img:     a.img,
-        initial: a.name?.[0]?.toUpperCase() ?? "?",
-        actorId: a.id,
-      }));
+    const tiers           = rawTiers.map(t => ({ ...t, active: t.label === activeTierLabel }));
 
     return {
       ...await super._prepareContext(options),
@@ -84,7 +68,6 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
       showChips: isGM && namePicker === "chips",
       showMenu:  isGM && namePicker === "menu",
       showRail:  isGM && namePicker === "rail",
-      portraits,
     };
   }
 
@@ -103,11 +86,6 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
 
   /** @override */
   _onRender(context, options) {
-    // Abort all listeners from the previous render before attaching new ones
-    this.#listenerAbort?.abort();
-    this.#listenerAbort = new AbortController();
-    const { signal } = this.#listenerAbort;
-
     // Hang from the bottom edge of Foundry's navigation bar so the widget
     // sits flush at the top of the canvas area rather than behind the nav.
     const nav = document.querySelector("#navigation");
@@ -116,13 +94,8 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     // Close the popover when the pointer leaves the target widget
     const widget = this.element.querySelector(".rfs-target-display");
     if (widget) {
-      widget.addEventListener("mouseleave", () => widget.removeAttribute("data-menu-open"), { signal });
+      widget.addEventListener("mouseleave", () => widget.removeAttribute("data-menu-open"));
     }
-
-    // Portrait double-click: pan to token (all users) + open sheet (owner/GM)
-    this.element.querySelectorAll(".rfs-portrait-peg[data-actor-id]").forEach(el => {
-      el.addEventListener("dblclick", RfsDcTracker._onPortraitDblClick, { signal });
-    });
   }
 
   /* -------------------------------------------- */
@@ -146,16 +119,5 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!game.user.isGM) return;
     const widget = target.closest(".rfs-target-display");
     widget?.toggleAttribute("data-menu-open");
-  }
-
-  static async _onPortraitDblClick(event) {
-    const actorId = event.currentTarget.dataset.actorId;
-    const actor = game.actors.get(actorId);
-    if (!actor) return;
-
-    const token = canvas.tokens?.placeables?.find(t => t.actor?.id === actorId);
-    if (token) await canvas.animatePan({ x: token.center.x, y: token.center.y });
-
-    if (actor.isOwner) actor.sheet?.render(true);
   }
 }

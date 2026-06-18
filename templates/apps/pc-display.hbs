@@ -1,0 +1,24 @@
+{{!-- templates/apps/pc-display.hbs --}}
+{{!-- PC portrait pegs — all characters in roster order. --}}
+{{!-- Positioned to the right of the DC tracker card by RfsPcDisplay._onRender. --}}
+
+<div class="rfs-dct-pegs">
+  {{#each portraits}}
+  <div class="rfs-portrait-peg" data-actor-id="{{this.actorId}}">
+    <div class="rfs-portrait-peg__card">
+      <div class="rfs-portrait-peg__portrait">
+        {{#if this.img}}
+        <img src="{{this.img}}" alt="{{this.name}}">
+        {{else}}
+        <span class="rfs-portrait-peg__monogram">{{this.initial}}</span>
+        {{/if}}
+      </div>
+      <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tl"></span>
+      <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tr"></span>
+      <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--bl"></span>
+      <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--br"></span>
+    </div>
+    <div class="rfs-portrait-peg__name">{{this.name}}</div>
+  </div>
+  {{/each}}
+</div>

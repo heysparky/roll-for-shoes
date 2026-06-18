@@ -9,6 +9,7 @@ import { RfsActor } from "./src/documents/actor.mjs";
 import { RfsCharacterSheet } from "./src/sheets/character-sheet.mjs";
 import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
 import { RfsDcTracker } from "./src/apps/dc-tracker.mjs";
+import { RfsPcDisplay } from "./src/apps/pc-display.mjs";
 import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
 import { registerSystemSettings } from "./src/helpers/settings.mjs";
 import { RFS } from "./src/helpers/config.mjs";
@@ -68,23 +69,27 @@ Hooks.once("ready", async function () {
     if (!exists) await Folder.create({ name: folderName, type: "Actor" });
   }
 
-  // Render the persistent DC tracker bar for all users
+  // Render the persistent DC tracker and PC display for all users.
+  // DC tracker must render first so PC display can measure its position.
   game.rfs.dcTracker = new RfsDcTracker();
   await game.rfs.dcTracker.render({ force: true });
 
-  // Re-render portraits when actors are created, folder-moved, or deleted.
+  game.rfs.pcDisplay = new RfsPcDisplay();
+  await game.rfs.pcDisplay.render({ force: true });
+
+  // Re-render PC display when actors are created, folder-moved, or deleted.
   // createActor: GM-only, and only when the new actor lands in the PC folder.
   Hooks.on("createActor", (actor) => {
     if (!game.user.isGM) return;
     const folderName = game.settings.get("roll-for-shoes", "pcFolder") ?? "PCs";
     const folder = game.folders.find(f => f.type === "Actor" && f.name === folderName);
-    if (folder && actor.folder?.id === folder.id) game.rfs?.dcTracker?.render();
+    if (folder && actor.folder?.id === folder.id) game.rfs?.pcDisplay?.render();
   });
   Hooks.on("updateActor", (actor, changes) => {
-    if ("folder" in changes) game.rfs?.dcTracker?.render();
+    if ("folder" in changes) game.rfs?.pcDisplay?.render();
   });
   Hooks.on("deleteActor", async (actor) => {
-    game.rfs?.dcTracker?.render();
+    game.rfs?.pcDisplay?.render();
 
     // Token cleanup — only GM runs this to avoid duplicate deletes
     if (!game.user.isGM) return;
