@@ -62,12 +62,15 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     const tiers = rawTiers.map(t => ({ ...t, active: t.label === activeTierLabel }));
 
     const players = game.users.filter(u => !u.isGM && u.active && u.character);
-    const half    = Math.ceil(players.length / 2);
     const toPortrait = u => ({
       name:    u.character.name,
       img:     u.character.img,
       initial: u.character.name?.[0]?.toUpperCase() ?? "?",
+      actorId: u.character.id,
     });
+
+    const left = [], right = [];
+    players.forEach((u, i) => (i % 2 === 0 ? left : right).push(toPortrait(u)));
 
     return {
       ...await super._prepareContext(options),
@@ -78,8 +81,8 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
       showChips: isGM && namePicker === "chips",
       showMenu:  isGM && namePicker === "menu",
       showRail:  isGM && namePicker === "rail",
-      left:  players.slice(0, half).map(toPortrait),
-      right: players.slice(half).map(toPortrait),
+      left,
+      right,
     };
   }
 
@@ -112,6 +115,11 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
         widget.removeAttribute("data-menu-open");
       });
     }
+
+    // Portrait double-click: pan to token (all users) + open sheet (owner/GM)
+    this.element.querySelectorAll(".rfs-portrait-peg[data-actor-id]").forEach(el => {
+      el.addEventListener("dblclick", RfsDcTracker._onPortraitDblClick);
+    });
   }
 
   /* -------------------------------------------- */
@@ -135,5 +143,16 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!game.user.isGM) return;
     const widget = target.closest(".rfs-target-display");
     widget?.toggleAttribute("data-menu-open");
+  }
+
+  static async _onPortraitDblClick(event) {
+    const actorId = event.currentTarget.dataset.actorId;
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+
+    const token = canvas.tokens?.placeables?.find(t => t.actor?.id === actorId);
+    if (token) await canvas.animatePan({ x: token.center.x, y: token.center.y });
+
+    if (actor.isOwner) actor.sheet?.render(true);
   }
 }

@@ -7,7 +7,7 @@
   {{!-- Left portrait pegs --}}
   <div class="rfs-dct-pegs rfs-dct-pegs--left">
     {{#each left}}
-    <div class="rfs-portrait-peg">
+    <div class="rfs-portrait-peg" data-actor-id="{{this.actorId}}">
       <div class="rfs-portrait-peg__card">
         <div class="rfs-portrait-peg__portrait">
           {{#if this.img}}
@@ -107,7 +107,7 @@
   {{!-- Right portrait pegs --}}
   <div class="rfs-dct-pegs rfs-dct-pegs--right">
     {{#each right}}
-    <div class="rfs-portrait-peg">
+    <div class="rfs-portrait-peg" data-actor-id="{{this.actorId}}">
       <div class="rfs-portrait-peg__card">
         <div class="rfs-portrait-peg__portrait">
           {{#if this.img}}
