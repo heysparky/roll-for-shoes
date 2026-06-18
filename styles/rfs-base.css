@@ -894,7 +894,7 @@ span.rfs-sheet__xp-value {
   overflow: visible !important;
 }
 
-/* Hangrow: flex row with portrait pegs flanking the target card */
+/* Hangrow: flex row — target card on the left, portrait pegs extending right */
 .rfs-dct-hangrow {
   pointer-events: auto;
   display: flex;
@@ -902,11 +902,12 @@ span.rfs-sheet__xp-value {
   gap: 11px;
 }
 
-/* Peg group on each side */
+/* Portrait peg group — sits to the right of the target card */
 .rfs-dct-pegs {
   display: flex;
   gap: 22px;
   align-items: flex-start;
+  margin-left: 16px;
 }
 
 /* ── Portrait peg ──────────────────────────────────────────────────────── */

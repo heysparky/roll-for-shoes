@@ -69,9 +69,6 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
       actorId: u.character.id,
     });
 
-    const left = [], right = [];
-    players.forEach((u, i) => (i % 2 === 0 ? left : right).push(toPortrait(u)));
-
     return {
       ...await super._prepareContext(options),
       dc,
@@ -81,8 +78,7 @@ export class RfsDcTracker extends HandlebarsApplicationMixin(ApplicationV2) {
       showChips: isGM && namePicker === "chips",
       showMenu:  isGM && namePicker === "menu",
       showRail:  isGM && namePicker === "rail",
-      left,
-      right,
+      portraits: players.map(toPortrait),
     };
   }
 

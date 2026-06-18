@@ -4,28 +4,6 @@
 
 <div class="rfs-dct-hangrow">
 
-  {{!-- Left portrait pegs --}}
-  <div class="rfs-dct-pegs rfs-dct-pegs--left">
-    {{#each left}}
-    <div class="rfs-portrait-peg" data-actor-id="{{this.actorId}}">
-      <div class="rfs-portrait-peg__card">
-        <div class="rfs-portrait-peg__portrait">
-          {{#if this.img}}
-          <img src="{{this.img}}" alt="{{this.name}}">
-          {{else}}
-          <span class="rfs-portrait-peg__monogram">{{this.initial}}</span>
-          {{/if}}
-        </div>
-        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tl"></span>
-        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--tr"></span>
-        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--bl"></span>
-        <span class="rfs-portrait-peg__rivet rfs-portrait-peg__rivet--br"></span>
-      </div>
-      <div class="rfs-portrait-peg__name">{{this.name}}</div>
-    </div>
-    {{/each}}
-  </div>
-
   {{!-- Target card --}}
   <div class="rfs-target-display{{#unless isGM}} rfs-target-display--locked{{/unless}}">
     <div class="rfs-target-display__card">
@@ -104,9 +82,9 @@
     {{/if}}
   </div>
 
-  {{!-- Right portrait pegs --}}
-  <div class="rfs-dct-pegs rfs-dct-pegs--right">
-    {{#each right}}
+  {{!-- Portrait pegs — all characters in roster order, to the right of the target card --}}
+  <div class="rfs-dct-pegs">
+    {{#each portraits}}
     <div class="rfs-portrait-peg" data-actor-id="{{this.actorId}}">
       <div class="rfs-portrait-peg__card">
         <div class="rfs-portrait-peg__portrait">
