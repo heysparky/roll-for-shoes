@@ -22,10 +22,13 @@ roll-for-shoes/                    ← repo root
 │   └── en.json
 ├── src/
 │   ├── apps/
-│   │   └── dc-tracker.mjs         ← RfsDcTracker; persistent DC bar for all users;
-│   │                                 GM adjusts globalDc via tier chips or +/− buttons;
-│   │                                 players see DC read-only with connected portraits;
-│   │                                 re-renders on userConnected hook
+│   │   ├── dc-tracker.mjs         ← RfsDcTracker; persistent difficulty card for all users;
+│   │   │                            GM adjusts globalDc via tier chips or +/− buttons;
+│   │   │                            players see DC value read-only
+│   │   └── pc-display.mjs         ← RfsPcDisplay; portrait pegs driven by pcFolder actor
+│   │                                 folder; positioned right of DC tracker; click to pan+
+│   │                                 select token, double-click to open sheet; deletes
+│   │                                 orphaned tokens when a PC actor is deleted
 │   ├── data/
 │   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
 │   │                                 CharacterData: skills[], xp, statuses[], biography
@@ -78,8 +81,8 @@ roll-for-shoes/                    ← repo root
     │       ├── status-list.hbs
     │       └── xp-tracker.hbs
     ├── apps/
-    │   └── dc-tracker.hbs         ← portraits left/right, DC value, tier chips (GM only),
-    │                                 +/− step buttons (GM only)
+    │   ├── dc-tracker.hbs         ← DC value, tier chips (GM only), +/− step buttons (GM only)
+    │   └── pc-display.hbs         ← portrait peg loop; one .rfs-portrait-peg per PC actor
     └── dialog/
         └── roll-result-dialog.hbs ← dice row, outcome strip, Claim Skill / Spend XP
 ```
@@ -104,9 +107,12 @@ There are no challenge cards. All roll results surface via the `RfsRollResultDia
 |-----|------|-------------|
 | `theme` | String | Active visual theme (`dark-factory`, `clean-light`, `vellum`) |
 | `npcDefaultMode` | String | `fixed` or `full` — initial mode for new NPCs |
-| `advancementNamer` | String | `player` or `gm` — who names new skills (all-sixes + XP spend paths) |
 | `difficultyMode` | String | `standard` (default DC 3) or `moreXp` (default DC 4) — shapes DC tier chips |
+| `targetNamePicker` | String | `chips` / `menu` / `rail` / `none` — GM's DC picker UI mode |
+| `pcFolder` | String | Name of the actor folder whose members appear as portrait pegs (default `"PCs"`; auto-created on first GM load) |
 | `globalDc` | Number | Current global difficulty class; set by GM via DC tracker; read by all rolls |
+| `syncTokenName` | Boolean | When true, renaming an actor also updates its prototype token and placed scene tokens |
+| `sheetTextSize` | String | Per-client body text size for character sheets (`12px`–`18px`) |
 
 ---
 
@@ -115,19 +121,24 @@ There are no challenge cards. All roll results surface via the `RfsRollResultDia
 ```
 roll-for-shoes.mjs
   ├── init hook            — registers sheets, settings, document classes
-  ├── ready hook           — renders RfsDcTracker; socket listener:
-  │     advancementNeeded  → GM gets _promptGmSkillName dialog; adds skill to actor;
-  │                          if messageId present: updates originating card;
-  │                          posts advancement announcement to chat
+  ├── ready hook           — auto-creates PC folder; renders RfsDcTracker then RfsPcDisplay;
+  │                          registers createActor/updateActor/deleteActor hooks (GM-only);
+  │                          socket listener: splashShow → RollSplash.show()
   └── renderChatMessageHTML hook — wires all chat card buttons:
         rfsOpenSheet         → actor.sheet.render(true)
         rfsClaimAdvancement  → RfsSkillRoll.claimAdvancement()
-        rfsSpendXp           → RfsSkillRoll.spendXpOnCard()
 
 src/apps/dc-tracker.mjs
-  └── _prepareContext() → reads globalDc + difficultyMode → builds tier array + portraits
+  └── _prepareContext() → reads globalDc + difficultyMode → builds tier array
   └── _onStepDc()       → GM ±1 on globalDc
   └── _onSetDc()        → GM jumps to named tier value
+
+src/apps/pc-display.mjs
+  └── _prepareContext() → reads pcFolder setting → game.folders lookup → deduped portraits array
+  └── _onRender()       → measures #rfs-dc-tracker.right + 16px → sets element.style.left;
+                          wires click (pan+select) and dblclick (open sheet) per portrait peg
+  └── _onPortraitClick()    → canvas.animatePan + token.control({ releaseOthers: true })
+  └── _onPortraitDblClick() → actor.sheet.render(true) if actor.isOwner
 
 src/rolls/skill-roll.mjs
   └── roll()
@@ -184,23 +195,34 @@ Standalone rolls show a fire-and-forget `RfsRollResultDialog` popup (not a chat 
 </div>
 ```
 
-## DC Tracker (.rfs-dct)
+## DC Tracker (.rfs-target-display)
 
 ```html
-<div class="rfs-dct">
-  <div class="rfs-dct__portraits rfs-dct__portraits--left"> … </div>
-  <div class="rfs-dct__controls">
-    <!-- GM only: -->
-    <button data-action="stepDc" data-dir="-1">−</button>
-    <div class="rfs-dct__dc-inner">
-      <div class="rfs-dct__tiers">
-        <button data-action="setDc" data-value="N" class="[rfs-dct__tier--active]">Easy</button>
-        …
-      </div>
-      <div class="rfs-dct__dc-value">N</div>
-    </div>
-    <button data-action="stepDc" data-dir="1">+</button>
+<!-- dc-tracker.hbs — rendered by RfsDcTracker (id="rfs-dc-tracker") -->
+<div class="rfs-target-display [rfs-target-display--locked]">
+  <div class="rfs-target-display__card">
+    <!-- rivets, label, +/− buttons, DC value, optional popover/rail -->
+    <div class="rfs-target-display__value">N</div>
   </div>
-  <div class="rfs-dct__portraits rfs-dct__portraits--right"> … </div>
+  <!-- GM only: -->
+  <div class="rfs-target-display__chips"> … </div>
+</div>
+```
+
+## PC Display (.rfs-dct-pegs)
+
+```html
+<!-- pc-display.hbs — rendered by RfsPcDisplay (id="rfs-pc-display") -->
+<div class="rfs-dct-pegs">
+  <div class="rfs-portrait-peg" data-actor-id="…">
+    <div class="rfs-portrait-peg__card">
+      <div class="rfs-portrait-peg__portrait">
+        <img src="…" alt="…">  <!-- or .rfs-portrait-peg__monogram fallback -->
+      </div>
+      <!-- 4 x .rfs-portrait-peg__rivet -->
+    </div>
+    <div class="rfs-portrait-peg__name">…</div>
+  </div>
+  …
 </div>
 ```

@@ -20,7 +20,7 @@ To develop, copy/symlink the repo into your Foundry `Data/systems/roll-for-shoes
 
 `roll-for-shoes.mjs` wires together all Foundry hooks:
 - `init`: registers sheets, settings, document classes
-- `ready`: renders the DC tracker bar; socket listener (`system.roll-for-shoes`) — handles `advancementNeeded` only
+- `ready`: auto-creates PC folder if absent; renders `RfsDcTracker` then `RfsPcDisplay`; registers actor lifecycle hooks; socket listener (`system.roll-for-shoes`) — handles `splashShow` only
 - `preCreateActor`: sets prototype token linking
 - `renderChatMessageHTML`: **all** interactive chat card button wiring
 
@@ -28,18 +28,22 @@ To develop, copy/symlink the repo into your Foundry `Data/systems/roll-for-shoes
 
 ```
 src/
-├── apps/dc-tracker.mjs               RfsDcTracker — persistent DC bar rendered for all users;
-│                                       GM adjusts globalDc via tier chips or +/− buttons;
-│                                       players see DC read-only with connected portraits
-├── data/actor-data.mjs               TypeDataModel schemas (CharacterData, NpcData)
-├── documents/actor.mjs               RfsActor — skill helpers, addXp, addRollHistory
+├── apps/
+│   ├── dc-tracker.mjs            RfsDcTracker — persistent difficulty card for all users;
+│   │                               GM adjusts globalDc via tier chips or +/− buttons;
+│   │                               players see DC value read-only
+│   └── pc-display.mjs            RfsPcDisplay — portrait pegs for all actors in the PC
+│                                   folder; positioned to the right of RfsDcTracker;
+│                                   click → pan+select token; double-click → open sheet
+├── data/actor-data.mjs           TypeDataModel schemas (CharacterData, NpcData)
+├── documents/actor.mjs           RfsActor — skill helpers, addXp, addRollHistory
 ├── dialogs/
-│   └── roll-result-dialog.mjs        Fire-and-forget popup for roll results;
-│                                       Claim Skill / Spend XP buttons inline
-├── sheets/character-sheet.mjs        ActorSheetV2 with skill list, XP, statuses, roll history
-├── sheets/npc-sheet.mjs              NPC sheet (fixed or full mode)
-├── rolls/skill-roll.mjs              Core roll logic — reads globalDc; all roll types;
-│                                       themed advancement dialogs
+│   └── roll-result-dialog.mjs    Fire-and-forget popup for roll results;
+│                                   Claim Skill / Spend XP buttons inline
+├── sheets/character-sheet.mjs    ActorSheetV2 with skill list, XP, statuses, roll history
+├── sheets/npc-sheet.mjs          NPC sheet (fixed or full mode)
+├── rolls/skill-roll.mjs          Core roll logic — reads globalDc; all roll types;
+│                                   themed advancement dialogs
 └── helpers/
     ├── config.mjs              RFS constants, DC tiers, themes, NPC modes
     ├── settings.mjs            Foundry settings registration + buildAdvancementCardContent
@@ -48,7 +52,9 @@ src/
 
 ### Critical Patterns
 
-**DC Tracker**: The persistent bar (`RfsDcTracker`) is rendered for all users on `ready`. The GM adjusts the global DC via named tier chips or +/− step buttons. Players see it read-only with connected character portraits on each side. DC is stored in `game.settings.get("roll-for-shoes", "globalDc")` (world-scoped, GM-only writes). `_resolveDifficulty()` reads this value unless `options.difficulty` is passed explicitly.
+**DC Tracker**: The persistent card (`RfsDcTracker`) is rendered for all users on `ready`. The GM adjusts the global DC via named tier chips or +/− step buttons. Players see the value read-only. DC is stored in `game.settings.get("roll-for-shoes", "globalDc")` (world-scoped, GM-only writes). `_resolveDifficulty()` reads this value unless `options.difficulty` is passed explicitly.
+
+**PC Display**: `RfsPcDisplay` is a separate app rendered immediately after the DC tracker. It reads all actors from the folder named in the `pcFolder` world setting (default `"PCs"`, auto-created on first GM load). Portraits are deduped by actorId. Single click pans the canvas to the character's token and selects it; double-click opens the sheet (owner/GM only). Re-renders via `createActor`, `updateActor` (folder changes), and `deleteActor` hooks — all GM-only to avoid duplicate triggers. Deleting a PC actor also cleans up all its tokens across every scene. Positioned dynamically in `_onRender` by measuring `rfs-dc-tracker`'s right edge + 16 px.
 
 **Roll Result Popup**: All rolls show a `RfsRollResultDialog` fire-and-forget popup. No chat card is posted until an advancement or XP-spend action completes. The popup handles Claim Skill and Spend XP inline. Results are always recorded to the actor's roll history flag (max 50).
 
@@ -81,8 +87,8 @@ All CSS values use custom properties from `styles/rfs-base.css` — no hardcoded
 
 ## Current Development State
 
-Core mechanics, roll UX, and advancement flow are complete and table-tested. Remaining work:
-1. CSS/visual polish — DC tracker bar, roll result popup, advancement announcement card
-2. Advancement prompt text branching — natural all-sixes vs. XP-purchased flavour text
+Core mechanics, roll UX, advancement flow, and the PC portrait display are complete and table-tested. Remaining work:
+1. Advancement prompt text branching — natural all-sixes vs. XP-purchased flavour text
+2. Further CSS/visual polish as needed after table testing
 
 **Socket pattern** (important): world-scoped settings can only be written by GMs. The only socket message type is `advancementNeeded` (player → GM when `advancementNamer === "gm"`). `"socket": true` must be in `system.json` and requires a full world reload (not just browser refresh) to take effect.

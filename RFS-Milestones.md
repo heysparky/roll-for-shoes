@@ -67,6 +67,15 @@
     - Bottom padding added in base CSS to prevent descender clipping
     - Vellum theme: `line-height: 1.3` on the 32px Cormorant Garamond input so old-style numeral tails (3, 4, 5, 7, 9) are not cut off
 
+28. **PC portrait display — standalone `RfsPcDisplay` app**
+    - Portraits driven by actor folder membership (`pcFolder` world setting, default `"PCs"`; auto-created on first GM load) rather than player connectivity
+    - `RfsPcDisplay` (`src/apps/pc-display.mjs`) is a separate `ApplicationV2` app from `RfsDcTracker`; portraits are no longer part of the DC tracker
+    - Positioned dynamically at `rfs-dc-tracker.right + 16px` in `_onRender`
+    - Single click: pans canvas to the character's token and selects it
+    - Double click (owner / GM): opens character sheet; no pan
+    - Deleting a PC actor from the folder cleans up all its tokens across every scene (GM-only)
+    - `createActor` / `updateActor` (folder change) / `deleteActor` hooks keep the display in sync; GM-only re-renders avoid duplicate triggers across clients
+
 ---
 
 ## Up Next

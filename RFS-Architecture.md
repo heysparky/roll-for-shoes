@@ -21,13 +21,24 @@ Players roll directly from their character sheet — no GM initiation required.
 
 ### DC Tracker
 
-The `RfsDcTracker` bar is rendered for all users at the `ready` hook. It sits at the top of the viewport (frameless `ApplicationV2`, `window.frame: false`).
+`RfsDcTracker` is rendered for all users at the `ready` hook. It sits at the top of the viewport (frameless `ApplicationV2`, `window.frame: false`), horizontally centered.
 
 - GM sees named tier chips (Easy / Medium / Hard / Elite / Legendary / Mythic) + +/− step buttons
-- Players see the DC value read-only; connected character portraits appear on each side
+- Players see the DC value read-only
 - DC is stored in `game.settings.get("roll-for-shoes", "globalDc")` (world-scoped, GM-only writes)
-- Re-renders on `userConnected` / `userDisconnected` to keep portraits current
 - `difficultyMode` setting determines the tier labels and defaults (`standard` vs `moreXp`)
+- Re-renders on `globalDc` and `targetNamePicker` setting changes only
+
+### PC Display
+
+`RfsPcDisplay` (`src/apps/pc-display.mjs`) is rendered immediately after the DC tracker, so it can measure the tracker element's position and place itself 16 px to the right.
+
+- Portrait source: all actors in the folder named by `pcFolder` world setting (default `"PCs"`); deduplicated by actorId
+- If the folder doesn't exist on first GM load, it is created automatically
+- Single click: `canvas.animatePan` to the actor's token → `token.control({ releaseOthers: true })`
+- Double click (owner or GM): `actor.sheet.render(true)` — no pan
+- Re-renders via `createActor` (GM-only, PC-folder-only), `updateActor` (folder changed), `deleteActor`
+- Deleting a PC actor also deletes all its tokens from every scene (GM-only, guarded by folder membership check using `actor._source.folder`)
 
 ### Rolling
 
