@@ -461,6 +461,19 @@
   color: var(--rfs-text);
 }
 
+[data-rfs-theme="vellum"] .rfs-inventory__qty {
+  min-width: 28px;
+  font-family: var(--rfs-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-rfs-theme="vellum"] .rfs-inventory__name {
+  font-family: var(--rfs-serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--rfs-text);
+}
+
 /* =============================================================================
    BUTTONS — universal .rfs-btn family
    Variants: --primary (oxblood, the main "Roll" CTA), --gold (claim, success

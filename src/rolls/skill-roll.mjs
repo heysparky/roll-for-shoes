@@ -70,13 +70,14 @@ export class RfsSkillRoll {
         dice,
         outcome:   allSixes ? "allsixes" : "fail",
         xpEarned:  1,
+        xpCost:    nonSixCount,
         onClaim: async (name, xpWasSpent) => {
-          if (xpWasSpent) await actor.spendXp(dice.length);
+          if (xpWasSpent) await actor.spendXp(nonSixCount);
           await actor.addSkill(name, skill.id);
           await ChatMessage.create({
             content: buildAdvancementCardContent(
               actor.name, name, skill.name, skill.level + 1,
-              xpWasSpent, xpWasSpent ? dice.length : 0,
+              xpWasSpent, xpWasSpent ? nonSixCount : 0,
             ),
           });
         },

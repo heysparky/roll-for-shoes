@@ -486,6 +486,47 @@
   &:focus { outline: none; border-color: var(--rfs-color-accent); }
 }
 
+/* ── Inventory ────────────────────────────────────────────────────────────── */
+.rfs-inventory__item {
+  display: flex;
+  align-items: center;
+  gap: var(--rfs-space-sm);
+  padding: var(--rfs-space-xs) var(--rfs-space-sm);
+  border-radius: var(--rfs-radius-sm);
+}
+
+.rfs-inventory__name {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-body);
+
+  &:focus {
+    outline: none;
+    border-bottom-color: var(--rfs-color-accent);
+  }
+}
+
+.rfs-inventory__qty {
+  font-family: var(--rfs-font-mono);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.rfs-inventory__qty-input {
+  background: transparent;
+  border: 1px solid var(--rfs-color-border);
+  border-radius: var(--rfs-radius-sm);
+  color: var(--rfs-color-text);
+  font-family: var(--rfs-font-mono);
+  padding: 2px 4px;
+  text-align: center;
+
+  &:focus { outline: none; border-color: var(--rfs-color-accent); }
+}
+
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 .rfs-btn {
   display: inline-flex;

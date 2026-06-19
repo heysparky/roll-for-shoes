@@ -12,6 +12,8 @@
  * it just shows/hides sections in the template.
  */
 
+import { sortSkillsForDisplay, mergeSkillFormData } from "./character-sheet.mjs";
+
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 
@@ -62,9 +64,22 @@ export class RfsNpcSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       isEditable: this.isEditable,
       isFixed:    system.mode === "fixed",
       isFull:     system.mode === "full",
-      skills:     system.skills,
+      skills:     sortSkillsForDisplay(system.skills),
       statuses:   system.statuses,
     };
+  }
+
+  /* -------------------------------------------- */
+  /*  Form Data Processing                        */
+  /* -------------------------------------------- */
+
+  /** @override — preserve skill fields not present as form inputs (level, id, parentId). */
+  _processFormData(event, form, formData) {
+    const data = super._processFormData(event, form, formData);
+    if (data.system?.skills) {
+      data.system.skills = mergeSkillFormData(data.system.skills, this.actor.system.skills);
+    }
+    return data;
   }
 
   /* -------------------------------------------- */

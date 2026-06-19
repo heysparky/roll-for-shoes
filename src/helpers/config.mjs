@@ -48,6 +48,11 @@ export const RFS = {
   // Themes are CSS files that override the custom properties defined in
   // rfs-base.css. Add an entry here + a corresponding CSS file in
   // styles/themes/ to register a new theme.
+  //
+  // DUAL REGISTRATION REQUIRED: adding a theme here is only half the job.
+  // You must also add its CSS path to the "styles" array in system.json,
+  // otherwise Foundry will never load the file even though the theme is
+  // selectable. Skipping either step produces a no-op theme with no error.
   themes: {
     "dark-factory": "RFS.Theme.DarkFactory",
     "clean-light":  "RFS.Theme.CleanLight",

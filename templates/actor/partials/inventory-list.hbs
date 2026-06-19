@@ -1,15 +1,15 @@
 {{!-- templates/actor/partials/inventory-list.hbs --}}
-<div class="rfs-statuses">
+<div class="rfs-inventory">
   {{#if inventory.length}}
     {{#each inventory}}
-      <div class="rfs-status" data-item-id="{{id}}">
+      <div class="rfs-inventory__item" data-item-id="{{id}}">
 
         {{#if ../isEditable}}
-          <input class="rfs-status__name"
+          <input class="rfs-inventory__name"
                  type="text"
                  name="system.inventory.{{@index}}.name"
                  value="{{name}}">
-          <input class="rfs-status__value"
+          <input class="rfs-inventory__qty-input"
                  type="number"
                  name="system.inventory.{{@index}}.quantity"
                  value="{{quantity}}"
@@ -23,8 +23,8 @@
             ✕
           </button>
         {{else}}
-          <span class="rfs-status__name">{{name}}</span>
-          <span class="rfs-status__mod">×{{quantity}}</span>
+          <span class="rfs-inventory__name">{{name}}</span>
+          <span class="rfs-inventory__qty">×{{quantity}}</span>
         {{/if}}
 
       </div>

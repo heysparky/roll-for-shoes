@@ -17,6 +17,7 @@
      dice       {number[]} — rolled face values
      outcome    {string}   — "allsixes" | "fail" | "success"
      xpEarned   {number}   — XP awarded on failure (always 1 in RfS)
+     xpCost     {number}   — XP to spend for advancement (non-six die count)
      onClaim    {(name: string, xpWasSpent: boolean) => Promise<void>}
      onTakeXp   {() => void}
      onClose    {() => void}
@@ -48,14 +49,14 @@ function renderVerdict(mount, data) {
     </div>`;
 
   const failView = () => {
-    const cost = dice.length;
+    const cost = data.xpCost;
     return `
       <h2 class="rfs-verdict__word rfs-verdict__word--fail">Failed.</h2>
       <span class="rfs-verdict__badge">&#x2726; +${data.xpEarned} XP earned</span>
       <div class="rfs-verdict__acts">
         <button class="rfs-btn rfs-btn--ghost rfs-btn--block" data-ref="takeXp">Take the XP &amp; close</button>
         <button class="rfs-btn rfs-btn--gold rfs-btn--block" data-ref="spend">Spend ${cost} XP · Advance</button>
-        <p class="rfs-verdict__hint">Spending turns ${cost === 1 ? "your die" : `all ${cost} dice`} to a 6 — an automatic new skill.</p>
+        <p class="rfs-verdict__hint">Spending turns ${cost === 1 ? "your non-six die" : `your ${cost} non-six dice`} to a 6 — an automatic new skill.</p>
       </div>`;
   };
 
@@ -69,10 +70,10 @@ function renderVerdict(mount, data) {
   function paint() {
     let body;
     if (advanced) {
-      const cost = dice.length;
+      const cost = data.xpCost;
       const note = data.outcome === "allsixes"
         ? "A natural all-sixes grants a skill for free — no XP spent."
-        : `Earned by spending ${cost} XP to turn ${cost === 1 ? "your die" : "all dice"} to 6.`;
+        : `Earned by spending ${cost} XP to turn ${cost === 1 ? "your non-six die" : `your ${cost} non-six dice`} to 6.`;
       body = evidence() + claimView(note);
     } else if (data.outcome === "success") {
       body = evidence() + successView();

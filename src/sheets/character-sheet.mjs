@@ -160,27 +160,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    * Sort skills root-first, children following parents.
    */
   _sortSkillsForDisplay(skills) {
-    // Build a stable map of skill id → original array index so form inputs
-    // use name="system.skills.N.name" with N matching the stored array position,
-    // not the display-sorted position.
-    const indexMap = new Map(skills.map((s, i) => [s.id, i]));
-
-    const root = skills.find((s) => s.parentId === "");
-    if (!root) return skills.map((s, i) => ({ ...s, depth: 0, originalIndex: i }));
-
-    const result = [];
-    const addWithChildren = (parentId, depth) => {
-      for (const s of skills.filter((s) => s.parentId === parentId)) {
-        result.push({ ...s, depth, originalIndex: indexMap.get(s.id) ?? 0 });
-        addWithChildren(s.id, depth + 1);
-      }
-    };
-
-    result.push({ ...root, depth: 0, originalIndex: indexMap.get(root.id) ?? 0 });
-    addWithChildren(root.id, 1);
-
-    const orphans = skills.filter((s) => !result.find((r) => r.id === s.id));
-    return [...result, ...orphans.map((s) => ({ ...s, depth: 0, originalIndex: indexMap.get(s.id) ?? 0 }))];
+    return sortSkillsForDisplay(skills);
   }
 
   /* -------------------------------------------- */
@@ -199,13 +179,7 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const data = super._processFormData(event, form, formData);
 
     if (data.system?.skills) {
-      const existingSkills = this.actor.system.skills;
-      const merged = existingSkills.map((skill, i) => {
-        const submitted = data.system.skills[i];
-        if (!submitted) return { ...skill };
-        return { ...skill, name: submitted.name ?? skill.name };
-      });
-      data.system.skills = merged;
+      data.system.skills = mergeSkillFormData(data.system.skills, this.actor.system.skills);
     }
 
     if (data.system?.inventory) {
@@ -352,5 +326,61 @@ export class RfsCharacterSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     this.render();
   }
 
+}
+
+/* -------------------------------------------- */
+/*  Shared Sheet Utilities                       */
+/* -------------------------------------------- */
+
+/**
+ * Sort a skill array root-first with depth and originalIndex decorations for
+ * template rendering. Shared by character and NPC sheets.
+ *
+ * Adds:
+ *   depth         — nesting level for CSS indentation
+ *   originalIndex — index in the stored array (for form field names)
+ *
+ * @param {object[]} skills — raw system.skills array
+ * @returns {object[]}
+ */
+export function sortSkillsForDisplay(skills) {
+  // stable index map so form inputs use name="system.skills.N.name" with N
+  // matching the stored array position, not the display-sorted position
+  const indexMap = new Map(skills.map((s, i) => [s.id, i]));
+
+  const root = skills.find((s) => s.parentId === "");
+  if (!root) return skills.map((s, i) => ({ ...s, depth: 0, originalIndex: i }));
+
+  const result = [];
+  const addWithChildren = (parentId, depth) => {
+    for (const s of skills.filter((s) => s.parentId === parentId)) {
+      result.push({ ...s, depth, originalIndex: indexMap.get(s.id) ?? 0 });
+      addWithChildren(s.id, depth + 1);
+    }
+  };
+
+  result.push({ ...root, depth: 0, originalIndex: indexMap.get(root.id) ?? 0 });
+  addWithChildren(root.id, 1);
+
+  const orphans = skills.filter((s) => !result.find((r) => r.id === s.id));
+  return [...result, ...orphans.map((s) => ({ ...s, depth: 0, originalIndex: indexMap.get(s.id) ?? 0 }))];
+}
+
+/**
+ * Merge submitted skill form data back onto the stored skill array,
+ * preserving fields that have no corresponding form input (id, level,
+ * parentId, notes). Call this in _processFormData when data.system.skills
+ * is present.
+ *
+ * @param {object[]} submitted    — sparse array from formData expansion
+ * @param {object[]} existing     — current actor.system.skills
+ * @returns {object[]}
+ */
+export function mergeSkillFormData(submitted, existing) {
+  return existing.map((skill, i) => {
+    const s = submitted[i];
+    if (!s) return { ...skill };
+    return { ...skill, name: s.name ?? skill.name };
+  });
 }
 
