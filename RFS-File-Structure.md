@@ -32,10 +32,14 @@ roll-for-shoes/                    ← repo root
 │   ├── data/
 │   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
 │   │                                 CharacterData: skills[], xp, statuses[], biography
-│   ├── dialogs/
-│   │   └── roll-result-dialog.mjs ← fire-and-forget popup for roll results;
-│   │                                 shows dice, outcome strip, Claim Skill / Spend XP;
-│   │                                 actions in DEFAULT_OPTIONS (not renderChatMessageHTML)
+│   ├── ui/
+│   │   ├── roll-splash.mjs        ← RollSplash singleton; full-screen cinematic overlay;
+│   │   │                            show(kind) — "success" / "critical" / "fail"; auto-hides
+│   │   │                            after dwell; broadcast to other clients via splashShow socket
+│   │   └── roll-verdict-dialog.mjs← RfsVerdictDialog (ApplicationV2 shell) +
+│   │                                 renderVerdict() closure engine; allsixes / fail / success
+│   │                                 outcomes; in-place XP-spend → claim transition;
+│   │                                 xpCost (nonSixCount) passed in from roll site
 │   ├── documents/
 │   │   └── actor.mjs              ← RfsActor; skill/xp/status mutations, getSkillById,
 │   │                                 addRollHistory (flag-based, max 50 entries)
@@ -55,15 +59,19 @@ roll-for-shoes/                    ← repo root
 │       ├── character-sheet.mjs    ← ActorSheetV2; play/edit mode toggle (_editMode,
 │       │                            _getHeaderControls); _preClose flushes form on close;
 │       │                            rollSkill, renameSkill, addStatus, switchTab actions;
-│       │                            _sortSkillsForDisplay with originalIndex; submitOnChange
-│       └── npc-sheet.mjs
+│       │                            submitOnChange; exports sortSkillsForDisplay(skills) and
+│       │                            mergeSkillFormData(submitted, existing) — shared by NPC sheet
+│       └── npc-sheet.mjs          ← imports sortSkillsForDisplay + mergeSkillFormData;
+│                                    fixed (difficulty + description) or full (skill tree + XP +
+│                                    statuses) mode; full mode uses skill-index.hbs with editMode=isEditable
 ├── styles/
-│   ├── rfs-base.css               ← layout, structure, custom property definitions on :root
-│   │                                includes: sheet, skill index, DC tracker bar (.rfs-dct),
-│   │                                buttons, biography textarea
-│   ├── rfs-chat.css               ← roll result popup (.rfs-rrd), advancement
-│   │                                announcement card (.rfs-advancement), advancement
-│   │                                dialog content (.rfs-adv-dlg), button variants
+│   ├── rfs-base.css               ← layout, structure, custom property definitions on :root;
+│   │                                sheet, skill index, DC tracker, buttons, biography,
+│   │                                statuses (.rfs-status), inventory (.rfs-inventory__*)
+│   ├── rfs-chat.css               ← advancement announcement card (.rfs-advancement)
+│   ├── rfs-splash.css             ← full-screen roll splash overlay (.rfs-splash)
+│   ├── rfs-verdict.css            ← verdict dialog (.rfs-verdict); scoped under .rfs-verdict
+│   │                                to beat Foundry's global element resets
 │   └── themes/
 │       ├── dark-factory.css       ← steampunk dark theme
 │       ├── clean-light.css        ← minimal light theme
@@ -84,10 +92,12 @@ roll-for-shoes/                    ← repo root
     │   ├── dc-tracker.hbs         ← DC value, tier chips (GM only), +/− step buttons (GM only)
     │   └── pc-display.hbs         ← portrait peg loop; one .rfs-portrait-peg per PC actor
     └── dialog/
-        └── roll-result-dialog.hbs ← dice row, outcome strip, Claim Skill / Spend XP
+        └── roll-verdict-dialog.hbs← shell template; mounts .rfs-verdict__body div that
+                                     renderVerdict() takes over after _onRender
 ```
 
 *(The skill map popup was removed — `skill-map-dialog.mjs`, `skill-node.hbs`, `skill-tree.hbs`, and `skill-map-dialog.hbs` no longer exist. Revert commit `41f27d8` to restore them.)*
+*(The old fire-and-forget roll result popup was removed — `src/dialogs/roll-result-dialog.mjs` and `templates/dialog/roll-result-dialog.hbs` no longer exist. Replaced by `RfsVerdictDialog`.)*
 
 ---
 
@@ -96,8 +106,9 @@ roll-for-shoes/                    ← repo root
 | type | visibility | description |
 |------|------------|-------------|
 | `advancement` | public | Announcement posted when any skill is gained (natural all-sixes or XP spend). Built by `buildAdvancementCardContent()`. Static — no buttons. |
+| `opposed roll` | public | Posted by `RfsSkillRoll.opposed()`. Shows both actors' dice, totals, winner. Contains `rfsClaimAdvancement` buttons if either actor rolled all-sixes. |
 
-There are no challenge cards. All roll results surface via the `RfsRollResultDialog` fire-and-forget popup and record to the actor's roll history flag.
+All standalone roll results surface via `RfsVerdictDialog` (not chat). Chat only receives advancement announcements and opposed roll cards.
 
 ---
 
@@ -142,17 +153,21 @@ src/apps/pc-display.mjs
 
 src/rolls/skill-roll.mjs
   └── roll()
-        → _resolveDifficulty()  reads options.difficulty ?? globalDc
+        → _resolveDifficulty()      reads options.difficulty ?? globalDc
         → DSN showForRoll or AudioHelper.play
         → actor.addXp(1) on failure
         → actor.addRollHistory()
-        → _showRollResultPopup() → RfsRollResultDialog.open()
-  └── _doStandaloneXpSpend()
-        → _confirmXpSpend → actor.spendXp → _promptSkillName | advancementNeeded socket
-  └── claimAdvancement()
-        → advancementNamer=gm + non-GM: emits advancementNeeded
-        → else: _promptSkillName → actor.addSkill → posts advancement announcement
-  └── _promptGmSkillName() — themed GM-facing naming dialog (called from socket handler too)
+        → RollSplash.show(kind) + socket splashShow broadcast
+        → RfsVerdictDialog.open() if allSixes or canSpendXp; else done
+             onClaim(name, xpWasSpent):
+               actor.spendXp(nonSixCount) if xpWasSpent
+               actor.addSkill(name, skill.id)
+               ChatMessage.create(buildAdvancementCardContent(...))
+  └── claimAdvancement()             opposed roll all-sixes path
+        → DialogV2.input for skill name
+        → actor.addSkill → posts advancement announcement
+  └── opposed()
+        → evaluates both rolls, posts chat card, awards XP to loser
 
 src/helpers/settings.mjs
   └── buildAdvancementCardContent() — renders advancement announcement HTML
@@ -177,23 +192,24 @@ src/helpers/settings.mjs
 </div>
 ```
 
-## Roll Result Popup (.rfs-rrd)
+## Verdict Dialog (.rfs-verdict)
 
-Standalone rolls show a fire-and-forget `RfsRollResultDialog` popup (not a chat card).
+Standalone rolls show `RfsVerdictDialog` (not a chat card). Opened fire-and-forget by `RfsSkillRoll.roll()`.
 
-```html
-<div class="rfs-rrd">
-  <div class="rfs-rrd__dice-row">
-    <span class="rfs-die [rfs-die--six]">N</span> …
-  </div>
-  <div class="rfs-rrd__outcome rfs-rrd__outcome--success|failure|allsixes">
-    ✔ Success — total vs DC  |  ✘ Fail — total vs DC — +1 XP  |  ✦ All Sixes! — total vs DC
-  </div>
-  <!-- optional action buttons -->
-  <button data-action="claimSkill">✦ Claim Skill</button>
-  <button data-action="spendXp">Spend N XP & Advance</button>
-</div>
+The ApplicationV2 shell renders `roll-verdict-dialog.hbs`, which contains an empty `.rfs-verdict__body` div. `renderVerdict()` takes that div as `mount` and owns it entirely via `innerHTML` replacement — Foundry's template system is not involved after the initial render.
+
 ```
+mount (.rfs-verdict__body)
+  ├── .rfs-verdict__evidence   — pip dice row
+  ├── h2.rfs-verdict__word     — "All sixes." / "Failed." / "Success."
+  ├── span.rfs-verdict__badge  — reward/outcome label
+  └── .rfs-verdict__acts       — action stack
+        [allsixes / post-spend]  input[data-ref="skillName"] + button[data-ref="claim"]
+        [fail]                   button[data-ref="takeXp"] + button[data-ref="spend"]
+        [success]                button[data-ref="close"]
+```
+
+Key: `data-ref` attributes are wired by `renderVerdict()` directly — not via `renderChatMessageHTML` or Foundry actions.
 
 ## DC Tracker (.rfs-target-display)
 

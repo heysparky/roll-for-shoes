@@ -76,10 +76,17 @@
     - Deleting a PC actor from the folder cleans up all its tokens across every scene (GM-only)
     - `createActor` / `updateActor` (folder change) / `deleteActor` hooks keep the display in sync; GM-only re-renders avoid duplicate triggers across clients
 
+29. **Codebase audit — bug fixes and cleanup**
+    - **XP spend cost bug fixed**: `spendXp` and the verdict dialog UI were using `dice.length` (total dice) instead of `nonSixCount` (non-six dice). A failed roll with any 6s among the dice would display and charge the wrong XP amount. `xpCost: nonSixCount` is now passed explicitly into `RfsVerdictDialog.open()` and used at all three call sites.
+    - **NPC full mode repaired**: template referenced non-existent `skill-tree.hbs`; context skipped the `sortSkillsForDisplay` processing that adds `depth`/`originalIndex`; `_processFormData` was absent so inline skill renames would wipe `id`/`level`/`parentId`. All three fixed. `sortSkillsForDisplay` and `mergeSkillFormData` extracted as named exports from `character-sheet.mjs` and imported by the NPC sheet.
+    - **Inventory CSS namespace separated**: `inventory-list.hbs` was borrowing `.rfs-status` class names. Renamed to `rfs-inventory__*` with own rules in `rfs-base.css` and `vellum.css`.
+    - **Theme dual-registration documented**: added warning comment to `config.mjs` theme registry explaining that `system.json` must also be updated when adding a theme.
+
 ---
 
 ## Up Next
 
+- **Portrait display** — PC portraits in `RfsPcDisplay` are not displaying correctly; this is the active work item
 - **Advancement announcement card copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
 - **Further CSS polish** — as needed after table testing
 
@@ -103,15 +110,19 @@ Core mechanics, roll UX, advancement flow, and the vellum character sheet visual
 - Token name syncs to prototype token and placed scene tokens on rename
 
 ### Known Gaps / Next Work
+- **Portrait display**: PC portraits in `RfsPcDisplay` are not displaying correctly — active work item
 - **Advancement announcement card copy**: same text for natural all-sixes vs XP-purchased advancement. Needs distinct flavour copy.
 
 ### Architecture Decisions
 - Global DC lives in `game.settings.get("roll-for-shoes", "globalDc")` — world-scoped, GM-only writes
 - All rolls read globalDc via `_resolveDifficulty()` — no per-challenge state, no passive token detection
-- Roll aftermath: splash (`RollSplash`) → verdict dialog (`RfsVerdictDialog`) when actionable; chat only receives advancement announcement cards
-- Players always name their own skills — no GM-namer socket path
-- Socket reduced to one type: `splashShow` (broadcast roll flourish to other clients)
+- Roll aftermath: splash (`RollSplash`) → verdict dialog (`RfsVerdictDialog`) when actionable; chat only receives advancement announcement cards and opposed roll cards
+- Players always name their own skills — no GM-namer socket path exists
+- Socket is one type only: `splashShow` (broadcast roll flourish to other clients)
+- XP spend cost is `nonSixCount` (non-six dice), not `dice.length`; `xpCost` is passed explicitly from roll site into `RfsVerdictDialog` so the UI display and the actual `spendXp()` call stay in sync
+- `sortSkillsForDisplay` and `mergeSkillFormData` are named exports from `character-sheet.mjs`; NPC sheet imports them so full-mode skill display and inline rename work identically to the PC sheet
 - CSS selectors in theme files scoped to `[data-rfs-theme="vellum"]`; verdict dialog CSS scoped to `.rfs-verdict` to beat Foundry's global element resets
+- Inventory has its own CSS namespace (`rfs-inventory__*`); status and inventory styling can now diverge independently
 
 ---
 

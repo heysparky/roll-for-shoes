@@ -45,38 +45,45 @@ Players roll directly from their character sheet — no GM initiation required.
 1. Player clicks a skill name on the character sheet
 2. `_onRollSkill()` (`character-sheet.mjs`) calls `RfsSkillRoll.roll(actor, skill)`
 3. `_resolveDifficulty()` reads `globalDc` (or uses `options.difficulty` if passed explicitly)
-4. Dice evaluated; XP awarded on failure; `actor.addRollHistory()` records the result
-5. `RfsRollResultDialog.open()` — fire-and-forget popup
+4. Dice evaluated; XP awarded on failure (`actor.addXp(1)`); `actor.addRollHistory()` records the result
+5. `RollSplash.show(kind)` fires immediately; broadcast to other clients via socket if `splashAudience` requires it
+6. If `allSixes` or `canSpendXp` (failure with enough XP): `RfsVerdictDialog.open()` — see below
+7. Plain success: splash only, no dialog
 
 ### Advancement After a Roll
 
-All advancement dialogs use themed `.rfs-adv-dlg` HTML inside `DialogV2`.
+`RfsVerdictDialog` is the single post-roll dialog. It opens only when there is something actionable.
 
-**XP spend (non-all-sixes roll):**
-1. Player clicks "Spend N XP" in the popup → `_doStandaloneXpSpend(actor, skill, nonSixCount)`
-2. `_confirmXpSpend()` dialog — "Spend N XP on a new skill?"
-3. On yes: `actor.spendXp()` runs immediately
-4. If `advancementNamer === "player"` or `game.user.isGM`: `_promptSkillName(skill, true)` opens locally → `actor.addSkill()` → posts advancement announcement
-5. If `advancementNamer === "gm"` and player client: `advancementNeeded` socket → GM gets `_promptGmSkillName`; names skill; `actor.addSkill()`; posts announcement
+**XP cost rule:** spend 1 XP per **non-six die** (`nonSixCount`). `canSpendXp = failed && nonSixCount > 0 && actor.system.xp >= nonSixCount`.
 
-**All sixes (natural advancement):**
-- `advancementNamer === "player"`: `_promptSkillName(skill, false)` — "You earned a skill!" — opens locally
-- `advancementNamer === "gm"` and player client: `advancementNeeded` socket → GM gets `_promptGmSkillName` — "{Actor} earned a skill!"
-- `advancementNamer === "gm"` and GM is the rolling client: `_promptGmSkillName` opens inline
+**All-sixes (natural advancement):**
+1. Dialog opens in `"allsixes"` state — claim view shows immediately (all dice already showing 6)
+2. Player types a skill name → clicks "Claim skill" (or presses Enter)
+3. `onClaim(name, xpWasSpent=false)` → `actor.addSkill(name, skill.id)` → advancement announcement card
 
-Either path calls `actor.addSkill()` then posts a `.rfs-advancement` announcement card to public chat.
+**Fail → spend XP path:**
+1. Dialog opens in `"fail"` state — "Failed." + "Take XP & close" / "Spend N XP · Advance"
+2. `spend()` flips all dice to 6 in the closure, sets `xpWasSpent = true`, repaints to claim view in-place
+3. Player types a skill name → clicks "Claim skill"
+4. `onClaim(name, xpWasSpent=true)` → `actor.spendXp(nonSixCount)` + `actor.addSkill()` + announcement card
+
+Players always name their own skills. There is no GM-namer socket path.
+
+Either path posts a `.rfs-advancement` announcement card to public chat via `buildAdvancementCardContent()`.
 
 ---
 
-## Roll Result Popup
+## Verdict Dialog
 
-`RfsRollResultDialog` (`src/dialogs/roll-result-dialog.mjs`) — fire-and-forget.
+`RfsVerdictDialog` (`src/ui/roll-verdict-dialog.mjs`) — opened fire-and-forget by `RfsSkillRoll.roll()`.
 
-- `roll()` calls `_showRollResultPopup()` without awaiting it; roll returns before the popup closes
-- Popup content: dice faces, outcome strip (success/failure/all-sixes + DC), optional Claim Skill or Spend XP buttons
-- Popup actions (`claimSkill`, `spendXp`) live in `RfsRollResultDialog.DEFAULT_OPTIONS.actions` — not in `renderChatMessageHTML`
-- DSN is called explicitly before opening the popup; `AudioHelper.play()` fallback when DSN is absent
-- After each roll, `actor.addRollHistory(entry)` records to `"roll-for-shoes.rollHistory"` flag (max 50, newest first)
+Architecture: a plain `renderVerdict(mount, data)` closure engine lives inside the ApplicationV2 shell. It manages all state (`dice`, `advanced`, `xpWasSpent`) via closure variables, not Foundry re-renders. `paint()` replaces `mount.innerHTML` on each state transition — old listeners are discarded with the replaced DOM.
+
+- Dialog opens only for actionable outcomes (allSixes or canSpendXp); plain success gets splash only
+- `data.xpCost` carries `nonSixCount` from the roll site so the UI and the actual `spendXp()` call use the same number
+- Actions (`claim`, `spend`, `takeXp`) are wired via `data-ref` attributes inside the render engine — NOT in `renderChatMessageHTML`
+- `_onRender` guard (`if (this._verdictInst) return`) prevents the engine from running twice on Foundry re-renders
+- `_preClose` calls `destroy()` to blank the mount div before ApplicationV2 tears down the element
 
 ---
 
@@ -97,7 +104,7 @@ GMs bypass the socket and call handlers directly (`game.user.isGM` guard before 
 
 | type | direction | handler |
 |------|-----------|---------|
-| `advancementNeeded` | player → GM | GM gets `_promptGmSkillName` dialog; names skill; `actor.addSkill()`; posts advancement announcement. If `messageId` is present, also updates the originating chat card. |
+| `splashShow` | roller → other clients | Recipients call `RollSplash.show(data.kind)`; `gmOnly` flag filters non-GM clients when `splashAudience === "roller_gm"` |
 
 `"socket": true` must be in `system.json`. Requires a full world reload (not just browser refresh) to take effect after changing.
 
@@ -109,11 +116,10 @@ All chat button listeners live in the `renderChatMessageHTML` hook in `roll-for-
 
 | data-action | surface | calls |
 |-------------|---------|-------|
-| `rfsOpenSheet` | portrait buttons (advancement card or any future card) | `actor.sheet.render(true)` |
-| `rfsClaimAdvancement` | advancement card (all-sixes) | `RfsSkillRoll.claimAdvancement()` |
-| `rfsSpendXp` | standalone result card (failure, has XP) | `RfsSkillRoll.spendXpOnCard()` |
+| `rfsOpenSheet` | any chat card with a portrait button | `actor.sheet.render(true)` |
+| `rfsClaimAdvancement` | opposed roll card (all-sixes only) | `RfsSkillRoll.claimAdvancement(actorId, skillId)` → `DialogV2.input` for skill name |
 
-Roll result popup actions (`claimSkill`, `spendXp`) are in `RfsRollResultDialog.DEFAULT_OPTIONS.actions`.
+Verdict dialog actions (`claim`, `spend`, `takeXp`, `close`) are wired via `data-ref` inside `renderVerdict()` — they are NOT in `renderChatMessageHTML`.
 
 ---
 
@@ -159,8 +165,9 @@ A **Done Editing** footer bar appears at the bottom of the sheet in edit mode (`
 ### Other Per-Field Notes
 
 - **Portrait** uses the built-in `editImage` action from `DocumentSheetV2` — `data-action` must be on the `<img>` itself, not a wrapper element (see `Foundry-v14-API.md`)
-- **`originalIndex`** — added by `_sortSkillsForDisplay()` so display-sorted order cannot cause form submissions to update the wrong skill in the stored array
-- **`_processFormData`** — merges incoming skill name inputs with the rest of each skill's data (level, id, parentId) so partial form updates don't reset unsubmitted fields
+- **`sortSkillsForDisplay(skills)`** — exported named function from `character-sheet.mjs`; adds `depth` (for CSS `--rfs-skill-depth` indentation) and `originalIndex` (for form field names). Both character sheet and NPC sheet import and call it.
+- **`mergeSkillFormData(submitted, existing)`** — exported named function from `character-sheet.mjs`; merges submitted skill name inputs with the rest of each skill's data (level, id, parentId) so partial form updates don't reset unsubmitted fields. Both sheets call this in their `_processFormData` override.
+- **NPC full mode** — uses the same `skill-index.hbs` partial as the character sheet. Passes `editMode=isEditable` (NPC has no two-stage edit-mode toggle).
 - **Rename skill dialog** (`renameSkill` action) — still registered but has no UI entry point; edit mode inline inputs replaced it
 - **Font inheritance** — `.rfs-sheet` scopes `input, textarea { font-family: inherit }` to prevent Foundry's global stylesheet from overriding the sheet font on form elements
 

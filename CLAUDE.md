@@ -87,8 +87,11 @@ All CSS values use custom properties from `styles/rfs-base.css` — no hardcoded
 
 ## Current Development State
 
-Core mechanics, roll UX, advancement flow, and the PC portrait display are complete and table-tested. Remaining work:
-1. Advancement prompt text branching — natural all-sixes vs. XP-purchased flavour text
-2. Further CSS/visual polish as needed after table testing
+Core mechanics, roll UX, and advancement flow are complete and table-tested. Active work:
+1. **Portrait display** — PC portraits in `RfsPcDisplay` are not displaying correctly; this is the current work item
+2. Advancement prompt text branching — natural all-sixes vs. XP-purchased flavour text on the announcement card
+3. Further CSS/visual polish as needed after table testing
 
-**Socket pattern** (important): world-scoped settings can only be written by GMs. The only socket message type is `advancementNeeded` (player → GM when `advancementNamer === "gm"`). `"socket": true` must be in `system.json` and requires a full world reload (not just browser refresh) to take effect.
+**Socket pattern** (important): world-scoped settings can only be written by GMs. The only socket message type is `splashShow` (broadcast roll flourish to other clients). `"socket": true` must be in `system.json` and requires a full world reload (not just browser refresh) to take effect.
+
+**XP spend cost** (important): spend cost is `nonSixCount` (non-six dice), NOT `dice.length`. `xpCost` is passed explicitly from `RfsSkillRoll.roll()` into `RfsVerdictDialog` so UI display and `spendXp()` use the same value.
