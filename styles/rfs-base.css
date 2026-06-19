@@ -935,6 +935,38 @@ span.rfs-sheet__xp-value {
   overflow: visible !important;
 }
 
+/* PC portrait display — same fixed-floating treatment as DC tracker.
+   top/left are overridden at runtime in RfsPcDisplay._onRender to sit
+   flush below #navigation, immediately right of #rfs-dc-tracker. */
+#rfs-pc-display {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+#rfs-pc-display .window-content,
+#rfs-pc-display .window-header,
+#rfs-pc-display .window-frame,
+#rfs-pc-display > section,
+#rfs-pc-display > form,
+#rfs-pc-display > div {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
 /* Hangrow: flex row — target card on the left, portrait pegs extending right */
 .rfs-dct-hangrow {
   pointer-events: auto;
@@ -948,6 +980,7 @@ span.rfs-sheet__xp-value {
   display: flex;
   gap: 22px;
   align-items: flex-start;
+  pointer-events: auto;
 }
 
 /* ── Portrait peg ──────────────────────────────────────────────────────── */
@@ -955,6 +988,8 @@ span.rfs-sheet__xp-value {
 .rfs-portrait-peg {
   position: relative;
   flex-shrink: 0;
+  width: 80px;
+  cursor: pointer;
 }
 
 /* box-sizing: border-box keeps the card inside its declared width so the
@@ -992,8 +1027,11 @@ span.rfs-sheet__xp-value {
 
 .rfs-portrait-peg__rivet {
   position: absolute;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   z-index: 5;         /* above the portrait image */
+  background: var(--rfs-color-border);
 }
 
 .rfs-portrait-peg__rivet--tl { top: 4px;    left: 4px; }
