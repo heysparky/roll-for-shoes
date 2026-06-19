@@ -79,13 +79,14 @@ export class RfsPcDisplay extends HandlebarsApplicationMixin(ApplicationV2) {
 
     // Click: pan to token + select; double-click: open sheet
     this.element.querySelectorAll(".rfs-portrait-peg[data-actor-id]").forEach(el => {
-      el.addEventListener("click", (event) => {
+      el.addEventListener("click", () => {
         clearTimeout(this.#clickTimer);
-        this.#clickTimer = setTimeout(() => RfsPcDisplay._onPortraitClick(event), 250);
+        const actorId = el.dataset.actorId;
+        this.#clickTimer = setTimeout(() => RfsPcDisplay._onPortraitClick(actorId), 250);
       });
-      el.addEventListener("dblclick", (event) => {
+      el.addEventListener("dblclick", () => {
         clearTimeout(this.#clickTimer);
-        RfsPcDisplay._onPortraitDblClick(event);
+        RfsPcDisplay._onPortraitDblClick(el.dataset.actorId);
       });
     });
   }
@@ -94,16 +95,14 @@ export class RfsPcDisplay extends HandlebarsApplicationMixin(ApplicationV2) {
   /*  Portrait Interactions                       */
   /* -------------------------------------------- */
 
-  static async _onPortraitClick(event) {
-    const actorId = event.currentTarget.dataset.actorId;
+  static async _onPortraitClick(actorId) {
     const token = canvas.tokens?.placeables?.find(t => t.actor?.id === actorId);
     if (!token) return;
     await canvas.animatePan({ x: token.center.x, y: token.center.y });
     token.control({ releaseOthers: true });
   }
 
-  static async _onPortraitDblClick(event) {
-    const actorId = event.currentTarget.dataset.actorId;
+  static async _onPortraitDblClick(actorId) {
     const actor = game.actors.get(actorId);
     if (!actor) return;
     if (actor.isOwner) actor.sheet?.render(true);
