@@ -1048,11 +1048,14 @@ span.rfs-sheet__xp-value {
 
 /* ── Target display (DC card) ───────────────────────────────────────────── */
 
+/* pointer-events: auto re-enables input — #rfs-dc-tracker sets it to none
+   so the transparent wrapper doesn't block canvas clicks. */
 .rfs-target-display {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   position: relative;
+  pointer-events: auto;
 }
 
 .rfs-target-display__card {
