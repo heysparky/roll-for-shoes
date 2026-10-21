@@ -122,7 +122,8 @@
       "XpSpendTitle": "Spend XP for Advancement?",
       "AdvancementWaiting": "XP spent — waiting for GM to name the new skill…",
       "AdvancementCard": {
-        "Title": "New Skill!",
+        "Title": "Skill Granted!",
+        "TitleXp": "Skill Earned!",
         "Meta": "From {parent}",
         "MetaXp": "From {parent}"
       }

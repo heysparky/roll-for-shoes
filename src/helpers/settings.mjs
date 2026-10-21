@@ -183,12 +183,14 @@ export function applySheetTextSize(size) {
  * @returns {string}
  */
 export function buildAdvancementCardContent(actorName, newSkillName, parentSkillName, newLevel, xpSpent = false, xpCost = 0) {
-  const meta = game.i18n.format("RFS.Chat.AdvancementCard.Meta", { parent: parentSkillName });
+  // Natural all-sixes → "Skill Granted!"; XP-bought → "Skill Earned!"
+  const title = game.i18n.localize(xpSpent ? "RFS.Chat.AdvancementCard.TitleXp" : "RFS.Chat.AdvancementCard.Title");
+  const meta  = game.i18n.format(xpSpent ? "RFS.Chat.AdvancementCard.MetaXp" : "RFS.Chat.AdvancementCard.Meta", { parent: parentSkillName });
 
   return `<div class="rfs-advancement">
     <div class="rfs-advancement__header">
       <span class="rfs-advancement__mark">✦</span>
-      <span class="rfs-advancement__title">${game.i18n.localize("RFS.Chat.AdvancementCard.Title")}</span>
+      <span class="rfs-advancement__title">${title}</span>
       <span class="rfs-advancement__mark">✦</span>
     </div>
     <div class="rfs-advancement__body">
