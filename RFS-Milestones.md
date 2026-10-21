@@ -21,7 +21,7 @@
     - Tier chip buttons highlight the active DC value; +/− step buttons nudge by 1
     - GM changes take effect immediately for all connected clients via the `onChange` callback
 13. **Character sheet UX**
-    - Four tabs: Skills / Inventory / Statuses / History
+    - Three tabs: Skills / Inventory / Statuses (History tab built but commented out in template — uncomment nav button and panel to restore)
     - Click skill name to roll (pips-only display, no level number)
     - Portrait: click-to-edit via FilePicker (`editPortrait` action); vellum shows pencil overlay on hover
     - XP: editable number input (auto-saves on blur)
@@ -44,7 +44,7 @@
     - Outcomes: allsixes (claim skill free), fail-with-enough-XP (spend N XP → in-place transition to claim view), plain success (splash only — no dialog)
     - `advancementNamer` setting and `advancementNeeded` socket removed; players always name their own skills
     - Enter key submits the skill name input
-19. **Inventory tab** — character sheet now has four tabs: Skills / Inventory / Statuses / History
+19. **Inventory tab** — character sheet has Skills / Inventory / Statuses tabs; History tab built but commented out
 20. **Vellum theme — character sheet visual design**
     - Connected parchment tab nav (mono uppercase, active tab gold hairline, panel seam dissolves)
     - Quill history cards (2-row grid, italic serif skill heading, circular outcome medallion, allsixes inner glow)
@@ -97,7 +97,7 @@
 Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. The post-roll experience (splash + verdict dialog) is implemented and styled.
 
 ### Working
-- Character sheet: name, portrait (click to edit), skills, XP, statuses, biography, rename skill, roll history — all four tabs styled in vellum theme
+- Character sheet: name, portrait (click to edit), skills, XP, statuses, biography, rename skill — three tabs (Skills / Inventory / Statuses) styled in vellum theme; History tab commented out in template
 - Header: 2×2 codex folio grid; biography fills remaining space below name/XP row; XP number vertically centred with name, descenders visible
 - Skill list: pips + clickable name; rename/delete buttons appear on row hover only
 - Tab nav: active tab gold hairline indicator; no browser focus ring
