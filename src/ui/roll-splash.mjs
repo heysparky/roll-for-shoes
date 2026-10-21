@@ -35,7 +35,7 @@ function configFor(kind) {
       return {
         word:   t("RFS.Splash.SuccessWord", "Success"),
         kicker: t("RFS.Splash.CritKicker", "All Sixes"),
-        tagPre: t("RFS.Splash.CritTagPre", "You earned"),
+        tagPre: t("RFS.Splash.CritTagPre", "You unlocked"),
         reward: t("RFS.Splash.CritReward", "a new skill"),
       };
     case "fail":

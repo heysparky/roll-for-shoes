@@ -38,9 +38,9 @@ function renderVerdict(mount, data) {
   const evidence = () =>
     `<div class="rfs-verdict__evidence">${dice.map(dieHtml).join("")}</div>`;
 
-  const claimView = (note) => `
+  const claimView = (note, badge) => `
     <h2 class="rfs-verdict__word rfs-verdict__word--six">All sixes.</h2>
-    <span class="rfs-verdict__badge">&#x2726; New skill earned</span>
+    <span class="rfs-verdict__badge">&#x2726; ${badge}</span>
     <div class="rfs-verdict__acts">
       <input class="rfs-verdict__input" data-ref="skillName"
              placeholder="Name your new skill — e.g. Kick Down Doors" />
@@ -70,11 +70,13 @@ function renderVerdict(mount, data) {
   function paint() {
     let body;
     if (advanced) {
-      const cost = data.xpCost;
-      const note = data.outcome === "allsixes"
+      const cost    = data.xpCost;
+      const natural = data.outcome === "allsixes";
+      const note = natural
         ? "A natural all-sixes grants a skill for free — no XP spent."
         : `Earned by spending ${cost} XP to turn ${cost === 1 ? "your non-six die" : `your ${cost} non-six dice`} to 6.`;
-      body = evidence() + claimView(note);
+      const badge = natural ? "New skill unlocked" : "New skill earned";
+      body = evidence() + claimView(note, badge);
     } else if (data.outcome === "success") {
       body = evidence() + successView();
     } else {
