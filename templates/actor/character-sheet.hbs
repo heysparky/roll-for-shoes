@@ -1,7 +1,7 @@
 {{!-- templates/actor/character-sheet.hbs --}}
 <div class="rfs-sheet character">
 
-  {{!-- ── Header: portrait | (name + xp) / background ─────────────────── --}}
+  {{!-- ── Header: portrait | (name + concept + xp) / background ───────── --}}
   <header class="rfs-sheet__header">
 
     <img class="rfs-sheet__portrait{{#if editMode}} rfs-sheet__portrait--editable{{/if}}"
@@ -11,15 +11,25 @@
 
     <div class="rfs-sheet__header-right">
       <div class="rfs-sheet__header-top">
-        {{#if editMode}}
-          <input class="rfs-sheet__name"
-                 type="text"
-                 name="name"
-                 value="{{actor.name}}"
-                 placeholder="{{localize 'RFS.Placeholder.ActorName'}}">
-        {{else}}
-          <span class="rfs-sheet__name rfs-sheet__name--display">{{actor.name}}</span>
-        {{/if}}
+        <div class="rfs-sheet__identity">
+          {{#if editMode}}
+            <input class="rfs-sheet__name"
+                   type="text"
+                   name="name"
+                   value="{{actor.name}}"
+                   placeholder="{{localize 'RFS.Placeholder.ActorName'}}">
+            <input class="rfs-sheet__concept"
+                   type="text"
+                   name="system.concept"
+                   value="{{actor.system.concept}}"
+                   placeholder="{{localize 'RFS.Placeholder.Concept'}}">
+          {{else}}
+            <span class="rfs-sheet__name rfs-sheet__name--display">{{actor.name}}</span>
+            {{#if actor.system.concept}}
+              <span class="rfs-sheet__concept rfs-sheet__concept--display">{{actor.system.concept}}</span>
+            {{/if}}
+          {{/if}}
+        </div>
         <div class="rfs-sheet__xp">
           <span class="rfs-sheet__xp-label">{{localize 'RFS.Label.XP'}}</span>
           {{#if editMode}}

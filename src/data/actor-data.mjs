@@ -127,6 +127,11 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
         initial: [],
       }),
 
+      // ── Concept ──────────────────────────────────────────────────────────
+      // Optional one-line character pitch shown under the name,
+      // e.g. "Cobbler with a grudge". Blank is allowed and hides the line.
+      concept: new StringField({ required: false, blank: true, initial: "" }),
+
       // ── Biography ────────────────────────────────────────────────────────
       // Freeform character notes. HTMLField allows rich text via ProseMirror.
       biography: new HTMLField({ required: false, blank: true, initial: "" }),

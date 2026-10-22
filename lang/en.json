@@ -97,6 +97,7 @@
     },
     "Placeholder": {
       "ActorName": "Character Name",
+      "Concept": "Concept (optional), e.g. Cobbler with a grudge",
       "Biography": "Character background, appearance, notes…"
     },
     "Warn": {
