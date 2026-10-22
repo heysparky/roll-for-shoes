@@ -25,6 +25,7 @@
     - Click skill name to roll (pips-only display, no level number)
     - Portrait: click-to-edit via FilePicker (`editPortrait` action); vellum shows pencil overlay on hover
     - XP: editable number input (auto-saves on blur)
+    - Optional concept line under the name (`system.concept`; hidden in play mode when blank)
     - Biography textarea (auto-saves on blur)
     - Rename skill: pencil button opens a DialogV2 rename prompt (root skill excluded)
     - `originalIndex` tracking so display sort order cannot corrupt the stored skill array
@@ -97,8 +98,8 @@
 Core mechanics, roll UX, advancement flow, and the vellum character sheet visual design are complete and table-tested. The post-roll experience (splash + verdict dialog) is implemented and styled.
 
 ### Working
-- Character sheet: name, portrait (click to edit), skills, XP, statuses, biography, rename skill — three tabs (Skills / Inventory / Statuses) styled in vellum theme; History tab commented out in template
-- Header: 2×2 codex folio grid; biography fills remaining space below name/XP row; XP number vertically centred with name, descenders visible
+- Character sheet: name, optional concept, portrait (click to edit), skills, XP, statuses, biography, rename skill — three tabs (Skills / Inventory / Statuses) styled in vellum theme; History tab commented out in template
+- Header: 2×2 codex folio grid; name + concept stacked in `.rfs-sheet__identity` left of XP; biography fills remaining space below that row; XP number vertically centred with name, descenders visible
 - Skill list: pips + clickable name; rename/delete buttons appear on row hover only
 - Tab nav: active tab gold hairline indicator; no browser focus ring
 - DC tracker bar: visible to all users; GM adjusts globalDc via six tier chips (Easy/Medium/Hard/Elite/Legendary/Mythic) or +/− buttons; free-floating on canvas (chrome stripped)

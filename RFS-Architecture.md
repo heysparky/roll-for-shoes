@@ -157,6 +157,7 @@ A **Done Editing** footer bar appears at the bottom of the sheet in edit mode (`
 |-|---------------------|-----------|
 | Portrait | static `<img>` | `<img data-action="editImage" data-edit="img">` → built-in FilePicker (dims on hover) |
 | Name | `<span>` | `<input name="name">` auto-saves |
+| Concept | `<span>` under name; omitted when blank | `<input name="system.concept">` auto-saves (optional) |
 | XP | `<span>` | `<input name="system.xp">` auto-saves |
 | Biography | read-only `<div>` | `<textarea name="system.biography">` auto-saves |
 | Skill names | roll buttons | inline `<input>` auto-saves; root is `readonly` |

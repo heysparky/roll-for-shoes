@@ -31,7 +31,7 @@ roll-for-shoes/                    ← repo root
 │   │                                 orphaned tokens when a PC actor is deleted
 │   ├── data/
 │   │   └── actor-data.mjs         ← TypeDataModel schemas (CharacterData, NpcData)
-│   │                                 CharacterData: skills[], xp, statuses[], biography
+│   │                                 CharacterData: skills[], xp, statuses[], concept, biography
 │   ├── ui/
 │   │   ├── roll-splash.mjs        ← RollSplash singleton; full-screen cinematic overlay;
 │   │   │                            show(kind) — "success" / "critical" / "fail"; auto-hides
@@ -80,7 +80,7 @@ roll-for-shoes/                    ← repo root
 │       └── REGISTRATION.md        ← how to wire a new theme
 └── templates/
     ├── actor/
-    │   ├── character-sheet.hbs    ← portrait, name, XP, biography; Skills tab
+    │   ├── character-sheet.hbs    ← portrait, name, concept, XP, biography; Skills tab
     │   │                            (skill-index + statuses) and Roll History tab
     │   ├── npc-sheet.hbs
     │   └── partials/

@@ -136,7 +136,7 @@ search-replace within `vellum.css`:
 |---|---|
 | App/window shell | `.rfs-app`, `.rfs-window` |
 | Section header | `.rfs-section`, `.rfs-section__mark`, `.rfs-section__title`, `.rfs-section__rule`, `.rfs-section__action` |
-| Sheet | `.rfs-sheet__top`, `.rfs-sheet__portrait`, `.rfs-sheet__name`, `.rfs-sheet__subname`, `.rfs-sheet__blurb`, `.rfs-sheet__meta`, `.rfs-sheet__xp`, `.rfs-sheet__background` |
+| Sheet | `.rfs-sheet__top`, `.rfs-sheet__portrait`, `.rfs-sheet__identity`, `.rfs-sheet__name`, `.rfs-sheet__concept`, `.rfs-sheet__subname`, `.rfs-sheet__blurb`, `.rfs-sheet__meta`, `.rfs-sheet__xp`, `.rfs-sheet__background` |
 | Skill tree | `.rfs-skill-tree`, `.rfs-skill-tree__canvas`, `.rfs-skill-node`, `.rfs-skill-node--branch`, `.rfs-skill-node__card`, `.rfs-skill-node__card--root`, `.rfs-skill-node__row`, `.rfs-skill-node__name`, `.rfs-skill-node__pips`, `.rfs-skill-pip`, `.rfs-skill-node__hint`, `.rfs-skill-node__children` |
 | Expanded map | `.rfs-skill-map`, `.rfs-skill-map__title`, `.rfs-skill-map__close`, `.rfs-skill-map__inner` |
 | Statuses | `.rfs-statuses`, `.rfs-statuses__grid`, `.rfs-statuses__col-label`, `.rfs-status`, `.rfs-status--pos/--neg`, `.rfs-status__mod`, `.rfs-status__name` |
