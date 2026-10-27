@@ -87,9 +87,9 @@
 
 ## Up Next
 
-- **Portrait display** — PC portraits in `RfsPcDisplay` are not displaying correctly; this is the active work item
-- **Advancement announcement card copy** — distinct flavour text for natural all-sixes vs XP-purchased advancement
-- **Further CSS polish** — as needed after table testing
+- **Token sheet (`RfsTokenSheet`)** — active work item. Frameless sheet that opens centred on the token: skills left, portrait / name / concept · XP / bio centre, statuses + gear right; Edit / sheet settings / Close top-right. Default for characters and NPCs; classic sheets remain selectable per actor. Needs table testing.
+- **Theming (later)** — colour settings over Foundry variables + a GM-supplied image; no generated art
+- **Advancement card meta line** — titles already differ (Skill Granted! / Skill Earned!); `Meta` / `MetaXp` copy is still identical
 
 ---
 

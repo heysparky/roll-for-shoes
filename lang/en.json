@@ -11,8 +11,9 @@
       "Npc": "NPC"
     },
     "SheetLabel": {
-      "Character": "Roll for Shoes: Character Sheet",
-      "Npc": "Roll for Shoes: NPC Sheet"
+      "Character": "Roll for Shoes: Classic Character Sheet",
+      "Npc": "Roll for Shoes: Classic NPC Sheet",
+      "Token": "Roll for Shoes: Token Sheet"
     },
     "NpcMode": {
       "Fixed": "Fixed",
@@ -33,6 +34,8 @@
       "NoStatuses": "No active statuses.",
       "Inventory": "Inventory",
       "NoInventory": "No items in inventory.",
+      "Gear": "Gear",
+      "Quantity": "Quantity",
       "RollHistory": "Roll History",
       "NoHistory": "No rolls recorded yet."
     },
@@ -48,7 +51,9 @@
       "ToggleNpcMode": "Toggle NPC mode (Fixed / Full Rules)",
       "Cancel": "Cancel",
       "EditCharacter": "Edit Character",
-      "DoneEditing": "Done Editing"
+      "DoneEditing": "Done Editing",
+      "SheetSettings": "Sheet settings",
+      "ChangePortrait": "Change portrait"
     },
     "Dialog": {
       "NewSkill": {

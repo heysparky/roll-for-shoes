@@ -1,0 +1,194 @@
+{{!-- templates/actor/token-sheet.hbs --}}
+{{!--
+  Token-anchored sheet. Three columns: skills | centre (anchor) | statuses + gear.
+  Rendered by src/sheets/token-sheet.mjs. The .rfs-ts__portrait element is the
+  anchor point — its centre is placed over the token.
+--}}
+<div class="rfs-ts">
+
+  {{!-- ── Window controls (top-right, Windows convention) ─────────────── --}}
+  <div class="rfs-ts__controls">
+    {{#if isEditable}}
+      <button type="button" class="rfs-ts__control" data-action="toggleEditMode"
+              data-tooltip aria-label="{{#if editMode}}{{localize 'RFS.Action.DoneEditing'}}{{else}}{{localize 'RFS.Action.EditCharacter'}}{{/if}}">
+        <i class="fa-solid {{#if editMode}}fa-check{{else}}fa-pencil{{/if}}" inert></i>
+      </button>
+      <button type="button" class="rfs-ts__control" data-action="configureSheet"
+              data-tooltip aria-label="{{localize 'RFS.Action.SheetSettings'}}">
+        <i class="fa-solid fa-gear" inert></i>
+      </button>
+    {{/if}}
+    <button type="button" class="rfs-ts__control" data-action="close"
+            data-tooltip aria-label="{{localize 'APPLICATION.TOOLS.Close'}}">
+      <i class="fa-solid fa-xmark" inert></i>
+    </button>
+  </div>
+
+  <div class="rfs-ts__columns">
+
+    {{!-- ── Left: skills ───────────────────────────────────────────────── --}}
+    <div class="rfs-ts__col rfs-ts__col--left">
+      {{#if showSkills}}
+        <details class="rfs-ts__panel rfs-ts__panel--skills" data-panel="skills" {{#unless collapsed.skills}}open{{/unless}}>
+          <summary class="rfs-ts__panel-title">{{localize 'RFS.Label.Skills'}}</summary>
+          <ul class="rfs-ts__list rfs-ts__skills">
+            {{#each skills}}
+              <li class="rfs-ts__skill" style="--depth: {{depth}};">
+                {{#if ../editMode}}
+                  <input type="text" class="rfs-ts__skill-input"
+                         name="system.skills.{{originalIndex}}.name"
+                         value="{{name}}"
+                         {{#if (rfsIsRoot this)}}readonly{{/if}}>
+                  {{#unless (rfsIsRoot this)}}
+                    <button type="button" class="rfs-ts__icon-btn" data-action="deleteSkill" data-skill-id="{{id}}"
+                            data-tooltip aria-label="{{localize 'RFS.Action.DeleteSkill'}}: {{name}}">
+                      <i class="fa-solid fa-trash" inert></i>
+                    </button>
+                  {{/unless}}
+                {{else}}
+                  <button type="button" class="rfs-ts__skill-btn" data-action="rollSkill" data-skill-id="{{id}}"
+                          aria-label="{{name}} ({{level}}d6)">
+                    <span class="rfs-ts__skill-name">{{name}}</span>
+                    <span class="rfs-ts__pips" aria-hidden="true">{{#rfsRepeat level}}<span class="rfs-ts__pip"></span>{{/rfsRepeat}}</span>
+                  </button>
+                {{/if}}
+              </li>
+            {{/each}}
+          </ul>
+        </details>
+      {{/if}}
+    </div>
+
+    {{!-- ── Centre: portrait, name, concept · XP, bio ─────────────────── --}}
+    <div class="rfs-ts__col rfs-ts__col--centre">
+      <img class="rfs-ts__portrait{{#if editMode}} rfs-ts__portrait--editable{{/if}}"
+           src="{{actor.img}}" alt="{{actor.name}}"
+           {{#if editMode}}data-action="editImage" data-edit="img" data-tooltip="{{localize 'RFS.Action.ChangePortrait'}}"{{/if}}>
+
+      {{#if editMode}}
+        <input type="text" class="rfs-ts__name-input" name="name" value="{{actor.name}}"
+               placeholder="{{localize 'RFS.Placeholder.ActorName'}}" aria-label="{{localize 'RFS.Placeholder.ActorName'}}">
+      {{else}}
+        <h2 class="rfs-ts__name">{{actor.name}}</h2>
+      {{/if}}
+
+      <div class="rfs-ts__panel rfs-ts__meta">
+        {{#if isFixed}}
+          {{!-- Fixed-mode NPC: a single difficulty number --}}
+          <label class="rfs-ts__stat">
+            <span class="rfs-ts__stat-label">{{localize 'RFS.Label.Difficulty'}}</span>
+            {{#if editMode}}
+              <input type="number" class="rfs-ts__stat-input" name="system.difficulty" value="{{system.difficulty}}" min="0">
+            {{else}}
+              <span class="rfs-ts__stat-value">{{system.difficulty}}</span>
+            {{/if}}
+          </label>
+          <button type="button" class="rfs-ts__text-btn" data-action="rollDifficulty">{{localize 'RFS.Action.PostDifficulty'}}</button>
+        {{else}}
+          {{#unless isNpc}}
+            {{#if editMode}}
+              <input type="text" class="rfs-ts__concept-input" name="system.concept" value="{{system.concept}}"
+                     placeholder="{{localize 'RFS.Placeholder.Concept'}}" aria-label="{{localize 'RFS.Placeholder.Concept'}}">
+            {{else if system.concept}}
+              <span class="rfs-ts__concept">{{system.concept}}</span>
+            {{/if}}
+          {{/unless}}
+          <label class="rfs-ts__stat">
+            <span class="rfs-ts__stat-label">{{localize 'RFS.Label.XP'}}</span>
+            {{#if editMode}}
+              <input type="number" class="rfs-ts__stat-input" name="system.xp" value="{{system.xp}}" min="0">
+            {{else}}
+              <span class="rfs-ts__stat-value">{{system.xp}}</span>
+            {{/if}}
+          </label>
+        {{/if}}
+        {{#if (and isNpc editMode)}}
+          <button type="button" class="rfs-ts__text-btn" data-action="toggleNpcMode">
+            {{#if isFixed}}{{localize 'RFS.NpcMode.Fixed'}}{{else}}{{localize 'RFS.NpcMode.Full'}}{{/if}}
+            <i class="fa-solid fa-right-left" inert></i>
+          </button>
+        {{/if}}
+      </div>
+
+      <div class="rfs-ts__panel rfs-ts__bio">
+        {{#if editMode}}
+          <textarea class="rfs-ts__bio-input" name="{{bioField}}" rows="6"
+                    aria-label="{{#if isNpc}}{{localize 'RFS.Label.Description'}}{{else}}{{localize 'RFS.Label.Biography'}}{{/if}}"
+                    placeholder="{{localize 'RFS.Placeholder.Biography'}}">{{bioRaw}}</textarea>
+        {{else if bioHTML}}
+          <div class="rfs-ts__bio-text">{{{bioHTML}}}</div>
+        {{else}}
+          <p class="rfs-ts__empty">{{localize 'RFS.Placeholder.Biography'}}</p>
+        {{/if}}
+      </div>
+    </div>
+
+    {{!-- ── Right: statuses, gear ──────────────────────────────────────── --}}
+    <div class="rfs-ts__col rfs-ts__col--right">
+      {{#unless isFixed}}
+        <details class="rfs-ts__panel" data-panel="statuses" {{#unless collapsed.statuses}}open{{/unless}}>
+          <summary class="rfs-ts__panel-title">{{localize 'RFS.Label.Statuses'}}</summary>
+          <ul class="rfs-ts__list">
+            {{#each statuses}}
+              <li class="rfs-ts__row">
+                {{#if ../editMode}}
+                  <input type="text" class="rfs-ts__row-input" name="system.statuses.{{@index}}.name" value="{{name}}"
+                         aria-label="{{localize 'RFS.Dialog.NewStatus.NameLabel'}}">
+                  <input type="number" class="rfs-ts__num-input" name="system.statuses.{{@index}}.value" value="{{value}}"
+                         aria-label="{{localize 'RFS.Dialog.NewStatus.ValueLabel'}}">
+                  <button type="button" class="rfs-ts__icon-btn" data-action="deleteStatus" data-status-id="{{id}}"
+                          data-tooltip aria-label="{{localize 'RFS.Action.DeleteStatus'}}: {{name}}">
+                    <i class="fa-solid fa-trash" inert></i>
+                  </button>
+                {{else}}
+                  <span class="rfs-ts__row-name">{{name}}</span>
+                  <span class="rfs-ts__row-value">{{rfsSignedNumber value}}</span>
+                {{/if}}
+              </li>
+            {{else}}
+              <li class="rfs-ts__empty">{{localize 'RFS.Label.NoStatuses'}}</li>
+            {{/each}}
+          </ul>
+          {{#if editMode}}
+            <button type="button" class="rfs-ts__text-btn" data-action="addStatus">
+              <i class="fa-solid fa-plus" inert></i> {{localize 'RFS.Action.AddStatus'}}
+            </button>
+          {{/if}}
+        </details>
+      {{/unless}}
+
+      {{#if showGear}}
+        <details class="rfs-ts__panel" data-panel="gear" {{#unless collapsed.gear}}open{{/unless}}>
+          <summary class="rfs-ts__panel-title">{{localize 'RFS.Label.Gear'}}</summary>
+          <ul class="rfs-ts__list">
+            {{#each inventory}}
+              <li class="rfs-ts__row">
+                {{#if ../editMode}}
+                  <input type="text" class="rfs-ts__row-input" name="system.inventory.{{@index}}.name" value="{{name}}"
+                         aria-label="{{localize 'RFS.Label.Gear'}}">
+                  <input type="number" class="rfs-ts__num-input" name="system.inventory.{{@index}}.quantity" value="{{quantity}}" min="0"
+                         aria-label="{{localize 'RFS.Label.Quantity'}}">
+                  <button type="button" class="rfs-ts__icon-btn" data-action="deleteItem" data-item-id="{{id}}"
+                          data-tooltip aria-label="{{localize 'RFS.Action.DeleteItem'}}: {{name}}">
+                    <i class="fa-solid fa-trash" inert></i>
+                  </button>
+                {{else}}
+                  <span class="rfs-ts__row-name">{{name}}</span>
+                  {{#if (gt quantity 1)}}<span class="rfs-ts__row-value">×{{quantity}}</span>{{/if}}
+                {{/if}}
+              </li>
+            {{else}}
+              <li class="rfs-ts__empty">{{localize 'RFS.Label.NoInventory'}}</li>
+            {{/each}}
+          </ul>
+          {{#if editMode}}
+            <button type="button" class="rfs-ts__text-btn" data-action="addItem">
+              <i class="fa-solid fa-plus" inert></i> {{localize 'RFS.Action.AddItem'}}
+            </button>
+          {{/if}}
+        </details>
+      {{/if}}
+    </div>
+
+  </div>
+</div>

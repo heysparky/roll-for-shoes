@@ -1,0 +1,338 @@
+/* =============================================================================
+   Roll for Shoes — Token Sheet
+   styles/rfs-token-sheet.css
+
+   Frameless sheet that floats around a token. Uses Foundry's own theme
+   variables only (verified in Foundry 14.369 foundry2.css) so it matches the
+   core UI; fallbacks cover the case where .application variables are absent.
+
+   Every selector is scoped under .rfs-token-sheet to beat Foundry's
+   `.application button` / input resets (0,1,1 specificity).
+============================================================================= */
+
+.rfs-token-sheet {
+  --rfs-ts-panel-bg:     var(--background, rgba(11, 10, 19, 0.9));
+  --rfs-ts-border:       var(--color-border, #302831);
+  --rfs-ts-text:         var(--color-text-primary, #e7e0d4);
+  --rfs-ts-text-strong:  var(--color-text-emphatic, #ffffff);
+  --rfs-ts-text-muted:   var(--color-text-subtle, #a8a19a);
+  --rfs-ts-accent:       var(--color-warm-2, #ee9b3a);
+  --rfs-ts-shadow:       var(--color-shadow-dark, rgba(0, 0, 0, 0.6));
+  --rfs-ts-radius:       6px;
+  --rfs-ts-gap:          12px;
+
+  /* Positioned by token-sheet.mjs via style.left/top — must be fixed */
+  position: fixed;
+  z-index: var(--z-index-window, 100);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  max-height: none;
+  min-width: 0;
+  color: var(--rfs-ts-text);
+  pointer-events: none;   /* gaps between panels pass clicks to the canvas */
+}
+
+.rfs-token-sheet .rfs-ts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Window controls (top-right) ──────────────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  pointer-events: auto;
+  align-self: flex-end;
+}
+.rfs-token-sheet .rfs-ts__control {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rfs-ts-panel-bg);
+  border: 1px solid var(--rfs-ts-border);
+  border-radius: 4px;
+  color: var(--rfs-ts-text);
+  box-shadow: 0 0 6px var(--rfs-ts-shadow);
+  cursor: pointer;
+}
+.rfs-token-sheet .rfs-ts__control:hover,
+.rfs-token-sheet .rfs-ts__control:focus-visible {
+  border-color: var(--rfs-ts-accent);
+  color: var(--rfs-ts-text-strong);
+}
+
+/* ── Columns ──────────────────────────────────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__columns {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rfs-ts-gap);
+}
+.rfs-token-sheet .rfs-ts__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rfs-ts-gap);
+}
+.rfs-token-sheet .rfs-ts__col--left  { width: 260px; }
+.rfs-token-sheet .rfs-ts__col--centre { width: 220px; align-items: stretch; }
+.rfs-token-sheet .rfs-ts__col--right { width: 240px; }
+
+/* Side columns with nothing in them (e.g. fixed-mode NPC) take no space */
+.rfs-token-sheet .rfs-ts__col--left:not(:has(.rfs-ts__panel)),
+.rfs-token-sheet .rfs-ts__col--right:not(:has(.rfs-ts__panel)) {
+  display: none;
+}
+
+/* ── Panels ───────────────────────────────────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__panel {
+  pointer-events: auto;
+  background: var(--rfs-ts-panel-bg);
+  border: 1px solid var(--rfs-ts-border);
+  border-radius: var(--rfs-ts-radius);
+  box-shadow: 0 0 10px var(--rfs-ts-shadow);
+  padding: 8px 10px;
+}
+.rfs-token-sheet .rfs-ts__panel-title {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: var(--font-size-14, 14px);
+  color: var(--rfs-ts-text-strong);
+  padding: 2px 0 4px;
+}
+.rfs-token-sheet details[open] > .rfs-ts__panel-title {
+  border-bottom: 1px solid var(--rfs-ts-border);
+  margin-bottom: 6px;
+}
+
+.rfs-token-sheet .rfs-ts__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rfs-token-sheet .rfs-ts__empty {
+  margin: 0;
+  color: var(--rfs-ts-text-muted);
+  font-style: italic;
+  font-size: var(--font-size-13, 13px);
+}
+
+/* ── Skills ───────────────────────────────────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__skills {
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+.rfs-token-sheet .rfs-ts__skill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: calc(var(--depth, 0) * 12px);
+}
+.rfs-token-sheet .rfs-ts__skill-btn {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 3px 6px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--rfs-ts-text);
+  font-size: var(--font-size-14, 14px);
+  text-align: left;
+  cursor: pointer;
+}
+.rfs-token-sheet .rfs-ts__skill-btn:hover,
+.rfs-token-sheet .rfs-ts__skill-btn:focus-visible {
+  border-color: var(--rfs-ts-accent);
+  color: var(--rfs-ts-text-strong);
+}
+.rfs-token-sheet .rfs-ts__skill-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rfs-token-sheet .rfs-ts__pips {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.rfs-token-sheet .rfs-ts__pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── Centre column ────────────────────────────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__portrait {
+  pointer-events: auto;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--rfs-ts-border);
+  border-radius: var(--rfs-ts-radius);
+  background: var(--rfs-ts-panel-bg);
+  box-shadow: 0 0 10px var(--rfs-ts-shadow);
+}
+.rfs-token-sheet .rfs-ts__portrait--editable {
+  cursor: pointer;
+}
+.rfs-token-sheet .rfs-ts__portrait--editable:hover {
+  border-color: var(--rfs-ts-accent);
+}
+
+.rfs-token-sheet .rfs-ts__name {
+  pointer-events: auto;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--rfs-ts-border);
+  border-radius: var(--rfs-ts-radius);
+  background: var(--rfs-ts-panel-bg);
+  box-shadow: 0 0 10px var(--rfs-ts-shadow);
+  color: var(--rfs-ts-text-strong);
+  font-size: var(--font-size-20, 20px);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.rfs-token-sheet .rfs-ts__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+.rfs-token-sheet .rfs-ts__concept {
+  flex: 1;
+  min-width: 0;
+  font-style: italic;
+  color: var(--rfs-ts-text);
+}
+.rfs-token-sheet .rfs-ts__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-left: auto;
+}
+.rfs-token-sheet .rfs-ts__stat-label {
+  font-size: var(--font-size-12, 12px);
+  color: var(--rfs-ts-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.rfs-token-sheet .rfs-ts__stat-value {
+  font-size: var(--font-size-20, 20px);
+  font-weight: bold;
+  color: var(--rfs-ts-text-strong);
+}
+
+.rfs-token-sheet .rfs-ts__bio {
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: var(--font-size-13, 13px);
+  line-height: 1.4;
+}
+.rfs-token-sheet .rfs-ts__bio-text > :first-child { margin-top: 0; }
+.rfs-token-sheet .rfs-ts__bio-text > :last-child  { margin-bottom: 0; }
+
+/* ── Status + gear rows ───────────────────────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 0;
+}
+.rfs-token-sheet .rfs-ts__row-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rfs-token-sheet .rfs-ts__row-value {
+  flex-shrink: 0;
+  font-weight: bold;
+  color: var(--rfs-ts-text-strong);
+}
+
+/* ── Edit-mode inputs and small buttons ───────────────────────────────────── */
+.rfs-token-sheet .rfs-ts__skill-input,
+.rfs-token-sheet .rfs-ts__row-input,
+.rfs-token-sheet .rfs-ts__concept-input {
+  flex: 1;
+  min-width: 0;
+}
+.rfs-token-sheet .rfs-ts__name-input {
+  pointer-events: auto;
+  text-align: center;
+  font-size: var(--font-size-16, 16px);
+}
+.rfs-token-sheet .rfs-ts__num-input,
+.rfs-token-sheet .rfs-ts__stat-input {
+  width: 4rem;
+  flex: 0 0 auto;
+}
+.rfs-token-sheet .rfs-ts__bio-input {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.rfs-token-sheet .rfs-ts__icon-btn {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--rfs-ts-text-muted);
+  font-size: var(--font-size-12, 12px);
+  cursor: pointer;
+}
+.rfs-token-sheet .rfs-ts__icon-btn:hover,
+.rfs-token-sheet .rfs-ts__icon-btn:focus-visible {
+  color: var(--rfs-ts-text-strong);
+  border-color: var(--rfs-ts-accent);
+}
+
+.rfs-token-sheet .rfs-ts__text-btn {
+  margin: 6px 0 0;
+  padding: 3px 8px;
+  height: auto;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--rfs-ts-border);
+  border-radius: 3px;
+  color: var(--rfs-ts-text);
+  font-size: var(--font-size-13, 13px);
+  cursor: pointer;
+}
+.rfs-token-sheet .rfs-ts__text-btn:hover,
+.rfs-token-sheet .rfs-ts__text-btn:focus-visible {
+  border-color: var(--rfs-ts-accent);
+  color: var(--rfs-ts-text-strong);
+}
+.rfs-token-sheet .rfs-ts__meta .rfs-ts__text-btn {
+  margin: 0;
+}

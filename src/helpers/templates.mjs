@@ -16,6 +16,7 @@ export async function preloadHandlebarsTemplates() {
     // Actor sheets
     "systems/roll-for-shoes/templates/actor/character-sheet.hbs",
     "systems/roll-for-shoes/templates/actor/npc-sheet.hbs",
+    "systems/roll-for-shoes/templates/actor/token-sheet.hbs",
     "systems/roll-for-shoes/templates/apps/dc-tracker.hbs",
     "systems/roll-for-shoes/templates/apps/pc-display.hbs",
     "systems/roll-for-shoes/templates/dialog/roll-verdict-dialog.hbs",

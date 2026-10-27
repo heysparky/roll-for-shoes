@@ -40,7 +40,8 @@ src/
 ├── dialogs/
 │   └── roll-result-dialog.mjs    Fire-and-forget popup for roll results;
 │                                   Claim Skill / Spend XP buttons inline
-├── sheets/character-sheet.mjs    ActorSheetV2 with skill list, XP, statuses, roll history
+├── sheets/token-sheet.mjs        Default sheet — frameless, floats around the token
+├── sheets/character-sheet.mjs    Classic ActorSheetV2 (fallback) with skill list, XP, statuses
 ├── sheets/npc-sheet.mjs          NPC sheet (fixed or full mode)
 ├── rolls/skill-roll.mjs          Core roll logic — reads globalDc; all roll types;
 │                                   themed advancement dialogs
@@ -88,9 +89,9 @@ All CSS values use custom properties from `styles/rfs-base.css` — no hardcoded
 ## Current Development State
 
 Core mechanics, roll UX, and advancement flow are complete and table-tested. Active work:
-1. **Portrait display** — PC portraits in `RfsPcDisplay` are not displaying correctly; this is the current work item
-2. Advancement prompt text branching — natural all-sixes vs. XP-purchased flavour text on the announcement card
-3. Further CSS/visual polish as needed after table testing
+1. **Token sheet** — `RfsTokenSheet` (`src/sheets/token-sheet.mjs`, `templates/actor/token-sheet.hbs`, `styles/rfs-token-sheet.css`) is the new default sheet for characters and NPCs: frameless, anchored over the token (pans at current zoom to fit), Foundry-default styling. Classic sheets stay registered as non-default fallbacks. Needs table testing.
+2. Theming later = colour settings + GM image, not generated art
+3. Advancement card `Meta` / `MetaXp` copy still identical (titles already differ)
 
 **Socket pattern** (important): world-scoped settings can only be written by GMs. The only socket message type is `splashShow` (broadcast roll flourish to other clients). `"socket": true` must be in `system.json` and requires a full world reload (not just browser refresh) to take effect.
 

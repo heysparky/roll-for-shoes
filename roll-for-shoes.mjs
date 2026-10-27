@@ -8,6 +8,7 @@ import { CharacterData, NpcData } from "./src/data/actor-data.mjs";
 import { RfsActor } from "./src/documents/actor.mjs";
 import { RfsCharacterSheet } from "./src/sheets/character-sheet.mjs";
 import { RfsNpcSheet } from "./src/sheets/npc-sheet.mjs";
+import { RfsTokenSheet } from "./src/sheets/token-sheet.mjs";
 import { RfsDcTracker } from "./src/apps/dc-tracker.mjs";
 import { RfsPcDisplay } from "./src/apps/pc-display.mjs";
 import { preloadHandlebarsTemplates, registerHandlebarsHelpers } from "./src/helpers/templates.mjs";
@@ -39,15 +40,23 @@ Hooks.once("init", function () {
 
   DocumentSheetConfig.unregisterSheet(Actor, "core", foundry.appv1.sheets.ActorSheet);
 
+  // Token sheet is the default for both types; the classic sheets stay
+  // selectable per-actor from the sheet settings (gear) control.
+  DocumentSheetConfig.registerSheet(Actor, "roll-for-shoes", RfsTokenSheet, {
+    types: ["character", "npc"],
+    makeDefault: true,
+    label: "RFS.SheetLabel.Token",
+  });
+
   DocumentSheetConfig.registerSheet(Actor, "roll-for-shoes", RfsCharacterSheet, {
     types: ["character"],
-    makeDefault: true,
+    makeDefault: false,
     label: "RFS.SheetLabel.Character",
   });
 
   DocumentSheetConfig.registerSheet(Actor, "roll-for-shoes", RfsNpcSheet, {
     types: ["npc"],
-    makeDefault: true,
+    makeDefault: false,
     label: "RFS.SheetLabel.Npc",
   });
 

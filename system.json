@@ -21,6 +21,7 @@
     "styles/rfs-chat.css",
     "styles/rfs-splash.css",
     "styles/rfs-verdict.css",
+    "styles/rfs-token-sheet.css",
     "styles/themes/clean-light.css",
     "styles/themes/dark-factory.css",
     "styles/themes/vellum.css"

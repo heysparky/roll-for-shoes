@@ -174,3 +174,41 @@ Fix: scope a `font-family: inherit` rule inside your sheet's root class:
 ```
 
 More-specific per-element rules (e.g. monospace on a number field) still apply normally on top of this.
+
+---
+
+## Token → Sheet Anchoring (verified against 14.369 source)
+
+Used by `RfsTokenSheet` (`src/sheets/token-sheet.mjs`). All references are to the Foundry install's `client/` directory.
+
+- **Token double-click passes the token to the sheet.** `canvas/placeables/token.mjs` `_onClickLeft2`: if the sheet is already rendered it calls `maximize()` + `bringToFront()`; otherwise `actor.sheet.render(true, {token: this.document})`. The legacy boolean signature is folded into options (`ApplicationV2#render`: `Object.assign(_options, {force})`), so `options.token` is available in `_onRender(context, options)`.
+- **Canvas → screen coordinates:** `canvas.clientCoordinatesFromCanvas({x, y})` (`canvas/board.mjs`) — applies `stage.worldTransform`. Inverse: `canvasCoordinatesFromClient`.
+- **Pan without changing zoom:** `canvas.animatePan({x, y})` — `x`/`y` are the canvas-space view centre (`stage.pivot`). Omitting `scale` keeps the current zoom (`_constrainView` falls back to `stage.scale.x`).
+- **Pan is constrained near scene edges:** `_constrainView` clamps the pivot to `0.4 × viewport / scale` beyond the scene rect, so a corner token may not pan far enough — clamp your UI as a fallback.
+- **Hooks:** `canvasPan(canvas, {x, y, scale})` fires on every `canvas.pan()`, including every tick of `animatePan`. `refresh${documentName}` (e.g. `refreshToken(token, flags)`) fires from `PlaceableObject` on every render-flag refresh, including movement animation frames.
+
+## ApplicationV2 — Frameless Apps
+
+- `window: { frame: false }` — `bringToFront()` returns early for frameless apps (no z-index management), so set `z-index` in CSS.
+- `window: { positioned: false }` — `setPosition()` returns early; position the element yourself (`style.left/top`) and give it `position: fixed` in CSS.
+- `data-action="close"` is handled by ApplicationV2's click dispatcher (`case "close"`) anywhere inside the element — no handler registration needed.
+- `DocumentSheetV2` provides `configureSheet` and `editImage` actions; a frameless sheet loses the header gear, so add a `data-action="configureSheet"` button yourself.
+- Core `.application` rule sets `background`, `overflow: hidden`, `max-height`, `min-width` — override these on a frameless floating root.
+
+## Token HUD — Palettes (verified against 14.369 source)
+
+Not currently used, but checked while designing the token sheet:
+
+- Subclass `foundry.applications.hud.TokenHUD`, register via `CONFIG.Token.hudClass`. Single root PART `templates/hud/token-hud.hbs` with `.col.left`, `.col.middle`, `.col.right`.
+- Any `.control-icon[data-action="togglePalette"][data-palette="X"]` toggles `.palette[data-palette="X"]` — generic, one palette open at a time. The active palette survives re-renders (reset only on bind/close).
+- Actor updates re-render the bound HUD (`documents/token.mjs`).
+- HUD colours come from `--control-*` CSS variables on `.placeable-hud`; list palettes use `.palette-list` / `.palette-list-entry`.
+- The `#hud` layer scales with canvas zoom.
+
+## Handlebars — Core Helpers
+
+`eq`, `ne`, `lt`, `gt`, `lte`, `gte`, `not`, `and`, `or`, `ifThen`, `localize`, `numberFormat`, `selectOptions` are registered by core (`applications/handlebars.mjs`).
+
+## Text Enrichment
+
+`foundry.applications.ux.TextEditor.implementation.enrichHTML(content, {secrets})` — returns a Promise of enriched HTML; render with triple braces.
